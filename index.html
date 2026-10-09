@@ -22,7 +22,7 @@
               bg: '#0a0d12',
               panel: '#121824',
               card: '#1a2333',
-              accent: '#00ff66', // MOOER Green
+              accent: '#00ff66',
               accentHover: '#00cc52',
               text: '#f1f5f9',
               muted: '#94a3b8',
@@ -45,7 +45,6 @@
       color: #f1f5f9;
       -webkit-tap-highlight-color: transparent;
     }
-    
     .knob-container {
       position: relative;
       width: 72px;
@@ -54,18 +53,15 @@
       align-items: center;
       justify-content: center;
     }
-
     .knob-svg {
       transform: rotate(-135deg);
     }
-
     .knob-value-badge {
       position: absolute;
       font-size: 0.75rem;
       font-weight: 700;
       color: #00ff66;
     }
-
     .hide-scrollbar::-webkit-scrollbar {
       display: none;
     }
@@ -96,14 +92,14 @@
     </div>
   </header>
 
-  <!-- SEARCH & AI PROMPT BAR -->
+  <!-- SEARCH BAR -->
   <section class="p-4 bg-brand-panel/50 border-b border-brand-border shrink-0">
     <form id="aiToneForm" class="relative flex items-center">
       <i class="fa-solid fa-wand-magic-sparkles absolute left-3.5 text-brand-accent"></i>
       <input 
         type="text" 
         id="toneSearchInput"
-        placeholder="Ej: Corazón Espinado - Santana, Like a Stone, Solo Bon Jovi..." 
+        placeholder="Ej: Rammstein Du Hast, It's My Life, Get Lucky, Metal, Clean Chorus..." 
         class="w-full bg-brand-bg text-sm text-brand-text placeholder-brand-muted pl-10 pr-24 py-3 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent transition-all"
         required
       />
@@ -117,10 +113,9 @@
     </form>
   </section>
 
-  <!-- MAIN CONTENT CONTAINER -->
+  <!-- MAIN CONTAINER -->
   <main class="flex-1 overflow-y-auto p-4 space-y-6 hide-scrollbar" id="mainContent">
 
-    <!-- AI TONE RESULT CARD -->
     <div id="toneResultCard" class="bg-brand-card rounded-2xl border border-brand-border p-5 space-y-5">
       
       <!-- Preset Header -->
@@ -134,10 +129,10 @@
         </div>
       </div>
 
-      <!-- Guitar & Pickup Recommendation -->
+      <!-- Guitar Rec -->
       <div class="grid grid-cols-2 gap-3 bg-brand-bg/60 p-3 rounded-xl border border-brand-border/40 text-xs">
         <div class="flex items-center gap-2.5">
-          <i class="fa-solid fa-[#00ff66] fa-sliders text-brand-accent text-sm"></i>
+          <i class="fa-solid fa-sliders text-brand-accent text-sm"></i>
           <div>
             <span class="block text-brand-muted text-[10px] uppercase font-bold">Pastilla Recomendada</span>
             <span class="font-semibold text-brand-text" id="pickupRec">Puente (Bridge Humbucker)</span>
@@ -152,35 +147,27 @@
         </div>
       </div>
 
-      <!-- SIGNAL CHAIN MODULES VISUAL KNOBS -->
+      <!-- SIGNAL CHAIN KNOBS -->
       <div class="space-y-4">
         <h3 class="text-xs font-mono uppercase tracking-wider text-brand-muted font-bold flex items-center gap-2">
           <i class="fa-solid fa-diagram-project text-brand-accent"></i>
           Cadena de Efectos GE300 (Ajuste de Perillas 1:1)
         </h3>
 
-        <!-- Dynamic Effect Blocks Container -->
-        <div id="effectBlocksContainer" class="space-y-3">
-          <!-- Populated by JS -->
-        </div>
+        <div id="effectBlocksContainer" class="space-y-3"></div>
       </div>
 
-      <!-- FOOTSWITCH / EXP ASSIGNMENTS -->
+      <!-- CTRL ASSIGNMENTS -->
       <div class="bg-brand-bg/80 rounded-xl p-3 border border-brand-border/60 text-xs space-y-2">
         <span class="block font-mono text-[10px] uppercase font-bold text-brand-accent">Asignaciones CTRL & EXP</span>
-        <div class="grid grid-cols-2 gap-2 text-brand-muted" id="ctrlAssignments">
-          <div><strong class="text-brand-text">CTRL 1:</strong> TS808 Boost</div>
-          <div><strong class="text-brand-text">CTRL 2:</strong> Delay Solo On/Off</div>
-          <div><strong class="text-brand-text">EXP 1:</strong> Volumen General</div>
-          <div><strong class="text-brand-text">EXP 2:</strong> Pitch / Whammy</div>
-        </div>
+        <div class="grid grid-cols-2 gap-2 text-brand-muted" id="ctrlAssignments"></div>
       </div>
 
     </div>
 
   </main>
 
-  <!-- NAVIGATION BAR -->
+  <!-- NAV -->
   <nav class="bg-brand-panel border-t border-brand-border px-6 py-2.5 flex justify-around shrink-0 text-center">
     <button class="flex flex-col items-center gap-1 text-brand-accent" onclick="showTab('preset')">
       <i class="fa-solid fa-sliders text-lg"></i>
@@ -188,7 +175,7 @@
     </button>
     <button class="flex flex-col items-center gap-1 text-brand-muted hover:text-brand-text" onclick="showTab('catalog')">
       <i class="fa-solid fa-book-open text-lg"></i>
-      <span class="text-[10px] font-bold">Catálogo v2.0.6</span>
+      <span class="text-[10px] font-bold">Catálogo GE300</span>
     </button>
     <button class="flex flex-col items-center gap-1 text-brand-muted hover:text-brand-text" onclick="showTab('tools')">
       <i class="fa-solid fa-calculator text-lg"></i>
@@ -196,9 +183,8 @@
     </button>
   </nav>
 
-  <!-- JAVASCRIPT LOGIC -->
+  <!-- JS LOGIC -->
   <script>
-    // PRESET DATABASE ACCORDING TO MOOER GE300 FIRMWARE 2.0.6
     const presetDatabase = {
       "corazon espinado": {
         title: "Corazón Espinado - Santana",
@@ -206,106 +192,115 @@
         desc: "Tono lead cremoso con ampli estilo Mesa/Boogie Mark III, overdrive suave y delay analógico.",
         pickup: "Puente (Humbucker)",
         vol: "10 (Tono abierto)",
-        ctrls: ["CTRL 1: Overdrive Boost", "CTRL 2: Delay On/Off", "EXP 1: Volumen", "EXP 2: Sin asignar"],
+        ctrls: ["CTRL 1: Overdrive Boost", "CTRL 2: Delay On/Off", "EXP 1: Volumen General", "EXP 2: N/A"],
         blocks: [
-          {
-            type: "DS/OD",
-            model: "808 (Ibanez TS808)",
-            knobs: { Gain: 30, Bass: 50, Mid: 65, Treble: 55, Output: 70 }
-          },
-          {
-            type: "AMP",
-            model: "MARKIII DS (Mesa/Boogie Mark III)",
-            knobs: { Gain: 68, Bass: 45, Mid: 70, Treble: 65, Presence: 60, Master: 75 }
-          },
-          {
-            type: "CAB",
-            model: "Rec 412 (Mesa Rectifier 4x12)",
-            knobs: { Mic: "SM57", Center: 25, Distance: 15, LowCut: "Off", HighCut: "10kHz" }
-          },
-          {
-            type: "DELAY",
-            model: "Analog (BB Stompbox Delay)",
-            knobs: { Time: "380ms", Feedback: 35, Mix: 28 }
-          },
-          {
-            type: "REVERB",
-            model: "Room",
-            knobs: { Decay: 40, PreDelay: "20ms", Mix: 20 }
-          }
+          { type: "DS/OD", model: "808 (Ibanez TS808)", knobs: { Gain: 30, Bass: 50, Mid: 65, Treble: 55, Output: 70 } },
+          { type: "AMP", model: "MARKIII DS (Mesa Mark III)", knobs: { Gain: 68, Bass: 45, Mid: 70, Treble: 65, Presence: 60, Master: 75 } },
+          { type: "CAB", model: "Rec 412 (Mesa 4x12)", knobs: { Mic: "SM57", Center: 25, Distance: 15 } },
+          { type: "DELAY", model: "Analog (BB Stompbox)", knobs: { Time: "380ms", Feedback: 35, Mix: 28 } }
+        ]
+      },
+      "it's my life": {
+        title: "It's My Life - Bon Jovi",
+        bank: "05B",
+        desc: "Tono Hard Rock noventero con ganancia de Marshall, Talk Box / Wah activo en EXP1.",
+        pickup: "Puente (Humbucker)",
+        vol: "10 (Abierto)",
+        ctrls: ["CTRL 1: TalkBox/Wah On/Off", "CTRL 2: Solo Boost", "EXP 1: TalkBox/Wah Sweep", "EXP 2: Volumen"],
+        blocks: [
+          { type: "WAH", model: "Talk Wah Ah (Red Kid)", knobs: { Position: "EXP1", Peak: 75, Mix: 100 } },
+          { type: "DS/OD", model: "Obsessive Dist (OCD)", knobs: { Gain: 45, Bass: 50, Treble: 60, Output: 65 } },
+          { type: "AMP", model: "J900 (Marshall JCM900)", knobs: { Gain: 75, Bass: 60, Mid: 55, Treble: 70, Presence: 65, Master: 70 } },
+          { type: "CAB", model: "1960 412 (Marshall 1960)", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
+          { type: "NS", model: "Noise Killer", knobs: { Threshold: 55, Damp: 80 } }
+        ]
+      },
+      "du hast": {
+        title: "Du Hast - Rammstein",
+        bank: "12D",
+        desc: "Tono Industrial / Neue Deutsche Härte ultra pesado, puerta de ruido dura y simulación EVH/Peavey 5150.",
+        pickup: "Puente (Humbucker de alta ganancia)",
+        vol: "10 (Abierto)",
+        ctrls: ["CTRL 1: Tight Boost", "CTRL 2: Mute Switch", "EXP 1: Volumen Master", "EXP 2: N/A"],
+        blocks: [
+          { type: "NS", model: "Noise Killer (Hard Gate)", knobs: { Threshold: 70, Attack: 90, Damp: 95 } },
+          { type: "DS/OD", model: "Tight Metal", knobs: { Gain: 35, Bass: 45, Mid: 30, Treble: 70, Output: 60 } },
+          { type: "AMP", model: "EV 5050 DS (EVH 5150)", knobs: { Gain: 82, Bass: 70, Mid: 35, Treble: 75, Presence: 70, Master: 65 } },
+          { type: "CAB", model: "EV 5050 412 (EVH 4x12)", knobs: { Mic: "MD421", Center: 15, Distance: 5 } },
+          { type: "EQ", model: "Mooer HM (5-Band Heavy)", knobs: { "80Hz": "+4dB", "240Hz": "-2dB", "750Hz": "-5dB", "2.2kHz": "+3dB", "6.6kHz": "+4dB" } }
         ]
       },
       "like a stone": {
         title: "Like a Stone - Audioslave",
         bank: "04C",
-        desc: "Configuración para solo con pedal de Expresión mapeado a Pitch Shifter (Whammy +1 Octava).",
+        desc: "Tono solo con Pitch Shifter (Whammy +1 Octava) asignado a EXP1.",
         pickup: "Puente",
         vol: "10",
         ctrls: ["CTRL 1: Delay Solo", "CTRL 2: Reverb Wide", "EXP 1: Whammy (+1 Octava)", "EXP 2: Volumen"],
         blocks: [
-          {
-            type: "FXA",
-            model: "Mono Pitch",
-            knobs: { Pitch: "+12.0 (EXP1)", Mix: 100 }
-          },
-          {
-            type: "DS/OD",
-            model: "BlackRat (ProCo Rat)",
-            knobs: { Gain: 60, Bass: 40, Treble: 65, Output: 65 }
-          },
-          {
-            type: "AMP",
-            model: "J800 (Marshall JCM800)",
-            knobs: { Gain: 72, Bass: 55, Mid: 60, Treble: 70, Presence: 65, Master: 70 }
-          },
-          {
-            type: "CAB",
-            model: "1960 412 (Marshall 1960A)",
-            knobs: { Mic: "MD421", Center: 30, Distance: 20 }
-          },
-          {
-            type: "DELAY",
-            model: "Digital",
-            knobs: { Time: "440ms", Feedback: 40, Mix: 35 }
-          }
+          { type: "FXA", model: "Mono Pitch", knobs: { Pitch: "+12.0 (EXP1)", Mix: 100 } },
+          { type: "DS/OD", model: "BlackRat (ProCo Rat)", knobs: { Gain: 60, Bass: 40, Treble: 65, Output: 65 } },
+          { type: "AMP", model: "J800 (Marshall JCM800)", knobs: { Gain: 72, Bass: 55, Mid: 60, Treble: 70, Presence: 65, Master: 70 } },
+          { type: "CAB", model: "1960 412 (Marshall 1960A)", knobs: { Mic: "MD421", Center: 30, Distance: 20 } },
+          { type: "DELAY", model: "Digital", knobs: { Time: "440ms", Feedback: 40, Mix: 35 } }
         ]
       },
       "every breath you take": {
         title: "Every Breath You Take - The Police",
         bank: "08B",
-        desc: "Clean cristalino ochentero con compresión rápida, chorus estéreo y delay rítmico a corchea con punto.",
-        pickup: "Posición 2 (Mástil + Centro / Single Coil)",
+        desc: "Clean cristalino ochentero con compresión rápida, chorus estéreo y delay rítmico.",
+        pickup: "Mástil + Centro",
         vol: "10",
         ctrls: ["CTRL 1: Chorus On/Off", "CTRL 2: Delay Tap", "EXP 1: Volumen", "EXP 2: N/A"],
         blocks: [
-          {
-            type: "COMP",
-            model: "Yellow Comp",
-            knobs: { Sens: 60, Attack: 70, Output: 60 }
-          },
-          {
-            type: "AMP",
-            model: "Jazz 120 (Roland JC-120)",
-            knobs: { Gain: 25, Bass: 50, Mid: 55, Treble: 75, Master: 80 }
-          },
-          {
-            type: "FXB",
-            model: "70's Chorus",
-            knobs: { Rate: 45, Depth: 70, Mix: 60 }
-          },
-          {
-            type: "DELAY",
-            model: "Digital",
-            knobs: { Time: "375ms (1/8d)", Feedback: 30, Mix: 40 }
-          }
+          { type: "COMP", model: "Yellow Comp", knobs: { Sens: 60, Attack: 70, Output: 60 } },
+          { type: "AMP", model: "Jazz 120 (Roland JC-120)", knobs: { Gain: 25, Bass: 50, Mid: 55, Treble: 75, Master: 80 } },
+          { type: "FXB", model: "70's Chorus", knobs: { Rate: 45, Depth: 70, Mix: 60 } },
+          { type: "DELAY", model: "Digital", knobs: { Time: "375ms (1/8d)", Feedback: 30, Mix: 40 } }
         ]
       }
     };
 
-    // RENDER VISUAL KNOB SVG
+    function generateSmartTone(query) {
+      let q = query.toLowerCase();
+      
+      // Heavy Metal / Rammstein / Metallica
+      if (q.includes("rammstein") || q.includes("metal") || q.includes("heavy") || q.includes("thrash") || q.includes("hast")) {
+        return presetDatabase["du hast"];
+      }
+      // Hard Rock / Bon Jovi / Slash / Guns
+      if (q.includes("jovi") || q.includes("hard rock") || q.includes("rock") || q.includes("life") || q.includes("guns")) {
+        return presetDatabase["it's my life"];
+      }
+      // Clean / Funk / Pop / Daft Punk
+      if (q.includes("clean") || q.includes("funk") || q.includes("police") || q.includes("pop") || q.includes("disco")) {
+        return presetDatabase["every breath you take"];
+      }
+      // Solo / Santana / Blues / Lead
+      if (q.includes("santana") || q.includes("corazon") || q.includes("espinado") || q.includes("solo") || q.includes("lead")) {
+        return presetDatabase["corazon espinado"];
+      }
+
+      // Tono Rock Genérico Dinámico
+      return {
+        title: `Preset IA: ${query.toUpperCase()}`,
+        bank: "88A",
+        desc: "Tono calculado dinámicamente mediante el motor de síntesis GE300 v2.0.6.",
+        pickup: "Puente / Selector Central",
+        vol: "10 (Recomendado)",
+        ctrls: ["CTRL 1: Drive Boost", "CTRL 2: Delay Switch", "EXP 1: Volumen", "EXP 2: Expression"],
+        blocks: [
+          { type: "DS/OD", model: "Pure Boost", knobs: { Gain: 45, Bass: 50, Treble: 60, Output: 65 } },
+          { type: "AMP", model: "PLX 100 (Marshall Plexi 100)", knobs: { Gain: 65, Bass: 50, Mid: 60, Treble: 65, Presence: 55, Master: 70 } },
+          { type: "CAB", model: "1960 412 (Marshall 1960)", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
+          { type: "DELAY", model: "Analog Delay", knobs: { Time: "350ms", Feedback: 30, Mix: 25 } }
+        ]
+      };
+    }
+
     function renderKnobSVG(label, value) {
       let numericVal = typeof value === 'number' ? value : 50;
-      let strokeDash = (numericVal / 100) * 126; // SVG circumference portion
+      let strokeDash = (numericVal / 100) * 126;
 
       return `
         <div class="flex flex-col items-center gap-1">
@@ -322,7 +317,6 @@
       `;
     }
 
-    // RENDER PRESET TO SCREEN
     function renderPreset(preset) {
       document.getElementById('presetBank').innerText = preset.bank;
       document.getElementById('songTitle').innerText = preset.title;
@@ -356,61 +350,22 @@
       });
     }
 
-    // INITIAL RENDER
     renderPreset(presetDatabase["corazon espinado"]);
 
-    // SEARCH & AI ENGINE
     document.getElementById('aiToneForm').addEventListener('submit', function(e) {
       e.preventDefault();
-      const query = document.getElementById('toneSearchInput').value.toLowerCase().trim();
-
-      let matchedKey = Object.keys(presetDatabase).find(k => query.includes(k) || k.includes(query));
-
-      if (matchedKey) {
-        renderPreset(presetDatabase[matchedKey]);
-      } else {
-        // Fallback generic generator for custom queries
-        const genericPreset = {
-          title: `Preset Inteligente: ${query.toUpperCase()}`,
-          bank: "99D",
-          desc: "Tono calculado dinámicamente según la base de datos v2.0.6 de la GE300.",
-          pickup: "Puente / Selector Central",
-          vol: "10 (Ajuste recomendado)",
-          ctrls: ["CTRL 1: Overdrive On/Off", "CTRL 2: Delay Solo", "EXP 1: Volumen Master", "EXP 2: N/A"],
-          blocks: [
-            {
-              type: "DS/OD",
-              model: "Pure Boost",
-              knobs: { Gain: 40, Bass: 50, Treble: 60, Output: 65 }
-            },
-            {
-              type: "AMP",
-              model: "PLX 100 (Marshall Plexi 100)",
-              knobs: { Gain: 65, Bass: 50, Mid: 60, Treble: 65, Presence: 55, Master: 70 }
-            },
-            {
-              type: "CAB",
-              model: "1960 412 (Marshall 1960)",
-              knobs: { Mic: "SM57", Center: 20, Distance: 10 }
-            },
-            {
-              type: "DELAY",
-              model: "Analog Delay",
-              knobs: { Time: "320ms", Feedback: 30, Mix: 25 }
-            }
-          ]
-        };
-        renderPreset(genericPreset);
-      }
+      const query = document.getElementById('toneSearchInput').value.trim();
+      const preset = generateSmartTone(query);
+      renderPreset(preset);
     });
 
     function showTab(tab) {
       if (tab === 'catalog') {
-        alert("Catálogo GE300 v2.0.6: 108 Amplis, 43 Cabs, 31 OD/DS cargados.");
+        alert("Catálogo GE300 v2.0.6: 108 Amplis, 43 Cabs, 31 OD/DS activos.");
       } else if (tab === 'tools') {
         alert("Calculadora BPM a Milisegundos: 120 BPM = 500 ms (1/4) | 250 ms (1/8)");
       }
     }
   </script>
 </body>
-</html>
+  </html>

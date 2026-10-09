@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 AI Tone Studio v2.0.6</title>
+  <title>MOOER GE300 AI Tone Studio v2.0.6 (Live AI)</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -26,7 +26,6 @@
               accentHover: '#00cc52',
               text: '#f1f5f9',
               muted: '#94a3b8',
-              knobTrack: '#26334d',
               border: '#2a364f'
             }
           },
@@ -83,12 +82,14 @@
         <h1 class="font-bold text-base leading-tight tracking-wide flex items-center gap-2">
           MOOER GE300 <span class="text-[10px] bg-brand-accent/20 text-brand-accent px-1.5 py-0.5 rounded uppercase font-mono font-bold">v2.0.6</span>
         </h1>
-        <p class="text-xs text-brand-muted">AI Tone Studio & Parameter Matcher</p>
+        <p class="text-xs text-brand-muted">AI Live Tone Generator</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
-      <span class="w-2.5 h-2.5 rounded-full bg-brand-accent animate-pulse"></span>
-      <span class="text-xs font-mono text-brand-accent font-bold">READY</span>
+      <button onclick="toggleApiKeyModal()" title="Configurar API Key de IA" class="p-2 rounded-lg bg-brand-border/40 hover:bg-brand-border text-brand-text transition-colors">
+        <i class="fa-solid fa-key text-xs text-brand-accent"></i>
+      </button>
+      <span id="aiStatusBadge" class="text-xs font-mono text-brand-accent font-bold bg-brand-accent/10 px-2 py-1 rounded border border-brand-accent/30">AI LIVE</span>
     </div>
   </header>
 
@@ -99,16 +100,17 @@
       <input 
         type="text" 
         id="toneSearchInput"
-        placeholder="Ej: Rammstein Du Hast, It's My Life, Get Lucky, Metal, Clean Chorus..." 
+        placeholder="Ej: Satisfaction - Rolling Stones, Soda Stereo, Comfortably Numb..." 
         class="w-full bg-brand-bg text-sm text-brand-text placeholder-brand-muted pl-10 pr-24 py-3 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent transition-all"
         required
       />
       <button 
         type="submit" 
+        id="searchBtn"
         class="absolute right-1.5 bg-brand-accent hover:bg-brand-accentHover text-brand-bg font-bold text-xs px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5"
       >
-        <span>Buscar</span>
-        <i class="fa-solid fa-arrow-right"></i>
+        <span id="btnText">Buscar</span>
+        <i id="btnIcon" class="fa-solid fa-arrow-right"></i>
       </button>
     </form>
   </section>
@@ -167,6 +169,33 @@
 
   </main>
 
+  <!-- MODAL CONFIGURACION API KEY -->
+  <div id="apiKeyModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-brand-card border border-brand-border rounded-2xl p-5 w-full max-w-sm space-y-4">
+      <div class="flex items-center justify-between border-b border-brand-border pb-3">
+        <h3 class="font-bold text-sm text-brand-text flex items-center gap-2">
+          <i class="fa-solid fa-key text-brand-accent"></i>
+          Configurar Clave de IA (Gemini API)
+        </h3>
+        <button onclick="toggleApiKeyModal()" class="text-brand-muted hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <p class="text-xs text-brand-muted leading-relaxed">
+        Ingresa tu Gemini API Key (gratuita) para permitir que la IA analice cualquier canción de la historia en vivo y genere su preset para la MOOER GE300.
+      </p>
+      <input 
+        type="password" 
+        id="apiKeyInput"
+        placeholder="AIzaSy..." 
+        class="w-full bg-brand-bg text-xs font-mono text-brand-text p-3 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent"
+      />
+      <div class="flex gap-2 pt-2">
+        <button onclick="saveApiKey()" class="w-full bg-brand-accent text-brand-bg font-bold text-xs py-2.5 rounded-xl hover:bg-brand-accentHover">
+          Guardar Clave
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- NAV -->
   <nav class="bg-brand-panel border-t border-brand-border px-6 py-2.5 flex justify-around shrink-0 text-center">
     <button class="flex flex-col items-center gap-1 text-brand-accent" onclick="showTab('preset')">
@@ -185,117 +214,102 @@
 
   <!-- JS LOGIC -->
   <script>
-    const presetDatabase = {
-      "corazon espinado": {
-        title: "Corazón Espinado - Santana",
-        bank: "02A",
-        desc: "Tono lead cremoso con ampli estilo Mesa/Boogie Mark III, overdrive suave y delay analógico.",
-        pickup: "Puente (Humbucker)",
-        vol: "10 (Tono abierto)",
-        ctrls: ["CTRL 1: Overdrive Boost", "CTRL 2: Delay On/Off", "EXP 1: Volumen General", "EXP 2: N/A"],
-        blocks: [
-          { type: "DS/OD", model: "808 (Ibanez TS808)", knobs: { Gain: 30, Bass: 50, Mid: 65, Treble: 55, Output: 70 } },
-          { type: "AMP", model: "MARKIII DS (Mesa Mark III)", knobs: { Gain: 68, Bass: 45, Mid: 70, Treble: 65, Presence: 60, Master: 75 } },
-          { type: "CAB", model: "Rec 412 (Mesa 4x12)", knobs: { Mic: "SM57", Center: 25, Distance: 15 } },
-          { type: "DELAY", model: "Analog (BB Stompbox)", knobs: { Time: "380ms", Feedback: 35, Mix: 28 } }
-        ]
-      },
-      "it's my life": {
-        title: "It's My Life - Bon Jovi",
-        bank: "05B",
-        desc: "Tono Hard Rock noventero con ganancia de Marshall, Talk Box / Wah activo en EXP1.",
-        pickup: "Puente (Humbucker)",
-        vol: "10 (Abierto)",
-        ctrls: ["CTRL 1: TalkBox/Wah On/Off", "CTRL 2: Solo Boost", "EXP 1: TalkBox/Wah Sweep", "EXP 2: Volumen"],
-        blocks: [
-          { type: "WAH", model: "Talk Wah Ah (Red Kid)", knobs: { Position: "EXP1", Peak: 75, Mix: 100 } },
-          { type: "DS/OD", model: "Obsessive Dist (OCD)", knobs: { Gain: 45, Bass: 50, Treble: 60, Output: 65 } },
-          { type: "AMP", model: "J900 (Marshall JCM900)", knobs: { Gain: 75, Bass: 60, Mid: 55, Treble: 70, Presence: 65, Master: 70 } },
-          { type: "CAB", model: "1960 412 (Marshall 1960)", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
-          { type: "NS", model: "Noise Killer", knobs: { Threshold: 55, Damp: 80 } }
-        ]
-      },
-      "du hast": {
-        title: "Du Hast - Rammstein",
-        bank: "12D",
-        desc: "Tono Industrial / Neue Deutsche Härte ultra pesado, puerta de ruido dura y simulación EVH/Peavey 5150.",
-        pickup: "Puente (Humbucker de alta ganancia)",
-        vol: "10 (Abierto)",
-        ctrls: ["CTRL 1: Tight Boost", "CTRL 2: Mute Switch", "EXP 1: Volumen Master", "EXP 2: N/A"],
-        blocks: [
-          { type: "NS", model: "Noise Killer (Hard Gate)", knobs: { Threshold: 70, Attack: 90, Damp: 95 } },
-          { type: "DS/OD", model: "Tight Metal", knobs: { Gain: 35, Bass: 45, Mid: 30, Treble: 70, Output: 60 } },
-          { type: "AMP", model: "EV 5050 DS (EVH 5150)", knobs: { Gain: 82, Bass: 70, Mid: 35, Treble: 75, Presence: 70, Master: 65 } },
-          { type: "CAB", model: "EV 5050 412 (EVH 4x12)", knobs: { Mic: "MD421", Center: 15, Distance: 5 } },
-          { type: "EQ", model: "Mooer HM (5-Band Heavy)", knobs: { "80Hz": "+4dB", "240Hz": "-2dB", "750Hz": "-5dB", "2.2kHz": "+3dB", "6.6kHz": "+4dB" } }
-        ]
-      },
-      "like a stone": {
-        title: "Like a Stone - Audioslave",
-        bank: "04C",
-        desc: "Tono solo con Pitch Shifter (Whammy +1 Octava) asignado a EXP1.",
-        pickup: "Puente",
-        vol: "10",
-        ctrls: ["CTRL 1: Delay Solo", "CTRL 2: Reverb Wide", "EXP 1: Whammy (+1 Octava)", "EXP 2: Volumen"],
-        blocks: [
-          { type: "FXA", model: "Mono Pitch", knobs: { Pitch: "+12.0 (EXP1)", Mix: 100 } },
-          { type: "DS/OD", model: "BlackRat (ProCo Rat)", knobs: { Gain: 60, Bass: 40, Treble: 65, Output: 65 } },
-          { type: "AMP", model: "J800 (Marshall JCM800)", knobs: { Gain: 72, Bass: 55, Mid: 60, Treble: 70, Presence: 65, Master: 70 } },
-          { type: "CAB", model: "1960 412 (Marshall 1960A)", knobs: { Mic: "MD421", Center: 30, Distance: 20 } },
-          { type: "DELAY", model: "Digital", knobs: { Time: "440ms", Feedback: 40, Mix: 35 } }
-        ]
-      },
-      "every breath you take": {
-        title: "Every Breath You Take - The Police",
-        bank: "08B",
-        desc: "Clean cristalino ochentero con compresión rápida, chorus estéreo y delay rítmico.",
-        pickup: "Mástil + Centro",
-        vol: "10",
-        ctrls: ["CTRL 1: Chorus On/Off", "CTRL 2: Delay Tap", "EXP 1: Volumen", "EXP 2: N/A"],
-        blocks: [
-          { type: "COMP", model: "Yellow Comp", knobs: { Sens: 60, Attack: 70, Output: 60 } },
-          { type: "AMP", model: "Jazz 120 (Roland JC-120)", knobs: { Gain: 25, Bass: 50, Mid: 55, Treble: 75, Master: 80 } },
-          { type: "FXB", model: "70's Chorus", knobs: { Rate: 45, Depth: 70, Mix: 60 } },
-          { type: "DELAY", model: "Digital", knobs: { Time: "375ms (1/8d)", Feedback: 30, Mix: 40 } }
-        ]
-      }
+    const systemPromptGE300 = `
+Eres un ingeniero de sonido experto en la pedalera MOOER GE300 (Firmware v2.0.6).
+Tu tarea es devolver un objeto JSON estricto para configurar el tono de la canción o estilo solicitado por el usuario.
+
+Modelos disponibles en la GE300:
+- AMP (108 modelos): US Blues JR, 65 US DX, 65 US TW, J800, J900, PLX 100, Cali LS CH1/CH2, Cali Dual 1/2, MARKIII CL/DS, EV 5050 CL/DS, PV 5050 CL/DS, Satsuma TH30A/B, Rock Vrb CL/DS, Jazz 120, HWT 103, etc.
+- DS/OD (31 modelos): Tube DR, 808, Pure Boost, Flex Boost, Od250, Ddrive, BlackRat, Grey Faze, Muffy, Fuzz Department, MTL Zone, Obsessive Dist, Tight Metal, Gold Clon, Solo, Blues Mood, Hustle Drive, etc.
+- CAB (43 modelos): US DLX 112, US TWN 212, 1960 412, Eagle P412, Rec 412, Citrus 412, Slow 412, Jazz 212, UK 212, HWT 412, EV 5050 412, etc.
+- FXA/FXB: Phaser, Flanger, Tremolo, Vibrato, Rotary, Ana-Chorus, 70's Chorus, Tri-Chorus, Mono Pitch, Poly Pitch, etc.
+- DELAY: Digital, Analog, Dynamic, Real, Tape, Mod, Reverse, Dual Delay, Ping Pong, etc.
+- REVERB: Room, Hall, Plate, Spring, Mod, Shimmer, Fl-Reverb, etc.
+- COMP: S-Comp, Red Comp, Yellow Comp, Blue Comp, L-Studio Comp, Deluxe Comp, etc.
+- WAH: Cry Wah, 535 Wah, 846 Wah, Auto Wah, Touch Wah, Talk Wah Ah, Talk Wah Oh.
+
+Devuelve EXCLUSIVAMENTE este JSON sin texto ni Markdown envolvente:
+{
+  "title": "Nombre de la Canción - Artista",
+  "bank": "01A",
+  "desc": "Descripción breve del tono en español.",
+  "pickup": "Pastilla recomendada (ej: Puente / Mástil)",
+  "vol": "10",
+  "ctrls": ["CTRL 1: ...", "CTRL 2: ...", "EXP 1: ...", "EXP 2: ..."],
+  "blocks": [
+    {
+      "type": "COMP/WAH/DS/OD/AMP/CAB/FXA/FXB/DELAY/REVERB/NS",
+      "model": "Nombre exacto del modelo GE300",
+      "knobs": { "Param1": 50, "Param2": 60 }
+    }
+  ]
+}`;
+
+    const presetFallback = {
+      title: "Satisfaction - The Rolling Stones",
+      bank: "03B",
+      desc: "Tono clásico vintage de Keith Richards con distorsión Gibson Maestro Fuzz y ampli combo limpio estilo Fender.",
+      pickup: "Puente (Single Coil / Humbucker vintage)",
+      vol: "10 (Tono abierto)",
+      ctrls: ["CTRL 1: Fuzz On/Off", "CTRL 2: Reverb Booster", "EXP 1: Volumen Master", "EXP 2: N/A"],
+      blocks: [
+        { type: "DS/OD", model: "Grey Faze (Fuzz Maestro/Face)", knobs: { Gain: 70, Bass: 40, Treble: 75, Output: 65 } },
+        { type: "AMP", model: "65 US DX (Fender 65 Deluxe)", knobs: { Gain: 45, Bass: 55, Mid: 50, Treble: 70, Master: 75 } },
+        { type: "CAB", model: "US DLX 112 (Fender 1x12)", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
+        { type: "REVERB", model: "Spring (Spring Reverb Tank)", knobs: { Decay: 35, PreDelay: "15ms", Mix: 25 } }
+      ]
     };
 
-    function generateSmartTone(query) {
-      let q = query.toLowerCase();
-      
-      // Heavy Metal / Rammstein / Metallica
-      if (q.includes("rammstein") || q.includes("metal") || q.includes("heavy") || q.includes("thrash") || q.includes("hast")) {
-        return presetDatabase["du hast"];
+    function toggleApiKeyModal() {
+      document.getElementById('apiKeyModal').classList.toggle('hidden');
+    }
+
+    function saveApiKey() {
+      const key = document.getElementById('apiKeyInput').value.trim();
+      if (key) {
+        localStorage.setItem('GE300_GEMINI_KEY', key);
+        alert('Clave API guardada exitosamente.');
+        toggleApiKeyModal();
       }
-      // Hard Rock / Bon Jovi / Slash / Guns
-      if (q.includes("jovi") || q.includes("hard rock") || q.includes("rock") || q.includes("life") || q.includes("guns")) {
-        return presetDatabase["it's my life"];
-      }
-      // Clean / Funk / Pop / Daft Punk
-      if (q.includes("clean") || q.includes("funk") || q.includes("police") || q.includes("pop") || q.includes("disco")) {
-        return presetDatabase["every breath you take"];
-      }
-      // Solo / Santana / Blues / Lead
-      if (q.includes("santana") || q.includes("corazon") || q.includes("espinado") || q.includes("solo") || q.includes("lead")) {
-        return presetDatabase["corazon espinado"];
+    }
+
+    async function fetchAiTone(promptQuery) {
+      const apiKey = localStorage.getItem('GE300_GEMINI_KEY');
+      if (!apiKey) {
+        return null; // Usa fallback si no hay clave
       }
 
-      // Tono Rock Genérico Dinámico
-      return {
-        title: `Preset IA: ${query.toUpperCase()}`,
-        bank: "88A",
-        desc: "Tono calculado dinámicamente mediante el motor de síntesis GE300 v2.0.6.",
-        pickup: "Puente / Selector Central",
-        vol: "10 (Recomendado)",
-        ctrls: ["CTRL 1: Drive Boost", "CTRL 2: Delay Switch", "EXP 1: Volumen", "EXP 2: Expression"],
-        blocks: [
-          { type: "DS/OD", model: "Pure Boost", knobs: { Gain: 45, Bass: 50, Treble: 60, Output: 65 } },
-          { type: "AMP", model: "PLX 100 (Marshall Plexi 100)", knobs: { Gain: 65, Bass: 50, Mid: 60, Treble: 65, Presence: 55, Master: 70 } },
-          { type: "CAB", model: "1960 412 (Marshall 1960)", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
-          { type: "DELAY", model: "Analog Delay", knobs: { Time: "350ms", Feedback: 30, Mix: 25 } }
-        ]
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
+      const requestBody = {
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: systemPromptGE300 },
+              { text: `Genera el preset para: ${promptQuery}` }
+            ]
+          }
+        ],
+        generationConfig: {
+          responseMimeType: "application/json"
+        }
       };
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody)
+        });
+
+        const data = await response.json();
+        const jsonText = data.candidates[0].content.parts[0].text;
+        return JSON.parse(jsonText);
+      } catch (err) {
+        console.error("Error consultando Gemini API:", err);
+        return null;
+      }
     }
 
     function renderKnobSVG(label, value) {
@@ -318,7 +332,7 @@
     }
 
     function renderPreset(preset) {
-      document.getElementById('presetBank').innerText = preset.bank;
+      document.getElementById('presetBank').innerText = preset.bank || "01A";
       document.getElementById('songTitle').innerText = preset.title;
       document.getElementById('soundDescription').innerText = preset.desc;
       document.getElementById('pickupRec').innerText = preset.pickup;
@@ -350,22 +364,39 @@
       });
     }
 
-    renderPreset(presetDatabase["corazon espinado"]);
+    renderPreset(presetFallback);
 
-    document.getElementById('aiToneForm').addEventListener('submit', function(e) {
+    document.getElementById('aiToneForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const query = document.getElementById('toneSearchInput').value.trim();
-      const preset = generateSmartTone(query);
+      
+      const btnText = document.getElementById('btnText');
+      const btnIcon = document.getElementById('btnIcon');
+      
+      btnText.innerText = "Pensando...";
+      btnIcon.className = "fa-solid fa-spinner animate-spin";
+
+      let preset = await fetchAiTone(query);
+
+      if (!preset) {
+        // Fallback local si no hay API Key
+        preset = presetFallback;
+        preset.title = `${query.toUpperCase()} (Búsqueda local)`;
+      }
+
       renderPreset(preset);
+
+      btnText.innerText = "Buscar";
+      btnIcon.className = "fa-solid fa-arrow-right";
     });
 
     function showTab(tab) {
       if (tab === 'catalog') {
-        alert("Catálogo GE300 v2.0.6: 108 Amplis, 43 Cabs, 31 OD/DS activos.");
+        alert("Catálogo GE300 v2.0.6 cargado: 108 Amplis, 43 Cabs, 31 OD/DS.");
       } else if (tab === 'tools') {
-        alert("Calculadora BPM a Milisegundos: 120 BPM = 500 ms (1/4) | 250 ms (1/8)");
+        alert("Calculadora BPM / ms: 120 BPM = 500 ms (1/4) | 250 ms (1/8)");
       }
     }
   </script>
 </body>
-  </html>
+</html>

@@ -1,0 +1,382 @@
+```html
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MOOER GE300 Tone Hub & Preset Studio</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              bg: '#08090c',
+              panel: '#101218',
+              card: '#161922',
+              cardHover: '#1f2430',
+              border: '#272d3b',
+              neon: '#00ff87',
+              cyan: '#00e5ff',
+              amber: '#ffb703',
+              pink: '#ff0055',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style>
+    body {
+      background-color: #08090c;
+      color: #e2e8f0;
+      font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #101218;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #272d3b;
+      border-radius: 4px;
+    }
+    .glass-header {
+      background: rgba(8, 9, 12, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .glow-neon {
+      box-shadow: 0 0 20px rgba(0, 255, 135, 0.18);
+    }
+    .glow-cyan {
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.18);
+    }
+    .pedal-active {
+      border-color: #00ff87 !important;
+      box-shadow: 0 0 12px rgba(0, 255, 135, 0.25);
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-brand-neon selection:text-black">
+
+  <!-- Top App Navigation -->
+  <header class="sticky top-0 z-40 glass-header border-b border-brand-border/80 px-4 py-3">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
+      
+      <!-- Logo & Hardware Badge -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="resetAppView()">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-neon via-brand-cyan to-blue-600 flex items-center justify-center text-black font-black text-xl shadow-lg shadow-brand-neon/20">
+          <i class="fa-solid fa-sliders"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-black tracking-wider uppercase text-white">
+              MOOER <span class="text-brand-neon font-mono text-xs px-1.5 py-0.5 rounded bg-brand-neon/10 border border-brand-neon/30">GE300</span>
+            </h1>
+            <span class="hidden sm:inline-block text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20">
+              v3.0 Tone Hub
+            </span>
+          </div>
+          <p class="text-xs text-gray-400">Database &amp; Signal Chain Architect</p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2">
+        <button onclick="openBpmModal()" class="px-3 py-2 rounded-xl bg-brand-panel hover:bg-brand-cardHover border border-brand-border text-xs font-mono text-brand-amber flex items-center gap-2 transition active:scale-95">
+          <i class="fa-solid fa-calculator"></i>
+          <span class="hidden md:inline">Calculadora</span> <span class="font-bold">BPM</span>
+        </button>
+        <button onclick="openCreateModal()" class="px-3.5 py-2 rounded-xl bg-brand-neon text-black font-bold text-xs flex items-center gap-2 shadow-lg shadow-brand-neon/20 hover:brightness-110 transition active:scale-95">
+          <i class="fa-solid fa-plus"></i>
+          <span class="hidden sm:inline">Nuevo Preset</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-1 flex flex-col gap-6">
+
+    <!-- Search & Filter Controls -->
+    <section class="flex flex-col gap-4">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-3">
+        <!-- Search Input -->
+        <div class="lg:col-span-8 relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"></i>
+          <input 
+            type="text" 
+            id="searchInput" 
+            oninput="filterPresets()"
+            placeholder="Buscar por canción, artista, efecto (Whammy, Tremolo, Plexi)..." 
+            class="w-full bg-brand-panel border border-brand-border rounded-2xl pl-11 pr-10 py-3.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand-neon focus:ring-1 focus:ring-brand-neon transition"
+          />
+          <button onclick="clearSearch()" id="clearSearchBtn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white p-2">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Pickup Filter Dropdown -->
+        <div class="lg:col-span-4 relative">
+          <select id="pickupFilter" onchange="filterPresets()" class="w-full bg-brand-panel border border-brand-border rounded-2xl px-4 py-3.5 text-xs font-medium text-gray-300 focus:outline-none focus:border-brand-neon transition appearance-none">
+            <option value="All">Todas las Pastillas (Neck / Bridge / Middle)</option>
+            <option value="Mástil">Mástil (Neck Pickup)</option>
+            <option value="Puente">Puente (Bridge Pickup)</option>
+            <option value="Posición 4">Strat Posición 4 (Mástil+Centro)</option>
+          </select>
+          <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none text-xs"></i>
+        </div>
+      </div>
+
+      <!-- Genre Pills -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-1 custom-scrollbar text-xs font-medium">
+        <button onclick="setGenre('All', this)" class="genre-btn active px-4 py-2 rounded-xl bg-brand-neon text-black font-bold border border-brand-neon transition whitespace-nowrap">
+          Todos (<span id="count-all">0</span>)
+        </button>
+        <button onclick="setGenre('Alternative', this)" class="genre-btn px-4 py-2 rounded-xl bg-brand-panel text-gray-300 hover:text-white border border-brand-border hover:border-gray-600 transition whitespace-nowrap">
+          Alternative Rock
+        </button>
+        <button onclick="setGenre('Hard Rock', this)" class="genre-btn px-4 py-2 rounded-xl bg-brand-panel text-gray-300 hover:text-white border border-brand-border hover:border-gray-600 transition whitespace-nowrap">
+          Hard Rock
+        </button>
+        <button onclick="setGenre('Pop/Disco', this)" class="genre-btn px-4 py-2 rounded-xl bg-brand-panel text-gray-300 hover:text-white border border-brand-border hover:border-gray-600 transition whitespace-nowrap">
+          Pop / Funk / Disco
+        </button>
+        <button onclick="setGenre('Favorites', this)" class="genre-btn px-4 py-2 rounded-xl bg-brand-panel text-brand-amber hover:text-amber-300 border border-brand-border hover:border-brand-amber/50 transition whitespace-nowrap flex items-center gap-1.5">
+          <i class="fa-solid fa-star text-brand-amber"></i> Mis Favoritos
+        </button>
+      </div>
+    </section>
+
+    <section>
+      <div class="flex items-center justify-between mb-3.5 px-1">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-gray-400 flex items-center gap-2">
+          <i class="fa-solid fa-compact-disc text-brand-cyan"></i> Colección de Presets GE300
+        </h2>
+        <span id="resultsCount" class="text-xs font-mono text-gray-500">Cargando parches...</span>
+      </div>
+
+      <!-- Grid Container -->
+      <div id="presetsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- JS injects preset cards dynamically -->
+      </div>
+
+      <!-- Empty Search Result -->
+      <div id="noResults" class="hidden flex-col items-center justify-center py-16 text-center">
+        <div class="w-16 h-16 rounded-2xl bg-brand-panel border border-brand-border flex items-center justify-center text-gray-600 text-2xl mb-3">
+          <i class="fa-solid fa-guitar"></i>
+        </div>
+        <p class="text-gray-300 font-semibold text-sm">No se encontraron presets</p>
+        <p class="text-gray-500 text-xs mt-1">Intenta con otro término de búsqueda o cambia de género.</p>
+      </div>
+    </section>
+  </main>
+
+  <div id="presetDetailModal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex justify-center items-end sm:items-center p-0 sm:p-4 overflow-y-auto">
+    <div class="bg-brand-panel border-t sm:border border-brand-border w-full max-w-4xl rounded-t-3xl sm:rounded-3xl max-h-[94vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-200">
+      
+      <!-- Modal Header -->
+      <div class="p-5 border-b border-brand-border flex items-start justify-between bg-brand-bg/80 sticky top-0 z-20">
+        <div>
+          <div class="flex items-center gap-2 flex-wrap mb-1.5">
+            <span id="detailGenre" class="text-[10px] font-bold font-mono uppercase px-2 py-0.5 rounded bg-brand-neon/10 text-brand-neon border border-brand-neon/30">GENRE</span>
+            <span id="detailBpm" class="text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-brand-amber/10 text-brand-amber border border-brand-amber/30">108 BPM</span>
+            <span id="detailTuning" class="text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-gray-800 text-gray-300 border border-gray-700">E Standard</span>
+          </div>
+          <h2 id="detailTitle" class="text-xl sm:text-2xl font-black text-white tracking-tight">Song Title</h2>
+          <p id="detailSubtitle" class="text-xs sm:text-sm text-gray-400">Artist • Guitarist</p>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          <button id="detailFavBtn" onclick="toggleFavoriteCurrent()" class="w-10 h-10 rounded-xl bg-brand-cardHover border border-brand-border text-gray-400 hover:text-brand-amber flex items-center justify-center transition">
+            <i class="fa-regular fa-star text-lg"></i>
+          </button>
+          <button onclick="closeDetailModal()" class="w-10 h-10 rounded-xl bg-brand-cardHover border border-brand-border text-gray-400 hover:text-white flex items-center justify-center transition">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 overflow-y-auto custom-scrollbar flex-1 flex flex-col gap-6">
+        
+        <!-- Guitar Control & Pickup Recommendation -->
+        <div class="bg-brand-bg border border-brand-border rounded-2xl p-4 flex items-center gap-4">
+          <div class="w-10 h-10 rounded-xl bg-brand-cyan/10 border border-brand-cyan/30 text-brand-cyan flex items-center justify-center shrink-0 text-lg">
+            <i class="fa-solid fa-guitar"></i>
+          </div>
+          <div class="flex-1">
+            <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Pastilla y Controles Sugeridos</div>
+            <div id="detailPickup" class="text-xs sm:text-sm text-white font-semibold mt-0.5">Mástil / Puente</div>
+          </div>
+        </div>
+
+        <!-- Section Switcher Tabs -->
+        <div>
+          <label class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2 block">Secciones de la Canción</label>
+          <div id="sectionTabs" class="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
+            <!-- Section tabs injected via JS -->
+          </div>
+        </div>
+
+        <!-- Section Interactive Details -->
+        <div class="flex flex-col gap-5">
+          
+          <!-- Interactive GE300 Signal Chain Module Bar -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-gray-400">Cadena Interactiva GE300</span>
+              <span class="text-[10px] font-mono text-gray-500">Haz clic en un módulo para inspeccionar</span>
+            </div>
+            
+            <div id="signalChainNav" class="flex items-center gap-2 overflow-x-auto p-3.5 rounded-2xl bg-brand-bg border border-brand-border custom-scrollbar">
+              <!-- Signal blocks rendered by JS -->
+            </div>
+          </div>
+
+          <!-- Parameter Knob Display Card for Selected Pedal -->
+          <div class="p-4 rounded-2xl bg-brand-card border border-brand-border">
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-brand-border/60">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-brand-neon animate-pulse"></span>
+                <h4 id="selectedModuleName" class="text-xs font-bold font-mono text-brand-neon uppercase">MODULO SELECCIONADO</h4>
+              </div>
+              <span id="selectedModuleModel" class="text-xs font-mono text-gray-400 font-semibold">Modelo: Standard</span>
+            </div>
+
+            <!-- Parameters Grid -->
+            <div id="selectedModuleKnobs" class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <!-- Parameter knobs rendered by JS -->
+            </div>
+          </div>
+
+          <!-- Pro Tip / Routing Secrets Box -->
+          <div id="proTipBox" class="p-4 rounded-2xl bg-brand-amber/10 border border-brand-amber/30 text-amber-200 flex items-start gap-3">
+            <i class="fa-solid fa-lightbulb text-brand-amber text-lg mt-0.5 shrink-0"></i>
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-brand-amber mb-1">Truco de Ruteo y Tono (Pro Tip)</h4>
+              <p id="proTipText" class="text-xs leading-relaxed text-amber-100/90 font-sans">
+                Detalles de ruteo específico...
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-brand-border bg-brand-bg/90 flex items-center justify-between gap-3">
+        <button onclick="copyPresetSummary()" class="flex-1 py-3 px-4 rounded-xl bg-brand-cardHover border border-brand-border text-xs font-bold text-gray-200 flex items-center justify-center gap-2 hover:bg-gray-800 transition active:scale-95">
+          <i class="fa-solid fa-copy"></i> Copiar Resumen
+        </button>
+        <button onclick="closeDetailModal()" class="flex-1 py-3 px-4 rounded-xl bg-brand-neon text-black font-bold text-xs flex items-center justify-center gap-2 hover:brightness-110 transition active:scale-95">
+          Entendido
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="bpmModal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex justify-center items-center p-4">
+    <div class="bg-brand-panel border border-brand-border w-full max-w-md rounded-3xl p-6 shadow-2xl flex flex-col gap-5">
+      
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-brand-amber/10 border border-brand-amber/30 text-brand-amber flex items-center justify-center">
+            <i class="fa-solid fa-calculator"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-white text-base">Calculadora BPM ➔ Delay MS</h3>
+            <p class="text-xs text-gray-400">Ajuste manual para el bloque DELAY de la GE300</p>
+          </div>
+        </div>
+        <button onclick="closeBpmModal()" class="text-gray-400 hover:text-white p-2">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-4">
+        <div>
+          <label class="text-xs font-bold uppercase tracking-wider text-gray-400 block mb-1">Tempo de la Canción (BPM)</label>
+          <div class="flex items-center gap-3">
+            <input 
+              type="number" 
+              id="calcBpmInput" 
+              value="108" 
+              min="40" 
+              max="260" 
+              oninput="calculateDelayMs()" 
+              class="flex-1 bg-brand-bg border border-brand-border rounded-xl px-4 py-3 text-lg font-mono font-bold text-brand-amber focus:outline-none focus:border-brand-amber" 
+            />
+            <button onclick="tapTempo()" class="px-4 py-3 rounded-xl bg-brand-amber text-black font-bold text-xs hover:brightness-110 transition active:scale-95">
+              TAP TEMPO
+            </button>
+          </div>
+        </div>
+
+        <!-- Calculated Subdivisions Grid -->
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <div class="p-3 bg-brand-bg border border-brand-border rounded-xl">
+            <div class="text-[10px] font-bold text-gray-400 uppercase">Negra (1/4)</div>
+            <div id="msQuarter" class="text-lg font-mono font-bold text-white mt-1">556 ms</div>
+          </div>
+          <div class="p-3 bg-brand-bg border border-brand-border rounded-xl">
+            <div class="text-[10px] font-bold text-gray-400 uppercase">Corchea (1/8)</div>
+            <div id="msEighth" class="text-lg font-mono font-bold text-white mt-1">278 ms</div>
+          </div>
+          <div class="p-3 bg-brand-bg border border-brand-neon/40 bg-brand-neon/5 rounded-xl">
+            <div class="text-[10px] font-bold text-brand-neon uppercase">Corchea c/Punto (1/8D) ★</div>
+            <div id="msDottedEighth" class="text-lg font-mono font-bold text-brand-neon mt-1">417 ms</div>
+          </div>
+          <div class="p-3 bg-brand-bg border border-brand-border rounded-xl">
+            <div class="text-[10px] font-bold text-gray-400 uppercase">Semicorchea (1/16)</div>
+            <div id="msSixteenth" class="text-lg font-mono font-bold text-white mt-1">139 ms</div>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="closeBpmModal()" class="w-full py-3 rounded-xl bg-brand-cardHover border border-brand-border text-xs font-bold text-gray-300 hover:text-white">
+        Cerrar
+      </button>
+    </div>
+  </div>
+
+  <div id="createModal" class="fixed inset-0 z-50 hidden bg-black/85 backdrop-blur-md flex justify-center items-center p-4 overflow-y-auto">
+    <div class="bg-brand-panel border border-brand-border w-full max-w-lg rounded-3xl p-6 shadow-2xl flex flex-col gap-4 my-auto">
+      
+      <div class="flex items-center justify-between border-b border-brand-border/60 pb-3">
+        <h3 class="font-black text-white text-lg">Añadir Nuevo Preset GE300</h3>
+        <button onclick="closeCreateModal()" class="text-gray-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form id="createPresetForm" onsubmit="handleCreatePreset(event)" class="flex flex-col gap-3 text-xs">
+        <div>
+          <label class="text-gray-400 font-bold block mb-1">Nombre de la Canción *</label>
+          <input type="text" id="newTitle" required placeholder="Ej: Smooth Criminal" class="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-white focus:outline-none focus:border-brand-neon" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-gray-400 font-bold block mb-1">Banda / Artista *</label>
+            <input type="text" id="newArtist" required placeholder="Ej: Alien Ant Farm" class="w-full bg-brand-bg border border-brand-border rounded-xl p-3 text-white focus:outline-none focus:border-brand-neon" />
+       

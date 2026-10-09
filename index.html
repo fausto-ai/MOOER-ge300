@@ -3,413 +3,222 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 AI Tone Studio v2.0.6</title>
-
-  <!-- Tailwind CSS -->
+  <title>MOOER GE300 Pro AI Tone Studio v2.0.6</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
-
   <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              bg: '#0a0d12',
-              panel: '#121824',
-              card: '#1a2333',
-              accent: '#00ff66',
-              accentHover: '#00cc52',
-              text: '#f1f5f9',
-              muted: '#94a3b8',
-              border: '#2a364f'
-            }
-          },
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            mono: ['JetBrains Mono', 'monospace']
-          }
-        }
-      }
-    };
+    tailwind.config = { darkMode: 'class', theme: { extend: { colors: { brand: { bg: '#0a0d12', panel: '#121824', card: '#1a2333', accent: '#00ff66', accentHover: '#00cc52', text: '#f1f5f9', muted: '#94a3b8', border: '#2a364f' } }, fontFamily: { sans: ['Inter'], mono: ['JetBrains Mono'] } } } };
   </script>
-
   <style>
-    body {
-      background-color: #0a0d12;
-      color: #f1f5f9;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .knob-container {
-      position: relative;
-      width: 72px;
-      height: 72px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .knob-svg {
-      transform: rotate(-135deg);
-    }
-    .knob-value-badge {
-      position: absolute;
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: #00ff66;
-    }
-    .hide-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .hide-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
+    body { background-color: #0a0d12; color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
+    .knob-container { position: relative; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; }
+    .knob-svg { transform: rotate(-135deg); }
+    .knob-value-badge { position: absolute; font-size: 0.7rem; font-weight: 700; color: #00ff66; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
   </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden font-sans">
 
-  <!-- HEADER -->
   <header class="bg-brand-panel border-b border-brand-border px-4 py-3 flex items-center justify-between shrink-0">
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2.5">
       <div class="w-8 h-8 rounded-lg bg-brand-accent/10 border border-brand-accent/30 flex items-center justify-center text-brand-accent">
-        <i class="fa-solid fa-guitar text-base"></i>
+        <i class="fa-solid fa-guitar text-sm"></i>
       </div>
       <div>
-        <h1 class="font-bold text-base leading-tight tracking-wide flex items-center gap-2">
-          MOOER GE300 <span class="text-[10px] bg-brand-accent/20 text-brand-accent px-1.5 py-0.5 rounded uppercase font-mono font-bold">v2.0.6</span>
+        <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
+          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v2.0.6</span>
         </h1>
-        <p class="text-xs text-brand-muted">AI Live Tone Generator</p>
+        <p class="text-[11px] text-brand-muted">Pro Full-Chain Tone Studio</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
-      <button onclick="toggleApiKeyModal()" title="Configurar API Key de IA" class="p-2 rounded-lg bg-brand-border/40 hover:bg-brand-border text-brand-text transition-colors">
+      <button onclick="toggleApiKeyModal()" title="API Key" class="p-2 rounded-lg bg-brand-border/40 hover:bg-brand-border text-brand-text">
         <i class="fa-solid fa-key text-xs text-brand-accent"></i>
       </button>
-      <span id="aiStatusBadge" class="text-xs font-mono text-brand-accent font-bold bg-brand-accent/10 px-2 py-1 rounded border border-brand-accent/30">AI READY</span>
+      <span class="text-[10px] font-mono text-brand-accent font-bold bg-brand-accent/10 px-2 py-0.5 rounded border border-brand-accent/30">PRO AI</span>
     </div>
   </header>
 
-  <!-- SEARCH BAR -->
-  <section class="p-4 bg-brand-panel/50 border-b border-brand-border shrink-0">
+  <section class="p-3.5 bg-brand-panel/50 border-b border-brand-border shrink-0">
     <form id="aiToneForm" class="relative flex items-center">
-      <i class="fa-solid fa-wand-magic-sparkles absolute left-3.5 text-brand-accent"></i>
-      <input 
-        type="text" 
-        id="toneSearchInput"
-        placeholder="Ej: Satisfaction - Rolling Stones, Soda Stereo, Bon Jovi..." 
-        class="w-full bg-brand-bg text-sm text-brand-text placeholder-brand-muted pl-10 pr-24 py-3 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent transition-all"
-        required
-      />
-      <button 
-        type="submit" 
-        id="searchBtn"
-        class="absolute right-1.5 bg-brand-accent hover:bg-brand-accentHover text-brand-bg font-bold text-xs px-3.5 py-2 rounded-lg transition-colors flex items-center gap-1.5"
-      >
+      <i class="fa-solid fa-wand-magic-sparkles absolute left-3.5 text-brand-accent text-xs"></i>
+      <input type="text" id="toneSearchInput" placeholder="Ej: Satisfaction, Soda Stereo, Comfortably Numb..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-20 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" required />
+      <button type="submit" id="searchBtn" class="absolute right-1 bg-brand-accent hover:bg-brand-accentHover text-brand-bg font-bold text-xs px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
         <span id="btnText">Buscar</span>
-        <i id="btnIcon" class="fa-solid fa-arrow-right"></i>
+        <i id="btnIcon" class="fa-solid fa-arrow-right text-[10px]"></i>
       </button>
     </form>
   </section>
 
-  <!-- MAIN CONTAINER -->
-  <main class="flex-1 overflow-y-auto p-4 space-y-6 hide-scrollbar" id="mainContent">
-
-    <div id="toneResultCard" class="bg-brand-card rounded-2xl border border-brand-border p-5 space-y-5">
-      
-      <!-- Preset Header -->
-      <div class="flex items-start justify-between border-b border-brand-border/60 pb-4">
-        <div>
-          <div class="flex items-center gap-2">
-            <span class="text-xs font-mono bg-brand-accent/10 text-brand-accent border border-brand-accent/20 px-2 py-0.5 rounded-md font-bold" id="presetBank">01A</span>
-            <h2 class="text-lg font-bold text-white" id="songTitle">Corazón Espinado (Santana)</h2>
-          </div>
-          <p class="text-xs text-brand-muted mt-1" id="soundDescription">Tono solista cálido estilo Mesa/Boogie con sostenido fluido y ligero Delay analógico.</p>
+  <main class="flex-1 overflow-y-auto p-4 space-y-5 hide-scrollbar">
+    <div class="bg-brand-card rounded-2xl border border-brand-border p-4 space-y-4">
+      <div class="border-b border-brand-border/60 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] font-mono bg-brand-accent/10 text-brand-accent border border-brand-accent/20 px-1.5 py-0.5 rounded font-bold" id="presetBank">01A</span>
+          <h2 class="text-base font-bold text-white" id="songTitle">Corazón Espinado (Santana)</h2>
         </div>
+        <p class="text-xs text-brand-muted mt-1" id="soundDescription">Tono Pro procesado con cadena completa: Compresor, Mesa Mark III, Delay y Reverb Plate.</p>
       </div>
 
-      <!-- Guitar Rec -->
-      <div class="grid grid-cols-2 gap-3 bg-brand-bg/60 p-3 rounded-xl border border-brand-border/40 text-xs">
-        <div class="flex items-center gap-2.5">
-          <i class="fa-solid fa-sliders text-brand-accent text-sm"></i>
+      <div class="grid grid-cols-2 gap-2 bg-brand-bg/60 p-2.5 rounded-xl border border-brand-border/40 text-[11px]">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-brand-accent"></i>
           <div>
-            <span class="block text-brand-muted text-[10px] uppercase font-bold">Pastilla Recomendada</span>
-            <span class="font-semibold text-brand-text" id="pickupRec">Puente (Bridge Humbucker)</span>
+            <span class="block text-brand-muted text-[9px] uppercase font-bold">Pastilla</span>
+            <span class="font-semibold" id="pickupRec">Puente (Humbucker)</span>
           </div>
         </div>
-        <div class="flex items-center gap-2.5">
-          <i class="fa-solid fa-volume-high text-brand-accent text-sm"></i>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-volume-high text-brand-accent"></i>
           <div>
-            <span class="block text-brand-muted text-[10px] uppercase font-bold">Volumen Guitarra</span>
-            <span class="font-semibold text-brand-text" id="guitarVol">10 (Abierto Total)</span>
+            <span class="block text-brand-muted text-[9px] uppercase font-bold">Volumen Guitarra</span>
+            <span class="font-semibold" id="guitarVol">10 (Abierto Total)</span>
           </div>
         </div>
       </div>
 
-      <!-- SIGNAL CHAIN KNOBS -->
-      <div class="space-y-4">
-        <h3 class="text-xs font-mono uppercase tracking-wider text-brand-muted font-bold flex items-center gap-2">
-          <i class="fa-solid fa-diagram-project text-brand-accent"></i>
-          Cadena de Efectos GE300 (Ajuste de Perillas 1:1)
+      <div class="space-y-3">
+        <h3 class="text-[11px] font-mono uppercase text-brand-muted font-bold flex items-center justify-between">
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-diagram-project text-brand-accent"></i> Cadena de Efectos GE300 (1:1)</span>
         </h3>
-
-        <div id="effectBlocksContainer" class="space-y-3"></div>
+        <div id="effectBlocksContainer" class="space-y-2.5"></div>
       </div>
 
-      <!-- CTRL ASSIGNMENTS -->
-      <div class="bg-brand-bg/80 rounded-xl p-3 border border-brand-border/60 text-xs space-y-2">
-        <span class="block font-mono text-[10px] uppercase font-bold text-brand-accent">Asignaciones CTRL & EXP</span>
-        <div class="grid grid-cols-2 gap-2 text-brand-muted" id="ctrlAssignments"></div>
+      <div class="bg-brand-bg/80 rounded-xl p-3 border border-brand-border/60 text-[11px] space-y-1.5">
+        <span class="block font-mono text-[9px] uppercase font-bold text-brand-accent">Asignaciones CTRL & EXP</span>
+        <div class="grid grid-cols-2 gap-1.5 text-brand-muted" id="ctrlAssignments"></div>
       </div>
-
     </div>
-
   </main>
 
-  <!-- MODAL API KEY -->
   <div id="apiKeyModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="bg-brand-card border border-brand-border rounded-2xl p-5 w-full max-w-sm space-y-4">
-      <div class="flex items-center justify-between border-b border-brand-border pb-3">
-        <h3 class="font-bold text-sm text-brand-text flex items-center gap-2">
-          <i class="fa-solid fa-key text-brand-accent"></i>
-          Configurar Clave de IA (Gemini API)
-        </h3>
+    <div class="bg-brand-card border border-brand-border rounded-2xl p-4 w-full max-w-sm space-y-3">
+      <div class="flex items-center justify-between border-b border-brand-border pb-2">
+        <h3 class="font-bold text-xs text-brand-text flex items-center gap-1.5"><i class="fa-solid fa-key text-brand-accent"></i> Clave Gemini API</h3>
         <button onclick="toggleApiKeyModal()" class="text-brand-muted hover:text-white"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <p class="text-xs text-brand-muted leading-relaxed">
-        Pega tu Gemini API Key para permitir búsquedas inteligentes en vivo.
-      </p>
-      <input 
-        type="password" 
-        id="apiKeyInput"
-        placeholder="AQ.Ab8RN..." 
-        class="w-full bg-brand-bg text-xs font-mono text-brand-text p-3 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent"
-      />
-      <div class="flex gap-2 pt-2">
-        <button onclick="saveApiKey()" class="w-full bg-brand-accent text-brand-bg font-bold text-xs py-2.5 rounded-xl hover:bg-brand-accentHover">
-          Guardar Clave
-        </button>
-      </div>
+      <p class="text-[11px] text-brand-muted leading-relaxed">Pega tu Gemini API Key (debe empezar por <strong>AQ.Ab...</strong>) para búsquedas con IA en tiempo real.</p>
+      <input type="password" id="apiKeyInput" placeholder="AQ.Ab8RN..." class="w-full bg-brand-bg text-xs font-mono text-brand-text p-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" />
+      <button onclick="saveApiKey()" class="w-full bg-brand-accent text-brand-bg font-bold text-xs py-2 rounded-xl hover:bg-brand-accentHover">Guardar Clave</button>
     </div>
   </div>
 
-  <!-- NAV -->
-  <nav class="bg-brand-panel border-t border-brand-border px-6 py-2.5 flex justify-around shrink-0 text-center">
-    <button class="flex flex-col items-center gap-1 text-brand-accent" onclick="showTab('preset')">
-      <i class="fa-solid fa-sliders text-lg"></i>
-      <span class="text-[10px] font-bold">Tone AI</span>
+  <nav class="bg-brand-panel border-t border-brand-border px-6 py-2 flex justify-around shrink-0 text-center">
+    <button class="flex flex-col items-center gap-0.5 text-brand-accent" onclick="showTab('preset')">
+      <i class="fa-solid fa-sliders text-base"></i>
+      <span class="text-[9px] font-bold">Tone AI</span>
     </button>
-    <button class="flex flex-col items-center gap-1 text-brand-muted hover:text-brand-text" onclick="showTab('catalog')">
-      <i class="fa-solid fa-book-open text-lg"></i>
-      <span class="text-[10px] font-bold">Catálogo GE300</span>
+    <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text" onclick="showTab('catalog')">
+      <i class="fa-solid fa-book-open text-base"></i>
+      <span class="text-[9px] font-bold">Catálogo GE300</span>
     </button>
-    <button class="flex flex-col items-center gap-1 text-brand-muted hover:text-brand-text" onclick="showTab('tools')">
-      <i class="fa-solid fa-calculator text-lg"></i>
-      <span class="text-[10px] font-bold">BPM / ms</span>
+    <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text" onclick="showTab('tools')">
+      <i class="fa-solid fa-calculator text-base"></i>
+      <span class="text-[9px] font-bold">BPM / ms</span>
     </button>
   </nav>
 
-  <!-- JS LOGIC -->
   <script>
-    const systemPromptGE300 = `
-Eres un ingeniero de sonido experto en la pedalera MOOER GE300 (v2.0.6).
-Devuelve un JSON estricto para configurar el tono solicitado.
+    const systemPromptGE300 = `Eres un Ingeniero de Sonido experto en la MOOER GE300 (v2.0.6). Devuelve SIEMPRE una CADENA COMPLETA DE EFECTOS en formato JSON estricto:
+Incluye según el estilo: COMP, DS/OD, AMP, CAB, NS, EQ, FXA, DELAY, REVERB.
+Format: {"title":"Name","bank":"01A","desc":"Desc","pickup":"Puente","vol":"10","ctrls":["CTRL 1: ...","CTRL 2: ...","EXP 1: ...","EXP 2: ..."],"blocks":[{"type":"AMP","model":"PLX 100","knobs":{"Gain":50,"Master":70}}]}`;
 
-Modelos disponibles:
-- AMP: US Blues JR, 65 US DX, J800, J900, PLX 100, Cali Dual 1/2, MARKIII DS, EV 5050 DS, PV 5050 DS, Jazz 120, etc.
-- DS/OD: Tube DR, 808, Pure Boost, BlackRat, Grey Faze, Muffy, Fuzz Department, MTL Zone, Obsessive Dist, Tight Metal, Gold Clon.
-- CAB: US DLX 112, 1960 412, Rec 412, EV 5050 412.
-- FXA/FXB: Phaser, Flanger, Tremolo, Ana-Chorus, 70's Chorus, Tri-Chorus, Mono Pitch.
-- DELAY: Digital, Analog, Dynamic, Tape, Mod.
-- REVERB: Room, Hall, Plate, Spring.
+    const searchCache = {};
 
-Devuelve EXCLUSIVAMENTE este formato JSON:
-{
-  "title": "Nombre de Canción - Artista",
-  "bank": "01A",
-  "desc": "Descripción técnica breve.",
-  "pickup": "Puente / Mástil",
-  "vol": "10",
-  "ctrls": ["CTRL 1: ...", "CTRL 2: ...", "EXP 1: ...", "EXP 2: ..."],
-  "blocks": [
-    {
-      "type": "DS/OD",
-      "model": "Nombre del modelo GE300",
-      "knobs": { "Gain": 50, "Output": 60 }
-    }
-  ]
-}`;
-
-    function toggleApiKeyModal() {
-      document.getElementById('apiKeyModal').classList.toggle('hidden');
-    }
-
+    function toggleApiKeyModal() { document.getElementById('apiKeyModal').classList.toggle('hidden'); }
     function saveApiKey() {
       const key = document.getElementById('apiKeyInput').value.trim();
-      if (key) {
-        localStorage.setItem('GE300_GEMINI_KEY', key);
-        alert('Clave API guardada.');
-        toggleApiKeyModal();
-      }
+      if (key) { localStorage.setItem('GE300_GEMINI_KEY', key); alert('Clave guardada.'); toggleApiKeyModal(); }
     }
 
     async function fetchAiTone(promptQuery) {
+      const cleanKey = promptQuery.toLowerCase().trim();
+      if (searchCache[cleanKey]) return searchCache[cleanKey];
+
       const apiKey = localStorage.getItem('GE300_GEMINI_KEY');
-      if (!apiKey) {
-        return generateSmartToneLocal(promptQuery);
-      }
+      if (!apiKey) return generateFullChainLocal(promptQuery);
 
-      // Usamos el endpoint con gemini-1.5-flash para maximizar la velocidad y respetar la cuota gratuita
       const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-
       const requestBody = {
-        contents: [
-          {
-            role: "user",
-            parts: [
-              { text: systemPromptGE300 },
-              { text: `Genera el preset GE300 para: ${promptQuery}` }
-            ]
-          }
-        ],
+        contents: [{ role: "user", parts: [{ text: systemPromptGE300 }, { text: `Genera la cadena completa para: ${promptQuery}` }] }],
         generationConfig: { responseMimeType: "application/json" }
       };
 
       try {
         const response = await fetch(url, {
           method: "POST",
-          headers: { 
-            "Content-Type": "application/json",
-            "x-goog-api-key": apiKey
-          },
+          headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
           body: JSON.stringify(requestBody)
         });
 
         if (!response.ok) {
-          console.warn("API de Google saturada o en límite. Usando motor local de respaldo.");
-          return generateSmartToneLocal(promptQuery);
+          const fallback = generateFullChainLocal(promptQuery);
+          searchCache[cleanKey] = fallback;
+          return fallback;
         }
 
         const data = await response.json();
-        const jsonText = data.candidates[0].content.parts[0].text;
-        return JSON.parse(jsonText);
+        const parsedPreset = JSON.parse(data.candidates[0].content.parts[0].text);
+        searchCache[cleanKey] = parsedPreset;
+        return parsedPreset;
       } catch (err) {
-        console.error("Error al conectar con la API de IA:", err);
-        return generateSmartToneLocal(promptQuery);
+        const fallback = generateFullChainLocal(promptQuery);
+        searchCache[cleanKey] = fallback;
+        return fallback;
       }
     }
 
-    function generateSmartToneLocal(q) {
+    function generateFullChainLocal(q) {
       let query = q.toLowerCase();
-      
-      // Rammstein / Metal Pesado
-      if (query.includes("rammstein") || query.includes("hast") || query.includes("metal") || query.includes("industrial")) {
+      if (query.includes("rammstein") || query.includes("hast") || query.includes("metal")) {
         return {
-          title: "Du Hast - Rammstein",
-          bank: "12D",
-          desc: "Tono Industrial pesado con simulación EVH 5150 y puerta de ruido estricta.",
-          pickup: "Puente (Humbucker alta ganancia)",
-          vol: "10 (Abierto)",
-          ctrls: ["CTRL 1: Tight Boost", "CTRL 2: Mute Switch", "EXP 1: Volumen Master", "EXP 2: N/A"],
+          title: "Du Hast - Rammstein", bank: "12D", desc: "Cadena Pro Completa: Compresor, Tight Metal, EVH 5150, Gate, EQ y Reverb.", pickup: "Puente (Humbucker)", vol: "10",
+          ctrls: ["CTRL 1: Tight Boost", "CTRL 2: Mute Gate", "EXP 1: Volumen Master", "EXP 2: N/A"],
           blocks: [
-            { type: "NS", model: "Noise Killer", knobs: { Threshold: 70, Damp: 90 } },
-            { type: "DS/OD", model: "Tight Metal", knobs: { Gain: 40, Bass: 45, Treble: 70, Output: 60 } },
+            { type: "COMP", model: "Yellow Comp", knobs: { Sens: 35, Output: 65 } },
+            { type: "DS/OD", model: "Tight Metal", knobs: { Gain: 35, Bass: 40, Treble: 75, Output: 60 } },
             { type: "AMP", model: "EV 5050 DS (EVH 5150)", knobs: { Gain: 82, Bass: 70, Mid: 35, Treble: 75, Master: 65 } },
-            { type: "CAB", model: "EV 5050 412", knobs: { Mic: "MD421", Center: 15, Distance: 5 } }
+            { type: "CAB", model: "EV 5050 412", knobs: { Mic: "MD421", Center: 15, Distance: 5 } },
+            { type: "NS", model: "Noise Killer", knobs: { Threshold: 75, Damp: 95 } },
+            { type: "EQ", model: "Mooer HM (5-Band)", knobs: { "80Hz": "+4dB", "240Hz": "-2dB", "750Hz": "-5dB", "2.2kHz": "+3dB" } },
+            { type: "REVERB", model: "Room", knobs: { Decay: 20, Mix: 15 } }
           ]
         };
       }
-
-      // Soda Stereo / De Música Ligera / Cerati
-      if (query.includes("soda") || query.includes("musica ligera") || query.includes("cerati") || query.includes("stereo")) {
+      if (query.includes("stone") || query.includes("satisfaction") || query.includes("rolling")) {
         return {
-          title: "De Música Ligera - Soda Stereo",
-          bank: "07A",
-          desc: "Tono Pop/Rock enérgico noventero con Marshall J800 y leve Modulación/Chorus en la rítmica.",
-          pickup: "Puente (Strat / Tele / Les Paul)",
-          vol: "10",
-          ctrls: ["CTRL 1: Solo Boost", "CTRL 2: Chorus On/Off", "EXP 1: Volumen", "EXP 2: N/A"],
+          title: "Satisfaction - The Rolling Stones", bank: "03B", desc: "Cadena Pro Completa: Compresor, Fuzz Maestro, Fender Deluxe, Tremolo y Spring Reverb.", pickup: "Puente (Single Coil)", vol: "10",
+          ctrls: ["CTRL 1: Fuzz On/Off", "CTRL 2: Tremolo On/Off", "EXP 1: Volumen", "EXP 2: N/A"],
           blocks: [
-            { type: "DS/OD", model: "808 (TS808)", knobs: { Gain: 35, Mid: 65, Output: 70 } },
-            { type: "AMP", model: "J800 (Marshall JCM800)", knobs: { Gain: 65, Bass: 50, Mid: 60, Treble: 70, Master: 75 } },
-            { type: "CAB", model: "1960 412", knobs: { Mic: "SM57", Center: 25, Distance: 10 } },
-            { type: "FXB", model: "70's Chorus", knobs: { Rate: 35, Depth: 50, Mix: 30 } }
-          ]
-        };
-      }
-
-      // Rolling Stones / Satisfaction
-      if (query.includes("stone") || query.includes("richards") || query.includes("satisfaction") || query.includes("rolling")) {
-        return {
-          title: "Satisfaction - The Rolling Stones",
-          bank: "03B",
-          desc: "Fuzz vintage tipo Gibson Maestro con ampli 65 US DX estilo Fender.",
-          pickup: "Puente (Single Coil)",
-          vol: "10",
-          ctrls: ["CTRL 1: Fuzz On/Off", "CTRL 2: Reverb Boost", "EXP 1: Volumen Master", "EXP 2: N/A"],
-          blocks: [
+            { type: "COMP", model: "Yellow Comp", knobs: { Sens: 50, Output: 60 } },
             { type: "DS/OD", model: "Grey Faze (Fuzz Maestro)", knobs: { Gain: 75, Bass: 40, Treble: 70, Output: 65 } },
             { type: "AMP", model: "65 US DX (Fender Deluxe)", knobs: { Gain: 45, Bass: 55, Mid: 50, Treble: 70, Master: 75 } },
             { type: "CAB", model: "US DLX 112", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
-            { type: "REVERB", model: "Spring", knobs: { Decay: 35, Mix: 25 } }
+            { type: "FXA", model: "Tremolo", knobs: { Rate: 45, Depth: 60, Mix: 40 } },
+            { type: "REVERB", model: "Spring", knobs: { Decay: 40, Mix: 30 } }
           ]
         };
       }
-
-      // Bon Jovi / It's My Life
-      if (query.includes("jovi") || query.includes("life")) {
-        return {
-          title: "It's My Life - Bon Jovi",
-          bank: "05B",
-          desc: "Hard rock noventero con Marshall J900 y Talk Box activo en EXP1.",
-          pickup: "Puente (Humbucker)",
-          vol: "10",
-          ctrls: ["CTRL 1: TalkBox On/Off", "CTRL 2: Solo Boost", "EXP 1: TalkBox Sweep", "EXP 2: N/A"],
-          blocks: [
-            { type: "WAH", model: "Talk Wah Ah", knobs: { Position: "EXP1", Peak: 75, Mix: 100 } },
-            { type: "AMP", model: "J900 (Marshall JCM900)", knobs: { Gain: 75, Bass: 60, Mid: 55, Treble: 70, Master: 70 } },
-            { type: "CAB", model: "1960 412", knobs: { Mic: "SM57", Center: 20, Distance: 10 } }
-          ]
-        };
-      }
-
-      // Genérico dinámico
       return {
-        title: `Preset GE300: ${q.toUpperCase()}`,
-        bank: "99A",
-        desc: "Preset generado por el motor de síntesis de la GE300.",
-        pickup: "Puente / Selector Central",
-        vol: "10",
-        ctrls: ["CTRL 1: Overdrive Boost", "CTRL 2: Delay Switch", "EXP 1: Volumen", "EXP 2: N/A"],
+        title: `Preset GE300: ${q.toUpperCase()}`, bank: "99A", desc: "Cadena de efectos Pro calculada con compresión, saturación, modulación y espacialidad.", pickup: "Puente / Selector Central", vol: "10",
+        ctrls: ["CTRL 1: Overdrive Boost", "CTRL 2: Modulation On/Off", "EXP 1: Volumen", "EXP 2: Expression"],
         blocks: [
+          { type: "COMP", model: "Yellow Comp", knobs: { Sens: 45, Output: 60 } },
           { type: "DS/OD", model: "Pure Boost", knobs: { Gain: 45, Bass: 50, Treble: 60, Output: 65 } },
           { type: "AMP", model: "PLX 100 (Marshall Plexi)", knobs: { Gain: 65, Bass: 50, Mid: 60, Treble: 65, Master: 70 } },
           { type: "CAB", model: "1960 412", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
-          { type: "DELAY", model: "Analog Delay", knobs: { Time: "350ms", Feedback: 30, Mix: 25 } }
+          { type: "NS", model: "Noise Killer", knobs: { Threshold: 40, Damp: 70 } },
+          { type: "FXA", model: "Ana-Chorus", knobs: { Rate: 35, Depth: 50, Mix: 30 } },
+          { type: "DELAY", model: "Analog Delay", knobs: { Time: "350ms", Feedback: 30, Mix: 25 } },
+          { type: "REVERB", model: "Plate", knobs: { Decay: 35, Mix: 20 } }
         ]
       };
     }
 
     function renderKnobSVG(label, value) {
-      let numericVal = typeof value === 'number' ? value : 50;
-      let strokeDash = (numericVal / 100) * 126;
-
-      return `
-        <div class="flex flex-col items-center gap-1">
-          <div class="knob-container">
-            <svg class="w-16 h-16 knob-svg" viewBox="0 0 50 50">
-              <circle cx="25" cy="25" r="20" fill="none" stroke="#26334d" stroke-width="4" />
-              <circle cx="25" cy="25" r="20" fill="none" stroke="#00ff66" stroke-width="4" 
-                      stroke-dasharray="${strokeDash} 126" stroke-linecap="round" />
-            </svg>
-            <span class="knob-value-badge">${value}</span>
-          </div>
-          <span class="text-[10px] font-mono font-bold text-brand-muted uppercase">${label}</span>
-        </div>
-      `;
+      let strokeDash = ((typeof value === 'number' ? value : 50) / 100) * 126;
+      return `<div class="flex flex-col items-center gap-0.5"><div class="knob-container"><svg class="w-14 h-14 knob-svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#26334d" stroke-width="4"/><circle cx="25" cy="25" r="20" fill="none" stroke="#00ff66" stroke-width="4" stroke-dasharray="${strokeDash} 126" stroke-linecap="round"/></svg><span class="knob-value-badge">${value}</span></div><span class="text-[9px] font-mono font-bold text-brand-muted uppercase">${label}</span></div>`;
     }
 
     function renderPreset(preset) {
@@ -418,58 +227,37 @@ Devuelve EXCLUSIVAMENTE este formato JSON:
       document.getElementById('soundDescription').innerText = preset.desc;
       document.getElementById('pickupRec').innerText = preset.pickup;
       document.getElementById('guitarVol').innerText = preset.vol;
-
-      const ctrlsContainer = document.getElementById('ctrlAssignments');
-      ctrlsContainer.innerHTML = preset.ctrls.map(c => `<div>${c}</div>`).join('');
+      document.getElementById('ctrlAssignments').innerHTML = preset.ctrls.map(c => `<div>${c}</div>`).join('');
 
       const blocksContainer = document.getElementById('effectBlocksContainer');
       blocksContainer.innerHTML = '';
-
       preset.blocks.forEach(block => {
         const blockEl = document.createElement('div');
-        blockEl.className = "bg-brand-bg/90 rounded-xl p-3 border border-brand-border/60 space-y-3";
-
+        blockEl.className = "bg-brand-bg/90 rounded-xl p-2.5 border border-brand-border/60 space-y-2";
         let knobsHTML = Object.entries(block.knobs).map(([k, v]) => renderKnobSVG(k, v)).join('');
-
-        blockEl.innerHTML = `
-          <div class="flex items-center justify-between border-b border-brand-border/40 pb-2">
-            <span class="text-xs font-bold font-mono text-brand-accent uppercase bg-brand-accent/10 px-2 py-0.5 rounded border border-brand-accent/20">${block.type}</span>
-            <span class="text-xs font-semibold text-brand-text">${block.model}</span>
-          </div>
-          <div class="flex items-center justify-around flex-wrap gap-2 pt-1">
-            ${knobsHTML}
-          </div>
-        `;
-
+        blockEl.innerHTML = `<div class="flex items-center justify-between border-b border-brand-border/40 pb-1.5"><span class="text-[10px] font-bold font-mono text-brand-accent uppercase bg-brand-accent/10 px-1.5 py-0.5 rounded border border-brand-accent/20">${block.type}</span><span class="text-xs font-semibold text-brand-text">${block.model}</span></div><div class="flex items-center justify-around flex-wrap gap-1.5 pt-0.5">${knobsHTML}</div>`;
         blocksContainer.appendChild(blockEl);
       });
     }
 
-    renderPreset(generateSmartToneLocal("santana"));
+    renderPreset(generateFullChainLocal("santana"));
 
     document.getElementById('aiToneForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const query = document.getElementById('toneSearchInput').value.trim();
-      
       const btnText = document.getElementById('btnText');
       const btnIcon = document.getElementById('btnIcon');
-      
       btnText.innerText = "Pensando...";
       btnIcon.className = "fa-solid fa-spinner animate-spin";
-
       let preset = await fetchAiTone(query);
       renderPreset(preset);
-
       btnText.innerText = "Buscar";
       btnIcon.className = "fa-solid fa-arrow-right";
     });
 
     function showTab(tab) {
-      if (tab === 'catalog') {
-        alert("Catálogo GE300 v2.0.6: 108 Amplis, 43 Cabs, 31 OD/DS.");
-      } else if (tab === 'tools') {
-        alert("Calculadora BPM / ms: 120 BPM = 500 ms (1/4) | 250 ms (1/8)");
-      }
+      if (tab === 'catalog') alert("Catálogo GE300 v2.0.6: 108 Amplis, 43 Cabs, 31 OD/DS, Módulos SYNTH, COMP, EQ, FXA, FXB, DELAY, REVERB.");
+      else if (tab === 'tools') alert("Calculadora BPM / ms: 120 BPM = 500 ms (1/4) | 250 ms (1/8)");
     }
   </script>
 </body>

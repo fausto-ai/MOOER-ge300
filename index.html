@@ -219,7 +219,7 @@ Eres un ingeniero de sonido experto en la pedalera MOOER GE300 (v2.0.6).
 Devuelve un JSON estricto para configurar el tono solicitado.
 
 Modelos disponibles:
-- AMP: US Blues JR, 65 US DX, J800, J900, PLX 100, Cali Dual 1/2, MARKIII DS, EV 5050 DS, Jazz 120, etc.
+- AMP: US Blues JR, 65 US DX, J800, J900, PLX 100, Cali Dual 1/2, MARKIII DS, EV 5050 DS, PV 5050 DS, Jazz 120, etc.
 - DS/OD: Tube DR, 808, Pure Boost, BlackRat, Grey Faze, Muffy, Fuzz Department, MTL Zone, Obsessive Dist, Tight Metal, Gold Clon.
 - CAB: US DLX 112, 1960 412, Rec 412, EV 5050 412.
 - FXA/FXB: Phaser, Flanger, Tremolo, Ana-Chorus, 70's Chorus, Tri-Chorus, Mono Pitch.
@@ -262,7 +262,8 @@ Devuelve EXCLUSIVAMENTE este formato JSON:
         return generateSmartToneLocal(promptQuery);
       }
 
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      // Usamos el endpoint con gemini-1.5-flash para maximizar la velocidad y respetar la cuota gratuita
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
       const requestBody = {
         contents: [
@@ -287,17 +288,60 @@ Devuelve EXCLUSIVAMENTE este formato JSON:
           body: JSON.stringify(requestBody)
         });
 
+        if (!response.ok) {
+          console.warn("API de Google saturada o en límite. Usando motor local de respaldo.");
+          return generateSmartToneLocal(promptQuery);
+        }
+
         const data = await response.json();
         const jsonText = data.candidates[0].content.parts[0].text;
         return JSON.parse(jsonText);
       } catch (err) {
-        console.error("Error API Gemini:", err);
+        console.error("Error al conectar con la API de IA:", err);
         return generateSmartToneLocal(promptQuery);
       }
     }
 
     function generateSmartToneLocal(q) {
       let query = q.toLowerCase();
+      
+      // Rammstein / Metal Pesado
+      if (query.includes("rammstein") || query.includes("hast") || query.includes("metal") || query.includes("industrial")) {
+        return {
+          title: "Du Hast - Rammstein",
+          bank: "12D",
+          desc: "Tono Industrial pesado con simulación EVH 5150 y puerta de ruido estricta.",
+          pickup: "Puente (Humbucker alta ganancia)",
+          vol: "10 (Abierto)",
+          ctrls: ["CTRL 1: Tight Boost", "CTRL 2: Mute Switch", "EXP 1: Volumen Master", "EXP 2: N/A"],
+          blocks: [
+            { type: "NS", model: "Noise Killer", knobs: { Threshold: 70, Damp: 90 } },
+            { type: "DS/OD", model: "Tight Metal", knobs: { Gain: 40, Bass: 45, Treble: 70, Output: 60 } },
+            { type: "AMP", model: "EV 5050 DS (EVH 5150)", knobs: { Gain: 82, Bass: 70, Mid: 35, Treble: 75, Master: 65 } },
+            { type: "CAB", model: "EV 5050 412", knobs: { Mic: "MD421", Center: 15, Distance: 5 } }
+          ]
+        };
+      }
+
+      // Soda Stereo / De Música Ligera / Cerati
+      if (query.includes("soda") || query.includes("musica ligera") || query.includes("cerati") || query.includes("stereo")) {
+        return {
+          title: "De Música Ligera - Soda Stereo",
+          bank: "07A",
+          desc: "Tono Pop/Rock enérgico noventero con Marshall J800 y leve Modulación/Chorus en la rítmica.",
+          pickup: "Puente (Strat / Tele / Les Paul)",
+          vol: "10",
+          ctrls: ["CTRL 1: Solo Boost", "CTRL 2: Chorus On/Off", "EXP 1: Volumen", "EXP 2: N/A"],
+          blocks: [
+            { type: "DS/OD", model: "808 (TS808)", knobs: { Gain: 35, Mid: 65, Output: 70 } },
+            { type: "AMP", model: "J800 (Marshall JCM800)", knobs: { Gain: 65, Bass: 50, Mid: 60, Treble: 70, Master: 75 } },
+            { type: "CAB", model: "1960 412", knobs: { Mic: "SM57", Center: 25, Distance: 10 } },
+            { type: "FXB", model: "70's Chorus", knobs: { Rate: 35, Depth: 50, Mix: 30 } }
+          ]
+        };
+      }
+
+      // Rolling Stones / Satisfaction
       if (query.includes("stone") || query.includes("richards") || query.includes("satisfaction") || query.includes("rolling")) {
         return {
           title: "Satisfaction - The Rolling Stones",
@@ -314,6 +358,8 @@ Devuelve EXCLUSIVAMENTE este formato JSON:
           ]
         };
       }
+
+      // Bon Jovi / It's My Life
       if (query.includes("jovi") || query.includes("life")) {
         return {
           title: "It's My Life - Bon Jovi",
@@ -329,6 +375,8 @@ Devuelve EXCLUSIVAMENTE este formato JSON:
           ]
         };
       }
+
+      // Genérico dinámico
       return {
         title: `Preset GE300: ${q.toUpperCase()}`,
         bank: "99A",

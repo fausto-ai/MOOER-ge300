@@ -40,7 +40,7 @@
   <section class="p-3.5 bg-brand-panel/50 border-b border-brand-border shrink-0">
     <form id="aiToneForm" class="relative flex items-center">
       <i class="fa-solid fa-wand-magic-sparkles absolute left-3.5 text-brand-accent text-xs"></i>
-      <input type="text" id="toneSearchInput" placeholder="Ej: Metallica, Soda Stereo, Santana, Comfortably Numb..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-20 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" required />
+      <input type="text" id="toneSearchInput" placeholder="Ej: Héroes del silencio, Soda Stereo, Metallica, Comfortably Numb..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-20 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" required />
       <button type="submit" id="searchBtn" class="absolute right-1 bg-brand-accent hover:bg-brand-accentHover text-brand-bg font-bold text-xs px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
         <span id="btnText">Buscar</span>
         <i id="btnIcon" class="fa-solid fa-arrow-right text-[10px]"></i>
@@ -53,9 +53,9 @@
       <div class="border-b border-brand-border/60 pb-3">
         <div class="flex items-center gap-2">
           <span class="text-[10px] font-mono bg-brand-accent/10 text-brand-accent border border-brand-accent/20 px-1.5 py-0.5 rounded font-bold" id="presetBank">01A</span>
-          <h2 class="text-base font-bold text-white" id="songTitle">Corazón Espinado (Santana)</h2>
+          <h2 class="text-base font-bold text-white" id="songTitle">Héroe de Leyenda (Héroes del Silencio)</h2>
         </div>
-        <p class="text-xs text-brand-muted mt-1" id="soundDescription">Tono Pro procesado con cadena completa: Compresor, Mesa Mark III, Delay y Reverb Plate.</p>
+        <p class="text-xs text-brand-muted mt-1" id="soundDescription">Tono cristalino ochentero arpegiado con Chorus, Digital Delay rítmico (Dotted 1/8) y amplificador Fender Deluxe Clean.</p>
       </div>
 
       <div class="grid grid-cols-2 gap-2 bg-brand-bg/60 p-2.5 rounded-xl border border-brand-border/40 text-[11px]">
@@ -63,7 +63,7 @@
           <i class="fa-solid fa-sliders text-brand-accent"></i>
           <div>
             <span class="block text-brand-muted text-[9px] uppercase font-bold">Pastilla</span>
-            <span class="font-semibold" id="pickupRec">Puente (Humbucker)</span>
+            <span class="font-semibold" id="pickupRec">Mástil / Posición Intermedia (Strat)</span>
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -113,7 +113,28 @@
       }
       let absHash = Math.abs(hash);
 
-      if (query.includes("rammstein") || query.includes("hast") || query.includes("metal")) {
+      // HÉROES DEL SILENCIO / HÉROE DE LEYENDA (JUAN VALDIVIA CLEAN + CHORUS + DELAY)
+      if (query.includes("heroe") || query.includes("heroes") || query.includes("leyenda") || query.includes("valdivia") || query.includes("silencio")) {
+        return {
+          title: "Héroe de Leyenda - Héroes del Silencio", 
+          bank: "04C", 
+          desc: "Tono cristalino arpegiado estilo Juan Valdivia con Fender Deluxe limpio, Chorus amplio, Delay rítmico y Reverb ambiental.", 
+          pickup: "Mástil / Posición Intermedia (Single Coil)", 
+          vol: "10 (Abierto)",
+          ctrls: ["CTRL 1: Boost Limpio", "CTRL 2: Chorus On/Off", "EXP 1: Volumen Master", "EXP 2: Delay Mix"],
+          blocks: [
+            { type: "COMP", model: "Yellow Comp", knobs: { Sens: 50, Output: 65 } },
+            { type: "AMP", model: "65 US DX (Fender Deluxe Clean)", knobs: { Gain: 28, Bass: 50, Mid: 60, Treble: 75, Master: 80 } },
+            { type: "CAB", model: "US DLX 112", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
+            { type: "FXA", model: "70's Chorus", knobs: { Rate: 42, Depth: 65, Mix: 45 } },
+            { type: "DELAY", model: "Digital Delay (Subdiv Dotted 1/8)", knobs: { Time: "380ms", Feedback: 40, Mix: 38 } },
+            { type: "REVERB", model: "Hall Reverb", knobs: { Decay: 50, Mix: 30 } }
+          ]
+        };
+      }
+
+      // RAMMSTEIN
+      if (query.includes("rammstein") || query.includes("hast") || query.includes("industrial")) {
         return {
           title: "Du Hast - Rammstein", bank: "12D", desc: "Cadena Pro Industrial: Compresor, Tight Metal, EVH 5150, Gate y Reverb corta.", pickup: "Puente (Humbucker)", vol: "10",
           ctrls: ["CTRL 1: Tight Boost", "CTRL 2: Mute Gate", "EXP 1: Volumen Master", "EXP 2: N/A"],
@@ -129,6 +150,7 @@
         };
       }
 
+      // ROLLING STONES / SATISFACTION
       if (query.includes("stone") || query.includes("satisfaction") || query.includes("rolling")) {
         return {
           title: "Satisfaction - The Rolling Stones", bank: "03B", desc: "Cadena Pro Vintage: Compresor, Fuzz Maestro, Fender Deluxe, Tremolo y Spring.", pickup: "Puente (Single Coil)", vol: "10",
@@ -144,6 +166,7 @@
         };
       }
 
+      // SODA STEREO / CERATI
       if (query.includes("soda") || query.includes("cerati") || query.includes("ligera") || query.includes("stereo")) {
         return {
           title: "De Música Ligera - Soda Stereo", bank: "07A", desc: "Cadena Pro Rock 90s: Compresor, TS808, Marshall JCM800, Chorus y Delay.", pickup: "Puente (Strat / Les Paul)", vol: "10",
@@ -160,13 +183,31 @@
         };
       }
 
-      // Algoritmo dinámico único por cada título de canción ingresado
-      const amps = ["PLX 100 (Plexi)", "J900 (JCM900)", "Cali Dual (Mesa)", "US Blues JR", "MARKIII DS", "Jazz 120"];
+      // SI LA BÚSQUEDA ES DE MÚSICA POP / CLEAN / ACÚSTICA
+      if (query.includes("clean") || query.includes("pop") || query.includes("acustica") || query.includes("soft") || query.includes("balada")) {
+        return {
+          title: `Preset Limpio: ${q.toUpperCase()}`,
+          bank: "02A",
+          desc: "Seteo ultra limpio cristalino con alta respuesta dinámica, compresión y ambiente.",
+          pickup: "Mástil o Posición 2/4 (Single Coil)",
+          vol: "10",
+          ctrls: ["CTRL 1: Chorus On/Off", "CTRL 2: Reverb Boost", "EXP 1: Master Volume", "EXP 2: Expression"],
+          blocks: [
+            { type: "COMP", model: "Yellow Comp", knobs: { Sens: 55, Output: 60 } },
+            { type: "AMP", model: "Jazz 120 (Roland JC120 Clean)", knobs: { Gain: 25, Bass: 50, Mid: 55, Treble: 65, Master: 80 } },
+            { type: "CAB", model: "US DLX 112", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
+            { type: "FXA", model: "70's Chorus", knobs: { Rate: 35, Depth: 50, Mix: 35 } },
+            { type: "DELAY", model: "Analog Delay", knobs: { Time: "350ms", Feedback: 30, Mix: 20 } },
+            { type: "REVERB", model: "Plate Reverb", knobs: { Decay: 40, Mix: 25 } }
+          ]
+        };
+      }
+
+      // Detección automática por defecto para Rock / Hard Rock
+      const amps = ["PLX 100 (Plexi)", "J900 (JCM900)", "Cali Dual (Mesa)", "US Blues JR", "MARKIII DS"];
       const dsList = ["Pure Boost", "808 (TS808)", "BlackRat", "Obsessive Dist", "Gold Clon"];
       const selectedAmp = amps[absHash % amps.length];
       const selectedDS = dsList[(absHash + 1) % dsList.length];
-      const gainVal = 40 + (absHash % 45);
-      const midVal = 30 + ((absHash * 3) % 50);
 
       return {
         title: `Preset GE300: ${q.toUpperCase()}`,
@@ -176,14 +217,14 @@
         vol: "10",
         ctrls: ["CTRL 1: Drive Boost", "CTRL 2: Modulation / Delay", "EXP 1: Master Volume", "EXP 2: Pitch / Wah"],
         blocks: [
-          { type: "COMP", model: "Yellow Comp", knobs: { Sens: 30 + (absHash % 30), Output: 60 } },
-          { type: "DS/OD", model: selectedDS, knobs: { Gain: 25 + (absHash % 40), Tone: 50 + (absHash % 20), Output: 65 } },
-          { type: "AMP", model: selectedAmp, knobs: { Gain: gainVal, Bass: 45 + (absHash % 20), Mid: midVal, Treble: 55 + (absHash % 25), Master: 70 } },
-          { type: "CAB", model: "1960 412", knobs: { Mic: "SM57", Center: 20 + (absHash % 15), Distance: 10 } },
-          { type: "NS", model: "Noise Killer", knobs: { Threshold: 40 + (absHash % 30), Damp: 75 } },
-          { type: "FXA", model: "Ana-Chorus", knobs: { Rate: 30 + (absHash % 30), Depth: 50, Mix: 25 } },
-          { type: "DELAY", model: "Digital Delay", knobs: { Time: `${250 + (absHash % 250)}ms`, Feedback: 25 + (absHash % 20), Mix: 20 } },
-          { type: "REVERB", model: "Plate Reverb", knobs: { Decay: 30 + (absHash % 25), Mix: 20 } }
+          { type: "COMP", model: "Yellow Comp", knobs: { Sens: 35, Output: 60 } },
+          { type: "DS/OD", model: selectedDS, knobs: { Gain: 35, Tone: 50, Output: 65 } },
+          { type: "AMP", model: selectedAmp, knobs: { Gain: 55, Bass: 50, Mid: 55, Treble: 65, Master: 70 } },
+          { type: "CAB", model: "1960 412", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
+          { type: "NS", model: "Noise Killer", knobs: { Threshold: 40, Damp: 70 } },
+          { type: "FXA", model: "70's Chorus", knobs: { Rate: 35, Depth: 45, Mix: 30 } },
+          { type: "DELAY", model: "Digital Delay", knobs: { Time: "380ms", Feedback: 30, Mix: 25 } },
+          { type: "REVERB", model: "Plate Reverb", knobs: { Decay: 35, Mix: 20 } }
         ]
       };
     }
@@ -219,9 +260,8 @@
     }
 
     // Carga inicial
-    renderPreset(generateDynamicTone("santana"));
+    renderPreset(generateDynamicTone("heroe de leyenda"));
 
-    // Listener de búsqueda corregido para permitir búsquedas infinitas
     document.getElementById('aiToneForm').addEventListener('submit', function(e) {
       e.preventDefault();
       const queryInput = document.getElementById('toneSearchInput');

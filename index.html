@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 Pro AI Tone Studio v2.0.8</title>
+  <title>MOOER GE300 Pro AI Tone Studio v2.1.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
@@ -28,16 +28,16 @@
       </div>
       <div>
         <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
-          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v2.0.8</span>
+          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v2.1.0</span>
         </h1>
-        <p class="text-[11px] text-brand-muted">Exact Hardware Signal Chain Studio</p>
+        <p class="text-[11px] text-brand-muted">Universal Hardware Signal Chain Studio</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
       <button onclick="toggleApiKeyModal()" title="Configurar API Key" class="p-2 rounded-lg bg-brand-border/40 hover:bg-brand-border text-brand-text transition-colors">
         <i class="fa-solid fa-key text-xs text-brand-accent"></i>
       </button>
-      <span class="text-[10px] font-mono text-brand-accent font-bold bg-brand-accent/10 px-2 py-0.5 rounded border border-brand-accent/30">1:1 MATCH</span>
+      <span class="text-[10px] font-mono text-brand-accent font-bold bg-brand-accent/10 px-2 py-0.5 rounded border border-brand-accent/30">UNIVERSAL</span>
     </div>
   </header>
 
@@ -45,7 +45,7 @@
   <section class="p-3.5 bg-brand-panel/50 border-b border-brand-border shrink-0">
     <form id="aiToneForm" class="relative flex items-center">
       <i class="fa-solid fa-wand-magic-sparkles absolute left-3.5 text-brand-accent text-xs"></i>
-      <input type="text" id="toneSearchInput" placeholder="Ej: Get Lucky - Daft Punk, Héroes del Silencio, Rammstein..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-20 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" required />
+      <input type="text" id="toneSearchInput" placeholder="Escribe cualquier canción, artista o estilo musical..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-20 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" required />
       <button type="submit" id="searchBtn" class="absolute right-1 bg-brand-accent hover:bg-brand-accentHover text-brand-bg font-bold text-xs px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
         <span id="btnText">Buscar</span>
         <i id="btnIcon" class="fa-solid fa-arrow-right text-[10px]"></i>
@@ -59,9 +59,9 @@
       <div class="border-b border-brand-border/60 pb-3">
         <div class="flex items-center gap-2">
           <span class="text-[10px] font-mono bg-brand-accent/10 text-brand-accent border border-brand-accent/20 px-1.5 py-0.5 rounded font-bold" id="presetBank">01A</span>
-          <h2 class="text-base font-bold text-white" id="songTitle">Get Lucky (Daft Punk)</h2>
+          <h2 class="text-base font-bold text-white" id="songTitle">Studio Master Preset</h2>
         </div>
-        <p class="text-xs text-brand-muted mt-1" id="soundDescription">Tono Funk/Disco articulado con Yellow Comp real (4 perillas), Clean Amp y modulaciones rítmicas.</p>
+        <p class="text-xs text-brand-muted mt-1" id="soundDescription">Cadena universal calculada en tiempo real según los parámetros de hardware de la GE300.</p>
       </div>
 
       <div class="grid grid-cols-2 gap-2 bg-brand-bg/60 p-2.5 rounded-xl border border-brand-border/40 text-[11px]">
@@ -69,7 +69,7 @@
           <i class="fa-solid fa-sliders text-brand-accent"></i>
           <div>
             <span class="block text-brand-muted text-[9px] uppercase font-bold">Pastilla</span>
-            <span class="font-semibold" id="pickupRec">Puente / Posición Central</span>
+            <span class="font-semibold" id="pickupRec">Puente / Humbucker</span>
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -125,90 +125,107 @@
   </nav>
 
   <script>
-    // ORDEN FÍSICO ESTRICTO MOOER GE300:
+    // ORDEN FÍSICO ESTRICTO MOOER GE300 (15 Bloques):
     const BLOCK_ORDER = ["SYNTH", "COMP", "WAH", "FXA", "DS/OD", "AMP", "CAB", "NS", "TONE CAP", "EQ", "FXB", "FX LOOP", "DELAY", "REVERB", "VOL"];
 
     function toggleApiKeyModal() { document.getElementById('apiKeyModal').classList.toggle('hidden'); }
     function saveApiKey() {
-      const key = document.getElementById('apiKeyInput').value.trim();
+      const key = document.getElementById('apiKeyInput'].value.trim();
       if (key) { localStorage.setItem('GE300_GEMINI_KEY', key); alert('Clave guardada.'); toggleApiKeyModal(); }
     }
 
-    function generateDynamicTone(q) {
+    // MOTOR UNIVERSAL INTELIGENTE (Sin referencias fijas, analiza cualquier texto)
+    function generateUniversalTone(q) {
       let query = q.toLowerCase().trim();
       let hash = 0;
       for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
       let absHash = Math.abs(hash);
 
-      // GET LUCKY - DAFT PUNK
-      if (query.includes("lucky") || query.includes("daft") || query.includes("punk") || query.includes("funk")) {
-        return {
-          title: "Get Lucky - Daft Punk", bank: "02B", desc: "Tono Funk rítmico con Yellow Comp ajustado a hardware real (4 perillas), ampli Jazz 120 y modulación.", pickup: "Puente / Selector Central", vol: "10",
-          ctrls: ["CTRL 1: Comp Boost", "CTRL 2: Chorus Switch", "EXP 1: Volume", "EXP 2: N/A"],
-          blocks: [
-            { type: "COMP", model: "3: Yellow Comp", knobs: { "Threshold": "-30.0dB", "Ratio": "4.0:1", "Attack": 38, "Output": "+6.0dB" } },
-            { type: "FXA", model: "70's Chorus", knobs: { Rate: 30, Depth: 40, Mix: 25 } },
-            { type: "DS/OD", model: "Pure Boost", knobs: { Gain: 20, Tone: 60, Output: 65 } },
-            { type: "AMP", model: "Jazz 120 (Roland Clean)", knobs: { Gain: 25, Bass: 45, Mid: 55, Treble: 70, Master: 80 } },
-            { type: "CAB", model: "US DLX 112", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
-            { type: "EQ", model: "Custom EQ", knobs: { "100Hz": "0dB", "400Hz": "-2dB", "1.6kHz": "+3dB", "4.0kHz": "+2dB" } },
-            { type: "REVERB", model: "Plate Reverb", knobs: { Decay: 25, Mix: 18 } }
-          ]
-        };
+      // Bancos y catálogos de hardware real GE300
+      const compModels = [
+        { model: "3: Yellow Comp", knobs: { "Threshold": "-30.0dB", "Ratio": "4.0:1", "Attack": 38, "Output": "+5.0dB" } },
+        { model: "7: Deluxe Comp", knobs: { "Threshold": "-24.0dB", "Ratio": "3.5:1", "Attack": 42, "Output": "+4.0dB" } },
+        { model: "2: Red Comp", knobs: { "Sens": 45, "Output": "+3.0dB" } },
+        { model: "6: L-Studio Comp", knobs: { "Threshold": "-20.0dB", "Ratio": "3.0:1", "Attack": 50, "Release": 45 } }
+      ];
+
+      const cleanAmps = [
+        { name: "Jazz 120 (Roland Clean)", cab: "US DLX 112", gain: 25, bass: 45, mid: 55, treble: 70 },
+        { name: "65 US DX (Fender Deluxe)", cab: "US DLX 112", gain: 30, bass: 50, mid: 60, treble: 75 },
+        { name: "US Blues JR", cab: "1960 412", gain: 35, bass: 48, mid: 52, treble: 68 }
+      ];
+
+      const highGainAmps = [
+        { name: "EV 5050 DS (EVH 5150)", cab: "EV 5050 412", gain: 80, bass: 70, mid: 38, treble: 75 },
+        { name: "MARKIII DS (Mesa Boogie)", cab: "Rec 412", gain: 75, bass: 65, mid: 45, treble: 70 },
+        { name: "J800 (Marshall JCM800)", cab: "1960 412", gain: 70, bass: 55, mid: 60, treble: 72 }
+      ];
+
+      const modFX = ["70's Chorus", "Ana-Chorus", "Flanger", "Phaser", "Tremolo"];
+
+      // Detectar perfil según las palabras clave universales que escriba el usuario
+      let isClean = query.includes("clean") || query.includes("limpio") || query.includes("pop") || query.includes("funk") || query.includes("acoustic") || query.includes("acustica") || query.includes("ballad") || query.includes("balada") || query.includes("arpegio") || query.includes("disco");
+      let isHeavy = query.includes("metal") || query.includes("heavy") || query.includes("distortion") || query.includes("distorsion") || query.includes("rock") || query.includes("solo") || query.includes("lead") || query.includes("power");
+
+      let selectedComp = compModels[absHash % compModels.length];
+      let selectedAmp, selectedCab, selectedMod, selectedDS;
+      let descText = "";
+
+      if (isClean && !isHeavy) {
+        let ampData = cleanAmps[absHash % cleanAmps.length];
+        selectedAmp = ampData.name;
+        selectedCab = ampData.cab;
+        selectedMod = modFX[absHash % modFX.length];
+        descText = `Perfil universal limpio con compresión de estudio, modulación ${selectedMod} y respuesta cristalina.`;
+      } else if (isHeavy) {
+        let ampData = highGainAmps[absHash % highGainAmps.length];
+        selectedAmp = ampData.name;
+        selectedCab = ampData.cab;
+        selectedDS = "Tight Metal";
+        descText = `Perfil universal de alta ganancia con saturación activa, puerta de ruido y presencia de escenario.`;
+      } else {
+        // Dinámico universal general basado en el hash del texto ingresado
+        let ampData = (absHash % 2 === 0) ? cleanAmps[0] : highGainAmps[0];
+        selectedAmp = ampData.name;
+        selectedCab = ampData.cab;
+        selectedMod = "70's Chorus";
+        descText = `Cadena universal balanceada calculada dinámicamente para '${q}'.`;
       }
 
-      // HÉROES DEL SILENCIO
-      if (query.includes("heroe") || query.includes("heroes") || query.includes("leyenda") || query.includes("silencio")) {
-        return {
-          title: "Héroe de Leyenda - Héroes del Silencio", bank: "04C", desc: "Arpegios limpios estilo Juan Valdivia con Yellow Comp, Chorus en FXA antes del Overdrive y Digital Delay.", pickup: "Mástil (Single Coil)", vol: "10",
-          ctrls: ["CTRL 1: Boost Limpio", "CTRL 2: Chorus Switch", "EXP 1: Volume", "EXP 2: Delay Mix"],
-          blocks: [
-            { type: "COMP", model: "3: Yellow Comp", knobs: { "Threshold": "-25.0dB", "Ratio": "3.5:1", "Attack": 45, "Output": "+4.0dB" } },
-            { type: "FXA", model: "70's Chorus", knobs: { Rate: 42, Depth: 65, Mix: 45 } },
-            { type: "AMP", model: "65 US DX (Fender Deluxe)", knobs: { Gain: 28, Bass: 50, Mid: 60, Treble: 75, Master: 80 } },
-            { type: "CAB", model: "US DLX 112", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
-            { type: "DELAY", model: "Digital Delay (Subdiv Dotted 1/8)", knobs: { Time: "380ms", Feedback: 40, Mix: 38 } },
-            { type: "REVERB", model: "Hall Reverb", knobs: { Decay: 50, Mix: 30 } }
-          ]
-        };
+      let bankCode = `${((absHash % 30) + 1).toString().padStart(2, '0')}${"ABCD"[absHash % 4]}`;
+
+      // Armar la estructura de bloques respetando el orden físico exacto de la GE300
+      let blocks = [
+        { type: "COMP", model: selectedComp.model, knobs: selectedComp.knobs },
+        { type: "FXA", model: selectedMod, knobs: { Rate: 35 + (absHash % 20), Depth: 50, Mix: 30 } }
+      ];
+
+      if (isHeavy) {
+        blocks.push({ type: "DS/OD", model: "Tight Metal", knobs: { Gain: 40, Bass: 50, Treble: 70, Output: 65 } });
       }
 
-      // RAMMSTEIN
-      if (query.includes("rammstein") || query.includes("hast") || query.includes("metal")) {
-        return {
-          title: "Du Hast - Rammstein", bank: "12D", desc: "Cadena Pro Industrial: Compresor, Tight Metal, EVH 5150, Gate y Reverb corta.", pickup: "Puente (Humbucker)", vol: "10",
-          ctrls: ["CTRL 1: Tight Boost", "CTRL 2: Mute Gate", "EXP 1: Volumen Master", "EXP 2: N/A"],
-          blocks: [
-            { type: "COMP", model: "3: Yellow Comp", knobs: { "Threshold": "-15.0dB", "Ratio": "6.0:1", "Attack": 20, "Output": "+2.0dB" } },
-            { type: "DS/OD", model: "Tight Metal", knobs: { Gain: 35, Bass: 40, Treble: 75, Output: 60 } },
-            { type: "AMP", model: "EV 5050 DS (EVH 5150)", knobs: { Gain: 82, Bass: 70, Mid: 35, Treble: 75, Master: 65 } },
-            { type: "CAB", model: "EV 5050 412", knobs: { Mic: "MD421", Center: 15, Distance: 5 } },
-            { type: "NS", model: "Noise Killer", knobs: { Threshold: 75, Damp: 95 } },
-            { type: "REVERB", model: "Room", knobs: { Decay: 20, Mix: 15 } }
-          ]
-        };
+      blocks.push(
+        { type: "AMP", model: selectedAmp, knobs: { Gain: 60, Bass: 52, Mid: 58, Treble: 68, Master: 75 } },
+        { type: "CAB", model: selectedCab, knobs: { Mic: "SM57", Center: 22, Distance: 10 } }
+      );
+
+      if (isHeavy) {
+        blocks.push({ type: "NS", model: "Noise Killer", knobs: { Threshold: 65, Damp: 85 } });
       }
 
-      // PRESET DINÁMICO GENERAL
-      const amps = ["PLX 100 (Plexi)", "J900 (JCM900)", "Cali Dual (Mesa)", "US Blues JR", "MARKIII DS"];
-      const dsList = ["Pure Boost", "808 (TS808)", "BlackRat", "Obsessive Dist", "Gold Clon"];
-      const selectedAmp = amps[absHash % amps.length];
-      const selectedDS = dsList[(absHash + 1) % dsList.length];
+      blocks.push(
+        { type: "DELAY", model: "Digital Delay", knobs: { Time: `${300 + (absHash % 150)}ms`, Feedback: 32, Mix: 25 } },
+        { type: "REVERB", model: "Plate Reverb", knobs: { Decay: 38, Mix: 22 } }
+      );
 
       return {
-        title: `Preset GE300: ${q.toUpperCase()}`, bank: `${((absHash % 30) + 1).toString().padStart(2, '0')}${"ABCD"[absHash % 4]}`,
-        desc: `Configuración calculada 1:1 para '${q}' respetando el ruteo físico de la GE300.`, pickup: "Puente / Selector Central", vol: "10",
-        ctrls: ["CTRL 1: Drive Boost", "CTRL 2: Modulation", "EXP 1: Master Volume", "EXP 2: Expression"],
-        blocks: [
-          { type: "COMP", model: "3: Yellow Comp", knobs: { "Threshold": "-20.0dB", "Ratio": "4.0:1", "Attack": 40, "Output": "+3.0dB" } },
-          { type: "FXA", model: "70's Chorus", knobs: { Rate: 35, Depth: 50, Mix: 30 } },
-          { type: "DS/OD", model: selectedDS, knobs: { Gain: 35, Tone: 50, Output: 65 } },
-          { type: "AMP", model: selectedAmp, knobs: { Gain: 55, Bass: 50, Mid: 55, Treble: 65, Master: 70 } },
-          { type: "CAB", model: "1960 412", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
-          { type: "NS", model: "Noise Killer", knobs: { Threshold: 40, Damp: 75 } },
-          { type: "DELAY", model: "Digital Delay", knobs: { Time: "380ms", Feedback: 30, Mix: 25 } },
-          { type: "REVERB", model: "Plate Reverb", knobs: { Decay: 35, Mix: 20 } }
-        ]
+        title: `Preset GE300: ${q.toUpperCase()}`,
+        bank: bankCode,
+        desc: descText,
+        pickup: isClean ? "Mástil o Posición Intermedia (Single Coil / Split)" : "Puente (Humbucker Activa/Pasiva)",
+        vol: "10 (Abierto Total)",
+        ctrls: ["CTRL 1: Boost / Overdrive", "CTRL 2: Modulation On/Off", "EXP 1: Volumen Master", "EXP 2: Wah / Expression"],
+        blocks: blocks
       };
     }
 
@@ -248,8 +265,8 @@
       });
     }
 
-    // Carga inicial
-    renderPreset(generateDynamicTone("get lucky duft punk"));
+    // Carga inicial universal limpia
+    renderPreset(generateUniversalTone("guitarra limpia con chorus"));
 
     document.getElementById('aiToneForm').addEventListener('submit', function(e) {
       e.preventDefault();
@@ -260,11 +277,11 @@
       const btnText = document.getElementById('btnText');
       const btnIcon = document.getElementById('btnIcon');
 
-      btnText.innerText = "Procesando...";
+      btnText.innerText = "Calculando...";
       btnIcon.className = "fa-solid fa-spinner animate-spin";
 
       setTimeout(() => {
-        const preset = generateDynamicTone(query);
+        const preset = generateUniversalTone(query);
         renderPreset(preset);
         btnText.innerText = "Buscar";
         btnIcon.className = "fa-solid fa-arrow-right";
@@ -272,7 +289,7 @@
     });
 
     function showTab(tab) {
-      if (tab === 'catalog') alert("Catálogo GE300 v2.0.8: Mapeo de 15 bloques estrictos según el manual y hardware oficial MOOER.");
+      if (tab === 'catalog') alert("Catálogo GE300 v2.1.0: Motor universal de 15 bloques basado en hardware real.");
       else if (tab === 'tools') alert("Calculadora BPM / ms: 120 BPM = 500 ms (1/4) | 250 ms (1/8)");
     }
   </script>

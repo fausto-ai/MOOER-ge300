@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 Pro AI Tone Studio v2.1.0</title>
+  <title>MOOER GE300 Pro AI Tone Studio v2.1.2</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
@@ -28,13 +28,13 @@
       </div>
       <div>
         <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
-          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v2.1.0</span>
+          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v2.1.2</span>
         </h1>
         <p class="text-[11px] text-brand-muted">Universal Hardware Signal Chain Studio</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
-      <button onclick="toggleApiKeyModal()" title="Configurar API Key" class="p-2 rounded-lg bg-brand-border/40 hover:bg-brand-border text-brand-text transition-colors">
+      <button type="button" onclick="toggleApiKeyModal()" title="Configurar API Key" class="p-2 rounded-lg bg-brand-border/40 hover:bg-brand-border text-brand-text transition-colors cursor-pointer">
         <i class="fa-solid fa-key text-xs text-brand-accent"></i>
       </button>
       <span class="text-[10px] font-mono text-brand-accent font-bold bg-brand-accent/10 px-2 py-0.5 rounded border border-brand-accent/30">UNIVERSAL</span>
@@ -100,11 +100,11 @@
     <div class="bg-brand-card border border-brand-border rounded-2xl p-4 w-full max-w-sm space-y-3">
       <div class="flex items-center justify-between border-b border-brand-border pb-2">
         <h3 class="font-bold text-xs text-brand-text flex items-center gap-1.5"><i class="fa-solid fa-key text-brand-accent"></i> Clave Gemini API</h3>
-        <button onclick="toggleApiKeyModal()" class="text-brand-muted hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+        <button type="button" onclick="toggleApiKeyModal()" class="text-brand-muted hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <p class="text-[11px] text-brand-muted leading-relaxed">Pega tu clave Gemini API si deseas habilitar la IA en tiempo real.</p>
       <input type="password" id="apiKeyInput" placeholder="AIzaSy... o AQ.Ab..." class="w-full bg-brand-bg text-xs font-mono text-brand-text p-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" />
-      <button onclick="saveApiKey()" class="w-full bg-brand-accent text-brand-bg font-bold text-xs py-2 rounded-xl hover:bg-brand-accentHover">Guardar Clave</button>
+      <button type="button" onclick="saveApiKey()" class="w-full bg-brand-accent text-brand-bg font-bold text-xs py-2 rounded-xl hover:bg-brand-accentHover cursor-pointer">Guardar Clave</button>
     </div>
   </div>
 
@@ -128,145 +128,169 @@
     // ORDEN FÍSICO ESTRICTO MOOER GE300 (15 Bloques):
     const BLOCK_ORDER = ["SYNTH", "COMP", "WAH", "FXA", "DS/OD", "AMP", "CAB", "NS", "TONE CAP", "EQ", "FXB", "FX LOOP", "DELAY", "REVERB", "VOL"];
 
-    function toggleApiKeyModal() { document.getElementById('apiKeyModal').classList.toggle('hidden'); }
-    function saveApiKey() {
-      const key = document.getElementById('apiKeyInput'].value.trim();
-      if (key) { localStorage.setItem('GE300_GEMINI_KEY', key); alert('Clave guardada.'); toggleApiKeyModal(); }
+    function toggleApiKeyModal() {
+      const modal = document.getElementById('apiKeyModal');
+      if (modal) {
+        modal.classList.toggle('hidden');
+        const savedKey = localStorage.getItem('GE300_GEMINI_KEY');
+        if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
+      }
     }
 
-    // MOTOR UNIVERSAL INTELIGENTE (Sin referencias fijas, analiza cualquier texto)
+    function saveApiKey() {
+      const keyInput = document.getElementById('apiKeyInput');
+      if (keyInput) {
+        const key = keyInput.value.trim();
+        if (key) {
+          localStorage.setItem('GE300_GEMINI_KEY', key);
+          alert('Clave guardada correctamente.');
+          toggleApiKeyModal();
+        } else {
+          alert('Por favor ingresa una clave válida.');
+        }
+      }
+    }
+
+    // MOTOR UNIVERSAL INTELIGENTE (Blindado)
     function generateUniversalTone(q) {
-      let query = q.toLowerCase().trim();
-      let hash = 0;
-      for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
-      let absHash = Math.abs(hash);
+      try {
+        let query = (q || "").toLowerCase().trim();
+        let hash = 0;
+        for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
+        let absHash = Math.abs(hash);
 
-      // Bancos y catálogos de hardware real GE300
-      const compModels = [
-        { model: "3: Yellow Comp", knobs: { "Threshold": "-30.0dB", "Ratio": "4.0:1", "Attack": 38, "Output": "+5.0dB" } },
-        { model: "7: Deluxe Comp", knobs: { "Threshold": "-24.0dB", "Ratio": "3.5:1", "Attack": 42, "Output": "+4.0dB" } },
-        { model: "2: Red Comp", knobs: { "Sens": 45, "Output": "+3.0dB" } },
-        { model: "6: L-Studio Comp", knobs: { "Threshold": "-20.0dB", "Ratio": "3.0:1", "Attack": 50, "Release": 45 } }
-      ];
+        const compModels = [
+          { model: "3: Yellow Comp", knobs: { "Threshold": "-30.0dB", "Ratio": "4.0:1", "Attack": 38, "Output": "+5.0dB" } },
+          { model: "7: Deluxe Comp", knobs: { "Threshold": "-24.0dB", "Ratio": "3.5:1", "Attack": 42, "Output": "+4.0dB" } },
+          { model: "2: Red Comp", knobs: { "Sens": 45, "Output": "+3.0dB" } },
+          { model: "6: L-Studio Comp", knobs: { "Threshold": "-20.0dB", "Ratio": "3.0:1", "Attack": 50, "Release": 45 } }
+        ];
 
-      const cleanAmps = [
-        { name: "Jazz 120 (Roland Clean)", cab: "US DLX 112", gain: 25, bass: 45, mid: 55, treble: 70 },
-        { name: "65 US DX (Fender Deluxe)", cab: "US DLX 112", gain: 30, bass: 50, mid: 60, treble: 75 },
-        { name: "US Blues JR", cab: "1960 412", gain: 35, bass: 48, mid: 52, treble: 68 }
-      ];
+        const cleanAmps = [
+          { name: "Jazz 120 (Roland Clean)", cab: "US DLX 112" },
+          { name: "65 US DX (Fender Deluxe)", cab: "US DLX 112" },
+          { name: "US Blues JR", cab: "1960 412" }
+        ];
 
-      const highGainAmps = [
-        { name: "EV 5050 DS (EVH 5150)", cab: "EV 5050 412", gain: 80, bass: 70, mid: 38, treble: 75 },
-        { name: "MARKIII DS (Mesa Boogie)", cab: "Rec 412", gain: 75, bass: 65, mid: 45, treble: 70 },
-        { name: "J800 (Marshall JCM800)", cab: "1960 412", gain: 70, bass: 55, mid: 60, treble: 72 }
-      ];
+        const highGainAmps = [
+          { name: "EV 5050 DS (EVH 5150)", cab: "EV 5050 412" },
+          { name: "MARKIII DS (Mesa Boogie)", cab: "Rec 412" },
+          { name: "J800 (Marshall JCM800)", cab: "1960 412" }
+        ];
 
-      const modFX = ["70's Chorus", "Ana-Chorus", "Flanger", "Phaser", "Tremolo"];
+        const modFX = ["70's Chorus", "Ana-Chorus", "Flanger", "Phaser", "Tremolo"];
 
-      // Detectar perfil según las palabras clave universales que escriba el usuario
-      let isClean = query.includes("clean") || query.includes("limpio") || query.includes("pop") || query.includes("funk") || query.includes("acoustic") || query.includes("acustica") || query.includes("ballad") || query.includes("balada") || query.includes("arpegio") || query.includes("disco");
-      let isHeavy = query.includes("metal") || query.includes("heavy") || query.includes("distortion") || query.includes("distorsion") || query.includes("rock") || query.includes("solo") || query.includes("lead") || query.includes("power");
+        let isClean = query.includes("clean") || query.includes("limpio") || query.includes("pop") || query.includes("funk") || query.includes("acoustic") || query.includes("balada") || query.includes("arpegio") || query.includes("disco");
+        let isHeavy = query.includes("metal") || query.includes("heavy") || query.includes("distortion") || query.includes("distorsion") || query.includes("rock") || query.includes("solo") || query.includes("lead");
 
-      let selectedComp = compModels[absHash % compModels.length];
-      let selectedAmp, selectedCab, selectedMod, selectedDS;
-      let descText = "";
+        let selectedComp = compModels[absHash % compModels.length];
+        let ampData = isHeavy ? highGainAmps[absHash % highGainAmps.length] : cleanAmps[absHash % cleanAmps.length];
+        let selectedMod = modFX[absHash % modFX.length];
+        let bankCode = `${((absHash % 30) + 1).toString().padStart(2, '0')}${"ABCD"[absHash % 4]}`;
 
-      if (isClean && !isHeavy) {
-        let ampData = cleanAmps[absHash % cleanAmps.length];
-        selectedAmp = ampData.name;
-        selectedCab = ampData.cab;
-        selectedMod = modFX[absHash % modFX.length];
-        descText = `Perfil universal limpio con compresión de estudio, modulación ${selectedMod} y respuesta cristalina.`;
-      } else if (isHeavy) {
-        let ampData = highGainAmps[absHash % highGainAmps.length];
-        selectedAmp = ampData.name;
-        selectedCab = ampData.cab;
-        selectedDS = "Tight Metal";
-        descText = `Perfil universal de alta ganancia con saturación activa, puerta de ruido y presencia de escenario.`;
-      } else {
-        // Dinámico universal general basado en el hash del texto ingresado
-        let ampData = (absHash % 2 === 0) ? cleanAmps[0] : highGainAmps[0];
-        selectedAmp = ampData.name;
-        selectedCab = ampData.cab;
-        selectedMod = "70's Chorus";
-        descText = `Cadena universal balanceada calculada dinámicamente para '${q}'.`;
+        let blocks = [
+          { type: "COMP", model: selectedComp.model, knobs: selectedComp.knobs },
+          { type: "FXA", model: selectedMod, knobs: { Rate: 35 + (absHash % 20), Depth: 50, Mix: 30 } }
+        ];
+
+        if (isHeavy) {
+          blocks.push({ type: "DS/OD", model: "Tight Metal", knobs: { Gain: 45, Bass: 50, Treble: 70, Output: 65 } });
+        }
+
+        blocks.push(
+          { type: "AMP", model: ampData.name, knobs: { Gain: isHeavy ? 75 : 30, Bass: 52, Mid: 58, Treble: 68, Master: 75 } },
+          { type: "CAB", model: ampData.cab, knobs: { Mic: "SM57", Center: 22, Distance: 10 } }
+        );
+
+        if (isHeavy) {
+          blocks.push({ type: "NS", model: "Noise Killer", knobs: { Threshold: 65, Damp: 85 } });
+        }
+
+        blocks.push(
+          { type: "DELAY", model: "Digital Delay", knobs: { Time: `${300 + (absHash % 150)}ms`, Feedback: 32, Mix: 25 } },
+          { type: "REVERB", model: "Plate Reverb", knobs: { Decay: 38, Mix: 22 } }
+        );
+
+        return {
+          title: `Preset GE300: ${q.toUpperCase()}`,
+          bank: bankCode,
+          desc: `Cadena universal calculada en tiempo real para '${q}' respetando el hardware GE300.`,
+          pickup: isClean ? "Mástil / Single Coil" : "Puente / Humbucker",
+          vol: "10 (Abierto Total)",
+          ctrls: ["CTRL 1: Boost / Overdrive", "CTRL 2: Modulation On/Off", "EXP 1: Volumen Master", "EXP 2: Expression"],
+          blocks: blocks
+        };
+      } catch (err) {
+        console.error(err);
+        return {
+          title: "Preset GE300 Master",
+          bank: "01A",
+          desc: "Preset base universal de respaldo.",
+          pickup: "Puente / Humbucker",
+          vol: "10",
+          ctrls: ["CTRL 1: Boost", "CTRL 2: Mod", "EXP 1: Vol", "EXP 2: Wah"],
+          blocks: [
+            { type: "COMP", model: "3: Yellow Comp", knobs: { "Threshold": "-30.0dB", "Ratio": "4.0:1", "Attack": 38, "Output": "+5.0dB" } },
+            { type: "AMP", model: "65 US DX (Fender Deluxe)", knobs: { Gain: 30, Bass: 50, Mid: 60, Treble: 70, Master: 75 } },
+            { type: "CAB", model: "US DLX 112", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
+            { type: "DELAY", model: "Digital Delay", knobs: { Time: "380ms", Feedback: 30, Mix: 25 } },
+            { type: "REVERB", model: "Plate Reverb", knobs: { Decay: 35, Mix: 20 } }
+          ]
+        };
       }
-
-      let bankCode = `${((absHash % 30) + 1).toString().padStart(2, '0')}${"ABCD"[absHash % 4]}`;
-
-      // Armar la estructura de bloques respetando el orden físico exacto de la GE300
-      let blocks = [
-        { type: "COMP", model: selectedComp.model, knobs: selectedComp.knobs },
-        { type: "FXA", model: selectedMod, knobs: { Rate: 35 + (absHash % 20), Depth: 50, Mix: 30 } }
-      ];
-
-      if (isHeavy) {
-        blocks.push({ type: "DS/OD", model: "Tight Metal", knobs: { Gain: 40, Bass: 50, Treble: 70, Output: 65 } });
-      }
-
-      blocks.push(
-        { type: "AMP", model: selectedAmp, knobs: { Gain: 60, Bass: 52, Mid: 58, Treble: 68, Master: 75 } },
-        { type: "CAB", model: selectedCab, knobs: { Mic: "SM57", Center: 22, Distance: 10 } }
-      );
-
-      if (isHeavy) {
-        blocks.push({ type: "NS", model: "Noise Killer", knobs: { Threshold: 65, Damp: 85 } });
-      }
-
-      blocks.push(
-        { type: "DELAY", model: "Digital Delay", knobs: { Time: `${300 + (absHash % 150)}ms`, Feedback: 32, Mix: 25 } },
-        { type: "REVERB", model: "Plate Reverb", knobs: { Decay: 38, Mix: 22 } }
-      );
-
-      return {
-        title: `Preset GE300: ${q.toUpperCase()}`,
-        bank: bankCode,
-        desc: descText,
-        pickup: isClean ? "Mástil o Posición Intermedia (Single Coil / Split)" : "Puente (Humbucker Activa/Pasiva)",
-        vol: "10 (Abierto Total)",
-        ctrls: ["CTRL 1: Boost / Overdrive", "CTRL 2: Modulation On/Off", "EXP 1: Volumen Master", "EXP 2: Wah / Expression"],
-        blocks: blocks
-      };
     }
 
     function renderKnobSVG(label, value) {
       let numVal = 50;
+      let valStr = String(value !== undefined && value !== null ? value : 50);
       if (typeof value === 'number') {
         numVal = Math.min(Math.max(value, 0), 100);
-      } else if (typeof value === 'string') {
-        let matches = value.match(/-?\d+(\.\d+)?/);
+      } else {
+        let matches = valStr.match(/-?\d+(\.\d+)?/);
         if (matches) {
           let parsed = parseFloat(matches[0]);
           numVal = Math.min(Math.max((parsed + 60) * 1.2, 10), 90);
         }
       }
       let strokeDash = (numVal / 100) * 126;
-      return `<div class="flex flex-col items-center gap-0.5"><div class="knob-container"><svg class="w-14 h-14 knob-svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#26334d" stroke-width="4"/><circle cx="25" cy="25" r="20" fill="none" stroke="#00ff66" stroke-width="4" stroke-dasharray="${strokeDash} 126" stroke-linecap="round"/></svg><span class="knob-value-badge">${value}</span></div><span class="text-[9px] font-mono font-bold text-brand-muted uppercase">${label}</span></div>`;
+      return `<div class="flex flex-col items-center gap-0.5"><div class="knob-container"><svg class="w-14 h-14 knob-svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#26334d" stroke-width="4"/><circle cx="25" cy="25" r="20" fill="none" stroke="#00ff66" stroke-width="4" stroke-dasharray="${strokeDash} 126" stroke-linecap="round"/></svg><span class="knob-value-badge">${valStr}</span></div><span class="text-[9px] font-mono font-bold text-brand-muted uppercase">${label}</span></div>`;
     }
 
     function renderPreset(preset) {
-      document.getElementById('presetBank').innerText = preset.bank || "01A";
-      document.getElementById('songTitle').innerText = preset.title;
-      document.getElementById('soundDescription').innerText = preset.desc;
-      document.getElementById('pickupRec').innerText = preset.pickup;
-      document.getElementById('guitarVol').innerText = preset.vol;
-      document.getElementById('ctrlAssignments').innerHTML = preset.ctrls.map(c => `<div>${c}</div>`).join('');
+      try {
+        document.getElementById('presetBank').innerText = preset.bank || "01A";
+        document.getElementById('songTitle').innerText = preset.title;
+        document.getElementById('soundDescription').innerText = preset.desc;
+        document.getElementById('pickupRec').innerText = preset.pickup;
+        document.getElementById('guitarVol').innerText = preset.vol;
+        document.getElementById('ctrlAssignments').innerHTML = preset.ctrls.map(c => `<div>${c}</div>`).join('');
 
-      preset.blocks.sort((a, b) => BLOCK_ORDER.indexOf(a.type) - BLOCK_ORDER.indexOf(b.type));
+        if (preset.blocks) {
+          preset.blocks.sort((a, b) => {
+            let idxA = BLOCK_ORDER.indexOf(a.type);
+            let idxB = BLOCK_ORDER.indexOf(b.type);
+            return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
+          });
+        }
 
-      const blocksContainer = document.getElementById('effectBlocksContainer');
-      blocksContainer.innerHTML = '';
-      preset.blocks.forEach(block => {
-        const blockEl = document.createElement('div');
-        blockEl.className = "bg-brand-bg/90 rounded-xl p-2.5 border border-brand-border/60 space-y-2";
-        let knobsHTML = Object.entries(block.knobs).map(([k, v]) => renderKnobSVG(k, v)).join('');
-        blockEl.innerHTML = `<div class="flex items-center justify-between border-b border-brand-border/40 pb-1.5"><span class="text-[10px] font-bold font-mono text-brand-accent uppercase bg-brand-accent/10 px-1.5 py-0.5 rounded border border-brand-accent/20">${block.type}</span><span class="text-xs font-semibold text-brand-text">${block.model}</span></div><div class="flex items-center justify-around flex-wrap gap-1.5 pt-0.5">${knobsHTML}</div>`;
-        blocksContainer.appendChild(blockEl);
-      });
+        const blocksContainer = document.getElementById('effectBlocksContainer');
+        blocksContainer.innerHTML = '';
+        preset.blocks.forEach(block => {
+          const blockEl = document.createElement('div');
+          blockEl.className = "bg-brand-bg/90 rounded-xl p-2.5 border border-brand-border/60 space-y-2";
+          let knobsHTML = Object.entries(block.knobs || {}).map(([k, v]) => renderKnobSVG(k, v)).join('');
+          blockEl.innerHTML = `<div class="flex items-center justify-between border-b border-brand-border/40 pb-1.5"><span class="text-[10px] font-bold font-mono text-brand-accent uppercase bg-brand-accent/10 px-1.5 py-0.5 rounded border border-brand-accent/20">${block.type}</span><span class="text-xs font-semibold text-brand-text">${block.model}</span></div><div class="flex items-center justify-around flex-wrap gap-1.5 pt-0.5">${knobsHTML}</div>`;
+          blocksContainer.appendChild(blockEl);
+        });
+      } catch (err) {
+        console.error("Error rendering preset:", err);
+      }
     }
 
-    // Carga inicial universal limpia
-    renderPreset(generateUniversalTone("guitarra limpia con chorus"));
+    // Carga inicial segura al abrir la página
+    window.addEventListener('DOMContentLoaded', () => {
+      renderPreset(generateUniversalTone("Preset Universal GE300"));
+    });
 
     document.getElementById('aiToneForm').addEventListener('submit', function(e) {
       e.preventDefault();
@@ -289,7 +313,7 @@
     });
 
     function showTab(tab) {
-      if (tab === 'catalog') alert("Catálogo GE300 v2.1.0: Motor universal de 15 bloques basado en hardware real.");
+      if (tab === 'catalog') alert("Catálogo GE300 v2.1.2: Motor universal blindado de 15 bloques.");
       else if (tab === 'tools') alert("Calculadora BPM / ms: 120 BPM = 500 ms (1/4) | 250 ms (1/8)");
     }
   </script>

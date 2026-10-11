@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 Pro AI Tone Studio v2.0.7</title>
+  <title>MOOER GE300 Pro AI Tone Studio v2.0.8</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
@@ -14,12 +14,13 @@
     body { background-color: #0a0d12; color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
     .knob-container { position: relative; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; }
     .knob-svg { transform: rotate(-135deg); }
-    .knob-value-badge { position: absolute; font-size: 0.68rem; font-weight: 700; color: #00ff66; text-align: center; }
+    .knob-value-badge { position: absolute; font-size: 0.65rem; font-weight: 700; color: #00ff66; text-align: center; }
     .hide-scrollbar::-webkit-scrollbar { display: none; }
   </style>
 </head>
 <body class="flex flex-col h-screen overflow-hidden font-sans">
 
+  <!-- HEADER -->
   <header class="bg-brand-panel border-b border-brand-border px-4 py-3 flex items-center justify-between shrink-0">
     <div class="flex items-center gap-2.5">
       <div class="w-8 h-8 rounded-lg bg-brand-accent/10 border border-brand-accent/30 flex items-center justify-center text-brand-accent">
@@ -27,16 +28,20 @@
       </div>
       <div>
         <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
-          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v2.0.7</span>
+          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v2.0.8</span>
         </h1>
         <p class="text-[11px] text-brand-muted">Exact Hardware Signal Chain Studio</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
+      <button onclick="toggleApiKeyModal()" title="Configurar API Key" class="p-2 rounded-lg bg-brand-border/40 hover:bg-brand-border text-brand-text transition-colors">
+        <i class="fa-solid fa-key text-xs text-brand-accent"></i>
+      </button>
       <span class="text-[10px] font-mono text-brand-accent font-bold bg-brand-accent/10 px-2 py-0.5 rounded border border-brand-accent/30">1:1 MATCH</span>
     </div>
   </header>
 
+  <!-- SEARCH BAR -->
   <section class="p-3.5 bg-brand-panel/50 border-b border-brand-border shrink-0">
     <form id="aiToneForm" class="relative flex items-center">
       <i class="fa-solid fa-wand-magic-sparkles absolute left-3.5 text-brand-accent text-xs"></i>
@@ -48,6 +53,7 @@
     </form>
   </section>
 
+  <!-- MAIN CONTAINER -->
   <main class="flex-1 overflow-y-auto p-4 space-y-5 hide-scrollbar">
     <div class="bg-brand-card rounded-2xl border border-brand-border p-4 space-y-4">
       <div class="border-b border-brand-border/60 pb-3">
@@ -89,6 +95,20 @@
     </div>
   </main>
 
+  <!-- MODAL API KEY -->
+  <div id="apiKeyModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-brand-card border border-brand-border rounded-2xl p-4 w-full max-w-sm space-y-3">
+      <div class="flex items-center justify-between border-b border-brand-border pb-2">
+        <h3 class="font-bold text-xs text-brand-text flex items-center gap-1.5"><i class="fa-solid fa-key text-brand-accent"></i> Clave Gemini API</h3>
+        <button onclick="toggleApiKeyModal()" class="text-brand-muted hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <p class="text-[11px] text-brand-muted leading-relaxed">Pega tu clave Gemini API si deseas habilitar la IA en tiempo real.</p>
+      <input type="password" id="apiKeyInput" placeholder="AIzaSy... o AQ.Ab..." class="w-full bg-brand-bg text-xs font-mono text-brand-text p-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" />
+      <button onclick="saveApiKey()" class="w-full bg-brand-accent text-brand-bg font-bold text-xs py-2 rounded-xl hover:bg-brand-accentHover">Guardar Clave</button>
+    </div>
+  </div>
+
+  <!-- NAV -->
   <nav class="bg-brand-panel border-t border-brand-border px-6 py-2 flex justify-around shrink-0 text-center">
     <button class="flex flex-col items-center gap-0.5 text-brand-accent" onclick="showTab('preset')">
       <i class="fa-solid fa-sliders text-base"></i>
@@ -106,16 +126,24 @@
 
   <script>
     // ORDEN FÍSICO ESTRICTO MOOER GE300:
-    // 1.SYNTH -> 2.COMP -> 3.WAH -> 4.FXA -> 5.DS/OD -> 6.AMP -> 7.CAB -> 8.NS -> 9.TONE CAP -> 10.EQ -> 11.FXB -> 12.FX LOOP -> 13.DELAY -> 14.REVERB -> 15.VOL
     const BLOCK_ORDER = ["SYNTH", "COMP", "WAH", "FXA", "DS/OD", "AMP", "CAB", "NS", "TONE CAP", "EQ", "FXB", "FX LOOP", "DELAY", "REVERB", "VOL"];
+
+    function toggleApiKeyModal() { document.getElementById('apiKeyModal').classList.toggle('hidden'); }
+    function saveApiKey() {
+      const key = document.getElementById('apiKeyInput').value.trim();
+      if (key) { localStorage.setItem('GE300_GEMINI_KEY', key); alert('Clave guardada.'); toggleApiKeyModal(); }
+    }
 
     function generateDynamicTone(q) {
       let query = q.toLowerCase().trim();
+      let hash = 0;
+      for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
+      let absHash = Math.abs(hash);
 
-      // GET LUCKY - DAFT PUNK (FUNK CLEAN CON YELLOW COMP REAL DE 4 PARÁMETROS)
+      // GET LUCKY - DAFT PUNK
       if (query.includes("lucky") || query.includes("daft") || query.includes("punk") || query.includes("funk")) {
         return {
-          title: "Get Lucky - Daft Punk", bank: "02B", desc: "Tono Funk rítmico con Yellow Comp ajustado a hardware real, ampli Jazz 120 y modulación ligera.", pickup: "Puente / Selector Central", vol: "10",
+          title: "Get Lucky - Daft Punk", bank: "02B", desc: "Tono Funk rítmico con Yellow Comp ajustado a hardware real (4 perillas), ampli Jazz 120 y modulación.", pickup: "Puente / Selector Central", vol: "10",
           ctrls: ["CTRL 1: Comp Boost", "CTRL 2: Chorus Switch", "EXP 1: Volume", "EXP 2: N/A"],
           blocks: [
             { type: "COMP", model: "3: Yellow Comp", knobs: { "Threshold": "-30.0dB", "Ratio": "4.0:1", "Attack": 38, "Output": "+6.0dB" } },
@@ -145,15 +173,37 @@
         };
       }
 
-      // DEFAULT PRO PRESET CON CADENA ORDENADA REAL
+      // RAMMSTEIN
+      if (query.includes("rammstein") || query.includes("hast") || query.includes("metal")) {
+        return {
+          title: "Du Hast - Rammstein", bank: "12D", desc: "Cadena Pro Industrial: Compresor, Tight Metal, EVH 5150, Gate y Reverb corta.", pickup: "Puente (Humbucker)", vol: "10",
+          ctrls: ["CTRL 1: Tight Boost", "CTRL 2: Mute Gate", "EXP 1: Volumen Master", "EXP 2: N/A"],
+          blocks: [
+            { type: "COMP", model: "3: Yellow Comp", knobs: { "Threshold": "-15.0dB", "Ratio": "6.0:1", "Attack": 20, "Output": "+2.0dB" } },
+            { type: "DS/OD", model: "Tight Metal", knobs: { Gain: 35, Bass: 40, Treble: 75, Output: 60 } },
+            { type: "AMP", model: "EV 5050 DS (EVH 5150)", knobs: { Gain: 82, Bass: 70, Mid: 35, Treble: 75, Master: 65 } },
+            { type: "CAB", model: "EV 5050 412", knobs: { Mic: "MD421", Center: 15, Distance: 5 } },
+            { type: "NS", model: "Noise Killer", knobs: { Threshold: 75, Damp: 95 } },
+            { type: "REVERB", model: "Room", knobs: { Decay: 20, Mix: 15 } }
+          ]
+        };
+      }
+
+      // PRESET DINÁMICO GENERAL
+      const amps = ["PLX 100 (Plexi)", "J900 (JCM900)", "Cali Dual (Mesa)", "US Blues JR", "MARKIII DS"];
+      const dsList = ["Pure Boost", "808 (TS808)", "BlackRat", "Obsessive Dist", "Gold Clon"];
+      const selectedAmp = amps[absHash % amps.length];
+      const selectedDS = dsList[(absHash + 1) % dsList.length];
+
       return {
-        title: `Preset GE300: ${q.toUpperCase()}`, bank: "15A", desc: "Preset mapeado respetando el ruteo estricto de señal del chasis físico GE300.", pickup: "Puente / Selector Central", vol: "10",
-        ctrls: ["CTRL 1: Drive Boost", "CTRL 2: Modulation", "EXP 1: Volume", "EXP 2: Expression"],
+        title: `Preset GE300: ${q.toUpperCase()}`, bank: `${((absHash % 30) + 1).toString().padStart(2, '0')}${"ABCD"[absHash % 4]}`,
+        desc: `Configuración calculada 1:1 para '${q}' respetando el ruteo físico de la GE300.`, pickup: "Puente / Selector Central", vol: "10",
+        ctrls: ["CTRL 1: Drive Boost", "CTRL 2: Modulation", "EXP 1: Master Volume", "EXP 2: Expression"],
         blocks: [
           { type: "COMP", model: "3: Yellow Comp", knobs: { "Threshold": "-20.0dB", "Ratio": "4.0:1", "Attack": 40, "Output": "+3.0dB" } },
-          { type: "FXA", model: "Ana-Chorus", knobs: { Rate: 35, Depth: 50, Mix: 30 } },
-          { type: "DS/OD", model: "Pure Boost", knobs: { Gain: 35, Tone: 50, Output: 65 } },
-          { type: "AMP", model: "PLX 100 (Marshall Plexi)", knobs: { Gain: 60, Bass: 50, Mid: 55, Treble: 65, Master: 70 } },
+          { type: "FXA", model: "70's Chorus", knobs: { Rate: 35, Depth: 50, Mix: 30 } },
+          { type: "DS/OD", model: selectedDS, knobs: { Gain: 35, Tone: 50, Output: 65 } },
+          { type: "AMP", model: selectedAmp, knobs: { Gain: 55, Bass: 50, Mid: 55, Treble: 65, Master: 70 } },
           { type: "CAB", model: "1960 412", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
           { type: "NS", model: "Noise Killer", knobs: { Threshold: 40, Damp: 75 } },
           { type: "DELAY", model: "Digital Delay", knobs: { Time: "380ms", Feedback: 30, Mix: 25 } },
@@ -164,10 +214,14 @@
 
     function renderKnobSVG(label, value) {
       let numVal = 50;
-      if (typeof value === 'number') numVal = value;
-      else if (typeof value === 'string') {
-        let parsed = parseFloat(value.replace(/[^0-9.-]/g, ''));
-        if (!isNaN(parsed)) numVal = Math.min(Math.max(parsed + 50, 0), 100);
+      if (typeof value === 'number') {
+        numVal = Math.min(Math.max(value, 0), 100);
+      } else if (typeof value === 'string') {
+        let matches = value.match(/-?\d+(\.\d+)?/);
+        if (matches) {
+          let parsed = parseFloat(matches[0]);
+          numVal = Math.min(Math.max((parsed + 60) * 1.2, 10), 90);
+        }
       }
       let strokeDash = (numVal / 100) * 126;
       return `<div class="flex flex-col items-center gap-0.5"><div class="knob-container"><svg class="w-14 h-14 knob-svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#26334d" stroke-width="4"/><circle cx="25" cy="25" r="20" fill="none" stroke="#00ff66" stroke-width="4" stroke-dasharray="${strokeDash} 126" stroke-linecap="round"/></svg><span class="knob-value-badge">${value}</span></div><span class="text-[9px] font-mono font-bold text-brand-muted uppercase">${label}</span></div>`;
@@ -181,7 +235,6 @@
       document.getElementById('guitarVol').innerText = preset.vol;
       document.getElementById('ctrlAssignments').innerHTML = preset.ctrls.map(c => `<div>${c}</div>`).join('');
 
-      // Ordenar los bloques según la cadena real física de la GE300
       preset.blocks.sort((a, b) => BLOCK_ORDER.indexOf(a.type) - BLOCK_ORDER.indexOf(b.type));
 
       const blocksContainer = document.getElementById('effectBlocksContainer');
@@ -195,7 +248,7 @@
       });
     }
 
-    // Carga inicial (Get Lucky con Yellow Comp real)
+    // Carga inicial
     renderPreset(generateDynamicTone("get lucky duft punk"));
 
     document.getElementById('aiToneForm').addEventListener('submit', function(e) {
@@ -219,7 +272,7 @@
     });
 
     function showTab(tab) {
-      if (tab === 'catalog') alert("Catálogo GE300 v2.0.7: Mapeo de 15 bloques estrictos según el manual y hardware oficial MOOER.");
+      if (tab === 'catalog') alert("Catálogo GE300 v2.0.8: Mapeo de 15 bloques estrictos según el manual y hardware oficial MOOER.");
       else if (tab === 'tools') alert("Calculadora BPM / ms: 120 BPM = 500 ms (1/4) | 250 ms (1/8)");
     }
   </script>

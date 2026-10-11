@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 Pro AI Tone Studio v2.0.6</title>
+  <title>MOOER GE300 Pro AI Tone Studio v2.0.7</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
@@ -14,7 +14,7 @@
     body { background-color: #0a0d12; color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
     .knob-container { position: relative; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; }
     .knob-svg { transform: rotate(-135deg); }
-    .knob-value-badge { position: absolute; font-size: 0.7rem; font-weight: 700; color: #00ff66; }
+    .knob-value-badge { position: absolute; font-size: 0.68rem; font-weight: 700; color: #00ff66; text-align: center; }
     .hide-scrollbar::-webkit-scrollbar { display: none; }
   </style>
 </head>
@@ -27,20 +27,20 @@
       </div>
       <div>
         <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
-          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v2.0.6</span>
+          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v2.0.7</span>
         </h1>
-        <p class="text-[11px] text-brand-muted">Pro Full-Chain Tone Studio</p>
+        <p class="text-[11px] text-brand-muted">Exact Hardware Signal Chain Studio</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
-      <span class="text-[10px] font-mono text-brand-accent font-bold bg-brand-accent/10 px-2 py-0.5 rounded border border-brand-accent/30">PRO READY</span>
+      <span class="text-[10px] font-mono text-brand-accent font-bold bg-brand-accent/10 px-2 py-0.5 rounded border border-brand-accent/30">1:1 MATCH</span>
     </div>
   </header>
 
   <section class="p-3.5 bg-brand-panel/50 border-b border-brand-border shrink-0">
     <form id="aiToneForm" class="relative flex items-center">
       <i class="fa-solid fa-wand-magic-sparkles absolute left-3.5 text-brand-accent text-xs"></i>
-      <input type="text" id="toneSearchInput" placeholder="Ej: Héroes del silencio, Soda Stereo, Metallica, Comfortably Numb..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-20 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" required />
+      <input type="text" id="toneSearchInput" placeholder="Ej: Get Lucky - Daft Punk, Héroes del Silencio, Rammstein..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-20 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" required />
       <button type="submit" id="searchBtn" class="absolute right-1 bg-brand-accent hover:bg-brand-accentHover text-brand-bg font-bold text-xs px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
         <span id="btnText">Buscar</span>
         <i id="btnIcon" class="fa-solid fa-arrow-right text-[10px]"></i>
@@ -53,9 +53,9 @@
       <div class="border-b border-brand-border/60 pb-3">
         <div class="flex items-center gap-2">
           <span class="text-[10px] font-mono bg-brand-accent/10 text-brand-accent border border-brand-accent/20 px-1.5 py-0.5 rounded font-bold" id="presetBank">01A</span>
-          <h2 class="text-base font-bold text-white" id="songTitle">Héroe de Leyenda (Héroes del Silencio)</h2>
+          <h2 class="text-base font-bold text-white" id="songTitle">Get Lucky (Daft Punk)</h2>
         </div>
-        <p class="text-xs text-brand-muted mt-1" id="soundDescription">Tono cristalino ochentero arpegiado con Chorus, Digital Delay rítmico (Dotted 1/8) y amplificador Fender Deluxe Clean.</p>
+        <p class="text-xs text-brand-muted mt-1" id="soundDescription">Tono Funk/Disco articulado con Yellow Comp real (4 perillas), Clean Amp y modulaciones rítmicas.</p>
       </div>
 
       <div class="grid grid-cols-2 gap-2 bg-brand-bg/60 p-2.5 rounded-xl border border-brand-border/40 text-[11px]">
@@ -63,7 +63,7 @@
           <i class="fa-solid fa-sliders text-brand-accent"></i>
           <div>
             <span class="block text-brand-muted text-[9px] uppercase font-bold">Pastilla</span>
-            <span class="font-semibold" id="pickupRec">Mástil / Posición Intermedia (Strat)</span>
+            <span class="font-semibold" id="pickupRec">Puente / Posición Central</span>
           </div>
         </div>
         <div class="flex items-center gap-2">
@@ -77,7 +77,7 @@
 
       <div class="space-y-3">
         <h3 class="text-[11px] font-mono uppercase text-brand-muted font-bold flex items-center justify-between">
-          <span class="flex items-center gap-1.5"><i class="fa-solid fa-diagram-project text-brand-accent"></i> Cadena de Efectos GE300 (1:1)</span>
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-diagram-project text-brand-accent"></i> Cadena Hardware GE300 (Orden Físico Real)</span>
         </h3>
         <div id="effectBlocksContainer" class="space-y-2.5"></div>
       </div>
@@ -105,124 +105,57 @@
   </nav>
 
   <script>
+    // ORDEN FÍSICO ESTRICTO MOOER GE300:
+    // 1.SYNTH -> 2.COMP -> 3.WAH -> 4.FXA -> 5.DS/OD -> 6.AMP -> 7.CAB -> 8.NS -> 9.TONE CAP -> 10.EQ -> 11.FXB -> 12.FX LOOP -> 13.DELAY -> 14.REVERB -> 15.VOL
+    const BLOCK_ORDER = ["SYNTH", "COMP", "WAH", "FXA", "DS/OD", "AMP", "CAB", "NS", "TONE CAP", "EQ", "FXB", "FX LOOP", "DELAY", "REVERB", "VOL"];
+
     function generateDynamicTone(q) {
       let query = q.toLowerCase().trim();
-      let hash = 0;
-      for (let i = 0; i < query.length; i++) {
-        hash = query.charCodeAt(i) + ((hash << 5) - hash);
-      }
-      let absHash = Math.abs(hash);
 
-      // HÉROES DEL SILENCIO / HÉROE DE LEYENDA (JUAN VALDIVIA CLEAN + CHORUS + DELAY)
-      if (query.includes("heroe") || query.includes("heroes") || query.includes("leyenda") || query.includes("valdivia") || query.includes("silencio")) {
+      // GET LUCKY - DAFT PUNK (FUNK CLEAN CON YELLOW COMP REAL DE 4 PARÁMETROS)
+      if (query.includes("lucky") || query.includes("daft") || query.includes("punk") || query.includes("funk")) {
         return {
-          title: "Héroe de Leyenda - Héroes del Silencio", 
-          bank: "04C", 
-          desc: "Tono cristalino arpegiado estilo Juan Valdivia con Fender Deluxe limpio, Chorus amplio, Delay rítmico y Reverb ambiental.", 
-          pickup: "Mástil / Posición Intermedia (Single Coil)", 
-          vol: "10 (Abierto)",
-          ctrls: ["CTRL 1: Boost Limpio", "CTRL 2: Chorus On/Off", "EXP 1: Volumen Master", "EXP 2: Delay Mix"],
+          title: "Get Lucky - Daft Punk", bank: "02B", desc: "Tono Funk rítmico con Yellow Comp ajustado a hardware real, ampli Jazz 120 y modulación ligera.", pickup: "Puente / Selector Central", vol: "10",
+          ctrls: ["CTRL 1: Comp Boost", "CTRL 2: Chorus Switch", "EXP 1: Volume", "EXP 2: N/A"],
           blocks: [
-            { type: "COMP", model: "Yellow Comp", knobs: { Sens: 50, Output: 65 } },
-            { type: "AMP", model: "65 US DX (Fender Deluxe Clean)", knobs: { Gain: 28, Bass: 50, Mid: 60, Treble: 75, Master: 80 } },
+            { type: "COMP", model: "3: Yellow Comp", knobs: { "Threshold": "-30.0dB", "Ratio": "4.0:1", "Attack": 38, "Output": "+6.0dB" } },
+            { type: "FXA", model: "70's Chorus", knobs: { Rate: 30, Depth: 40, Mix: 25 } },
+            { type: "DS/OD", model: "Pure Boost", knobs: { Gain: 20, Tone: 60, Output: 65 } },
+            { type: "AMP", model: "Jazz 120 (Roland Clean)", knobs: { Gain: 25, Bass: 45, Mid: 55, Treble: 70, Master: 80 } },
             { type: "CAB", model: "US DLX 112", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
+            { type: "EQ", model: "Custom EQ", knobs: { "100Hz": "0dB", "400Hz": "-2dB", "1.6kHz": "+3dB", "4.0kHz": "+2dB" } },
+            { type: "REVERB", model: "Plate Reverb", knobs: { Decay: 25, Mix: 18 } }
+          ]
+        };
+      }
+
+      // HÉROES DEL SILENCIO
+      if (query.includes("heroe") || query.includes("heroes") || query.includes("leyenda") || query.includes("silencio")) {
+        return {
+          title: "Héroe de Leyenda - Héroes del Silencio", bank: "04C", desc: "Arpegios limpios estilo Juan Valdivia con Yellow Comp, Chorus en FXA antes del Overdrive y Digital Delay.", pickup: "Mástil (Single Coil)", vol: "10",
+          ctrls: ["CTRL 1: Boost Limpio", "CTRL 2: Chorus Switch", "EXP 1: Volume", "EXP 2: Delay Mix"],
+          blocks: [
+            { type: "COMP", model: "3: Yellow Comp", knobs: { "Threshold": "-25.0dB", "Ratio": "3.5:1", "Attack": 45, "Output": "+4.0dB" } },
             { type: "FXA", model: "70's Chorus", knobs: { Rate: 42, Depth: 65, Mix: 45 } },
+            { type: "AMP", model: "65 US DX (Fender Deluxe)", knobs: { Gain: 28, Bass: 50, Mid: 60, Treble: 75, Master: 80 } },
+            { type: "CAB", model: "US DLX 112", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
             { type: "DELAY", model: "Digital Delay (Subdiv Dotted 1/8)", knobs: { Time: "380ms", Feedback: 40, Mix: 38 } },
             { type: "REVERB", model: "Hall Reverb", knobs: { Decay: 50, Mix: 30 } }
           ]
         };
       }
 
-      // RAMMSTEIN
-      if (query.includes("rammstein") || query.includes("hast") || query.includes("industrial")) {
-        return {
-          title: "Du Hast - Rammstein", bank: "12D", desc: "Cadena Pro Industrial: Compresor, Tight Metal, EVH 5150, Gate y Reverb corta.", pickup: "Puente (Humbucker)", vol: "10",
-          ctrls: ["CTRL 1: Tight Boost", "CTRL 2: Mute Gate", "EXP 1: Volumen Master", "EXP 2: N/A"],
-          blocks: [
-            { type: "COMP", model: "Yellow Comp", knobs: { Sens: 35, Output: 65 } },
-            { type: "DS/OD", model: "Tight Metal", knobs: { Gain: 35, Bass: 40, Treble: 75, Output: 60 } },
-            { type: "AMP", model: "EV 5050 DS (EVH 5150)", knobs: { Gain: 82, Bass: 70, Mid: 35, Treble: 75, Master: 65 } },
-            { type: "CAB", model: "EV 5050 412", knobs: { Mic: "MD421", Center: 15, Distance: 5 } },
-            { type: "NS", model: "Noise Killer", knobs: { Threshold: 75, Damp: 95 } },
-            { type: "EQ", model: "Mooer HM (5-Band)", knobs: { "80Hz": "+4dB", "240Hz": "-2dB", "750Hz": "-5dB", "2.2kHz": "+3dB" } },
-            { type: "REVERB", model: "Room", knobs: { Decay: 20, Mix: 15 } }
-          ]
-        };
-      }
-
-      // ROLLING STONES / SATISFACTION
-      if (query.includes("stone") || query.includes("satisfaction") || query.includes("rolling")) {
-        return {
-          title: "Satisfaction - The Rolling Stones", bank: "03B", desc: "Cadena Pro Vintage: Compresor, Fuzz Maestro, Fender Deluxe, Tremolo y Spring.", pickup: "Puente (Single Coil)", vol: "10",
-          ctrls: ["CTRL 1: Fuzz On/Off", "CTRL 2: Tremolo On/Off", "EXP 1: Volumen", "EXP 2: N/A"],
-          blocks: [
-            { type: "COMP", model: "Yellow Comp", knobs: { Sens: 50, Output: 60 } },
-            { type: "DS/OD", model: "Grey Faze (Fuzz Maestro)", knobs: { Gain: 75, Bass: 40, Treble: 70, Output: 65 } },
-            { type: "AMP", model: "65 US DX (Fender Deluxe)", knobs: { Gain: 45, Bass: 55, Mid: 50, Treble: 70, Master: 75 } },
-            { type: "CAB", model: "US DLX 112", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
-            { type: "FXA", model: "Tremolo", knobs: { Rate: 45, Depth: 60, Mix: 40 } },
-            { type: "REVERB", model: "Spring", knobs: { Decay: 40, Mix: 30 } }
-          ]
-        };
-      }
-
-      // SODA STEREO / CERATI
-      if (query.includes("soda") || query.includes("cerati") || query.includes("ligera") || query.includes("stereo")) {
-        return {
-          title: "De Música Ligera - Soda Stereo", bank: "07A", desc: "Cadena Pro Rock 90s: Compresor, TS808, Marshall JCM800, Chorus y Delay.", pickup: "Puente (Strat / Les Paul)", vol: "10",
-          ctrls: ["CTRL 1: Solo Boost", "CTRL 2: Chorus Switch", "EXP 1: Volumen", "EXP 2: N/A"],
-          blocks: [
-            { type: "COMP", model: "Yellow Comp", knobs: { Sens: 40, Output: 65 } },
-            { type: "DS/OD", model: "808 (TS808)", knobs: { Gain: 35, Mid: 65, Output: 70 } },
-            { type: "AMP", model: "J800 (Marshall JCM800)", knobs: { Gain: 65, Bass: 50, Mid: 60, Treble: 70, Master: 75 } },
-            { type: "CAB", model: "1960 412", knobs: { Mic: "SM57", Center: 25, Distance: 10 } },
-            { type: "FXB", model: "70's Chorus", knobs: { Rate: 40, Depth: 55, Mix: 35 } },
-            { type: "DELAY", model: "Digital", knobs: { Time: "380ms", Feedback: 30, Mix: 25 } },
-            { type: "REVERB", model: "Hall", knobs: { Decay: 35, Mix: 20 } }
-          ]
-        };
-      }
-
-      // SI LA BÚSQUEDA ES DE MÚSICA POP / CLEAN / ACÚSTICA
-      if (query.includes("clean") || query.includes("pop") || query.includes("acustica") || query.includes("soft") || query.includes("balada")) {
-        return {
-          title: `Preset Limpio: ${q.toUpperCase()}`,
-          bank: "02A",
-          desc: "Seteo ultra limpio cristalino con alta respuesta dinámica, compresión y ambiente.",
-          pickup: "Mástil o Posición 2/4 (Single Coil)",
-          vol: "10",
-          ctrls: ["CTRL 1: Chorus On/Off", "CTRL 2: Reverb Boost", "EXP 1: Master Volume", "EXP 2: Expression"],
-          blocks: [
-            { type: "COMP", model: "Yellow Comp", knobs: { Sens: 55, Output: 60 } },
-            { type: "AMP", model: "Jazz 120 (Roland JC120 Clean)", knobs: { Gain: 25, Bass: 50, Mid: 55, Treble: 65, Master: 80 } },
-            { type: "CAB", model: "US DLX 112", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
-            { type: "FXA", model: "70's Chorus", knobs: { Rate: 35, Depth: 50, Mix: 35 } },
-            { type: "DELAY", model: "Analog Delay", knobs: { Time: "350ms", Feedback: 30, Mix: 20 } },
-            { type: "REVERB", model: "Plate Reverb", knobs: { Decay: 40, Mix: 25 } }
-          ]
-        };
-      }
-
-      // Detección automática por defecto para Rock / Hard Rock
-      const amps = ["PLX 100 (Plexi)", "J900 (JCM900)", "Cali Dual (Mesa)", "US Blues JR", "MARKIII DS"];
-      const dsList = ["Pure Boost", "808 (TS808)", "BlackRat", "Obsessive Dist", "Gold Clon"];
-      const selectedAmp = amps[absHash % amps.length];
-      const selectedDS = dsList[(absHash + 1) % dsList.length];
-
+      // DEFAULT PRO PRESET CON CADENA ORDENADA REAL
       return {
-        title: `Preset GE300: ${q.toUpperCase()}`,
-        bank: `${((absHash % 30) + 1).toString().padStart(2, '0')}${"ABCD"[absHash % 4]}`,
-        desc: `Configuración calculada 1:1 para '${q}' utilizando ${selectedAmp} y ${selectedDS}.`,
-        pickup: absHash % 2 === 0 ? "Puente (Humbucker)" : "Mástil / Single Coil",
-        vol: "10",
-        ctrls: ["CTRL 1: Drive Boost", "CTRL 2: Modulation / Delay", "EXP 1: Master Volume", "EXP 2: Pitch / Wah"],
+        title: `Preset GE300: ${q.toUpperCase()}`, bank: "15A", desc: "Preset mapeado respetando el ruteo estricto de señal del chasis físico GE300.", pickup: "Puente / Selector Central", vol: "10",
+        ctrls: ["CTRL 1: Drive Boost", "CTRL 2: Modulation", "EXP 1: Volume", "EXP 2: Expression"],
         blocks: [
-          { type: "COMP", model: "Yellow Comp", knobs: { Sens: 35, Output: 60 } },
-          { type: "DS/OD", model: selectedDS, knobs: { Gain: 35, Tone: 50, Output: 65 } },
-          { type: "AMP", model: selectedAmp, knobs: { Gain: 55, Bass: 50, Mid: 55, Treble: 65, Master: 70 } },
+          { type: "COMP", model: "3: Yellow Comp", knobs: { "Threshold": "-20.0dB", "Ratio": "4.0:1", "Attack": 40, "Output": "+3.0dB" } },
+          { type: "FXA", model: "Ana-Chorus", knobs: { Rate: 35, Depth: 50, Mix: 30 } },
+          { type: "DS/OD", model: "Pure Boost", knobs: { Gain: 35, Tone: 50, Output: 65 } },
+          { type: "AMP", model: "PLX 100 (Marshall Plexi)", knobs: { Gain: 60, Bass: 50, Mid: 55, Treble: 65, Master: 70 } },
           { type: "CAB", model: "1960 412", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
-          { type: "NS", model: "Noise Killer", knobs: { Threshold: 40, Damp: 70 } },
-          { type: "FXA", model: "70's Chorus", knobs: { Rate: 35, Depth: 45, Mix: 30 } },
+          { type: "NS", model: "Noise Killer", knobs: { Threshold: 40, Damp: 75 } },
           { type: "DELAY", model: "Digital Delay", knobs: { Time: "380ms", Feedback: 30, Mix: 25 } },
           { type: "REVERB", model: "Plate Reverb", knobs: { Decay: 35, Mix: 20 } }
         ]
@@ -233,8 +166,8 @@
       let numVal = 50;
       if (typeof value === 'number') numVal = value;
       else if (typeof value === 'string') {
-        let parsed = parseInt(value);
-        if (!isNaN(parsed)) numVal = Math.min(Math.max(parsed, 0), 100);
+        let parsed = parseFloat(value.replace(/[^0-9.-]/g, ''));
+        if (!isNaN(parsed)) numVal = Math.min(Math.max(parsed + 50, 0), 100);
       }
       let strokeDash = (numVal / 100) * 126;
       return `<div class="flex flex-col items-center gap-0.5"><div class="knob-container"><svg class="w-14 h-14 knob-svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#26334d" stroke-width="4"/><circle cx="25" cy="25" r="20" fill="none" stroke="#00ff66" stroke-width="4" stroke-dasharray="${strokeDash} 126" stroke-linecap="round"/></svg><span class="knob-value-badge">${value}</span></div><span class="text-[9px] font-mono font-bold text-brand-muted uppercase">${label}</span></div>`;
@@ -248,6 +181,9 @@
       document.getElementById('guitarVol').innerText = preset.vol;
       document.getElementById('ctrlAssignments').innerHTML = preset.ctrls.map(c => `<div>${c}</div>`).join('');
 
+      // Ordenar los bloques según la cadena real física de la GE300
+      preset.blocks.sort((a, b) => BLOCK_ORDER.indexOf(a.type) - BLOCK_ORDER.indexOf(b.type));
+
       const blocksContainer = document.getElementById('effectBlocksContainer');
       blocksContainer.innerHTML = '';
       preset.blocks.forEach(block => {
@@ -259,8 +195,8 @@
       });
     }
 
-    // Carga inicial
-    renderPreset(generateDynamicTone("heroe de leyenda"));
+    // Carga inicial (Get Lucky con Yellow Comp real)
+    renderPreset(generateDynamicTone("get lucky duft punk"));
 
     document.getElementById('aiToneForm').addEventListener('submit', function(e) {
       e.preventDefault();
@@ -283,7 +219,7 @@
     });
 
     function showTab(tab) {
-      if (tab === 'catalog') alert("Catálogo GE300 v2.0.6: 108 Amplis, 43 Cabs, 31 OD/DS, Módulos SYNTH, COMP, EQ, FXA, FXB, DELAY, REVERB.");
+      if (tab === 'catalog') alert("Catálogo GE300 v2.0.7: Mapeo de 15 bloques estrictos según el manual y hardware oficial MOOER.");
       else if (tab === 'tools') alert("Calculadora BPM / ms: 120 BPM = 500 ms (1/4) | 250 ms (1/8)");
     }
   </script>

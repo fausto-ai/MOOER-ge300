@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 Pro AI Tone Studio v6.1.0</title>
+  <title>MOOER GE300 Pro AI Tone Studio v7.0.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
@@ -27,9 +27,9 @@
       </div>
       <div>
         <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
-          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v6.1.0</span>
+          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v7.0.0</span>
         </h1>
-        <p class="text-[11px] text-brand-muted" id="apiStatusText">Motor Definitivo: Gemini 3.8 Flash</p>
+        <p class="text-[11px] text-brand-muted" id="apiStatusText">Fuzzy Finder & Smart Knobs Activos</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -43,7 +43,7 @@
   <section class="p-3.5 bg-brand-panel/50 border-b border-brand-border shrink-0">
     <form id="aiToneForm" class="relative flex items-center">
       <i class="fa-solid fa-wand-magic-sparkles absolute left-3.5 text-brand-accent text-xs"></i>
-      <input type="text" id="toneSearchInput" placeholder="Busca un tono (Ej. Nirvana, Soda Stereo)..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-20 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" required />
+      <input type="text" id="toneSearchInput" placeholder="Busca un tono (Ej. Like a Stone, Nirvana)..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-20 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" required />
       <button type="submit" id="searchBtn" class="absolute right-1 bg-brand-accent hover:bg-brand-accentHover text-brand-bg font-bold text-xs px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
         <span id="btnText">Buscar</span>
         <i id="btnIcon" class="fa-solid fa-arrow-right text-[10px]"></i>
@@ -194,31 +194,70 @@
     const REVERB=[m("1: Room",{"Pre Delay":"8ms","Decay":35,"Low Cut":"80Hz","High Cut":"5000Hz","Mix":25,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("2: Hall",{"Pre Delay":"30ms","Decay":30,"Low Cut":"80Hz","High Cut":"4000Hz","Mix":20,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("3: Plate",{"Pre Delay":"15ms","Decay":23,"Low Cut":"60Hz","High Cut":"5700Hz","Mix":13,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("4: Filter-Reverb",{"Pre Delay":"30ms","Decay":35,"Low Cut":"40Hz","High Cut":"4500Hz","Mix":30,"Rate":45,"Peak":90,"Q":60,"Filter Output":90,"Output Mode":"Stereo"}),m("5: Fl-Reverb",{"Pre Delay":"30ms","Decay":45,"Low Cut":"40Hz","High Cut":"5500Hz","Mix":35,"Rate":45,"Feedback":45,"Mod Delay":50,"Mod Output":60,"Output Mode":"Stereo"}),m("6: Reverse-Reverb",{"Pre Delay":"20ms","Decay":45,"Low Cut":"60Hz","High Cut":"3800Hz","Mix":35,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("7: Swell-Reverb",{"Pre Delay":"30ms","Decay":45,"Low Cut":"60Hz","High Cut":"6700Hz","Mix":35,"Attack":45,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("8: Spring",{"Pre Delay":"0ms","Decay":10,"Low Cut":"80Hz","High Cut":"4800Hz","Mix":12,"Spring Length":50,"Spring Depth":76,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("9: Mod",{"Pre Delay":"35ms","Decay":45,"Low Cut":"40Hz","High Cut":"5400Hz","Mix":35,"Rate":30,"Depth":40,"Mod Output":80,"Output Mode":"Stereo","Output":"0dB"}),m("10: Shimmer",{"Pre Delay":"30ms","Decay":56,"Low Cut":"100Hz","High Cut":"5600Hz","Mix":50,"Shimmer":75,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("11: Dist-Reverb",{"Pre Delay":"40ms","Decay":50,"Low Cut":"200Hz","High Cut":"7330Hz","Mix":40,"Gain":60,"Dist lvl":65,"Tone":45,"Cab":"Off","Output Mode":"Stereo"})];
     const VOL=[m("Vol",{"Position":100,"Min":0,"Max":100,"Curve":"Log"})];
 
-    // CONEXIÓN ACTUALIZADA AL MODELO VIGENTE (GEMINI-3.8-FLASH)
+    // FUZZY FINDER PARA ENCONTRAR NOMBRES SIMILARES
+    function fuzzyMatch(list, query) {
+        if (!query || query === "None") return null;
+        let q = query.toLowerCase().replace(/[^a-z0-9]/g, ''); // Quitamos espacios y símbolos
+        
+        let match = list.find(x => {
+            let n = x.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+            return n.includes(q) || q.includes(n);
+        });
+        if (match) return match;
+        
+        // Excepciones comunes que la IA suele nombrar diferente al hardware
+        if (q.includes("jcm800")) return list.find(x => x.name.includes("J800"));
+        if (q.includes("whammy") || q.includes("pitch")) return list.find(x => x.name.includes("Pitch"));
+        if (q.includes("ts808") || q.includes("screamer")) return list.find(x => x.name.includes("808"));
+        
+        return list[0]; // Si definitivamente no hay nada, devuelve el primero de la lista (Fallback)
+    }
+
+    // CONSTRUCTOR DE BLOQUES CON PERILLAS DINÁMICAS
+    function buildBlock(aiDataNode, list, type) {
+        if (!aiDataNode || !aiDataNode.name || aiDataNode.name === "None") return null;
+        
+        let b = fuzzyMatch(list, aiDataNode.name);
+        if (!b) return null;
+        
+        let finalKnobs = { ...b.knobs() };
+        
+        // Si la IA nos mandó perillas específicas, las sobrescribimos
+        if (aiDataNode.p) {
+            for (let k in aiDataNode.p) {
+                // Buscamos la perilla ignorando mayúsculas/minúsculas
+                let realKey = Object.keys(finalKnobs).find(x => x.toLowerCase() === k.toLowerCase());
+                if (realKey) finalKnobs[realKey] = aiDataNode.p[k];
+                else finalKnobs[k] = aiDataNode.p[k]; // Si la perilla no existía, la forzamos
+            }
+        }
+        return { type: type, model: b.name, knobs: finalKnobs };
+    }
+
     async function fetchAITone(query, apiKey) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
         
         const prompt = `Eres un técnico de guitarra experto configurando la pedalera MOOER GE300.
         Crea el tono exacto para la canción o artista: "${query}".
         
-        Debes elegir ESTRICTAMENTE de estas listas (o "None" si no se requiere ese pedal):
+        Usa ESTOS nombres de catálogo (o "None" si no aplica):
         AMPS: ${AMP.map(a=>a.name).join(', ')}
         CABS: ${CAB.map(c=>c.name).join(', ')}
         DS_OD: ${DS_OD.map(d=>d.name).join(', ')}
-        MODULACION: ${FXA.map(f=>f.name).join(', ')}
+        MOD: ${FXA.map(f=>f.name).join(', ')}
         DELAY: ${DELAY.map(d=>d.name).join(', ')}
         REVERB: ${REVERB.map(r=>r.name).join(', ')}
         COMP: ${COMP.map(c=>c.name).join(', ')}
         
-        Devuelve ÚNICAMENTE un JSON estricto con esta estructura. No incluyas texto antes ni despues del JSON:
+        Devuelve ÚNICAMENTE un JSON estricto con esta estructura (incluyendo los valores 'p' (parameters) clave para el tono como Gain, Bass, Mix, Time, etc.):
         {
-          "comp": "nombre exacto o None",
-          "ds_od": "nombre exacto o None",
-          "amp": "nombre exacto",
-          "cab": "nombre exacto",
-          "mod": "nombre exacto o None",
-          "delay": "nombre exacto o None",
-          "reverb": "nombre exacto o None",
+          "comp": {"name": "nombre o None", "p": {"Sustain": 50, "Output": "+2dB"}},
+          "ds_od": {"name": "nombre o None", "p": {"Gain": 30, "Output": 70}},
+          "amp": {"name": "nombre", "p": {"Gain": 60, "Bass": 50, "Mid": 60, "Treble": 55}},
+          "cab": {"name": "nombre", "p": {}},
+          "mod": {"name": "nombre o None", "p": {"Pitch": "+24.0"}},
+          "delay": {"name": "nombre o None", "p": {"Time": "400ms", "Mix": 25}},
+          "reverb": {"name": "nombre o None", "p": {"Decay": 30, "Mix": 20}},
           "pickup": "Mástil / Single Coil o Puente / Humbucker",
           "desc": "Breve explicación técnica."
         }`;
@@ -231,7 +270,7 @@
 
         if (!response.ok) {
             const errData = await response.json();
-            throw new Error(`Código ${response.status}: ${errData.error?.message || 'Rechazo del servidor de Google'}`);
+            throw new Error(`Código ${response.status}: ${errData.error?.message || 'Error del servidor'}`);
         }
         
         const data = await response.json();
@@ -241,61 +280,29 @@
         if (jsonMatch) {
             rawText = jsonMatch[0];
         } else {
-            throw new Error("Gemini no devolvió un formato JSON válido.");
+            throw new Error("Gemini no devolvió JSON.");
         }
         
         return JSON.parse(rawText);
     }
 
     function generateOfflineTone(query, absHash) {
-        let isMetal = /metal|heavy|metallica|pantera|slipknot|doom|disturb/i.test(query);
-        let isRock = /rock|acdc|ac\/dc|guns|zeppelin|queen|overdrive|crunch/i.test(query);
         let isClean = /clean|funk|daft punk|get lucky|chic|jazz|pop|acoustic|indie|soda|prisioneros/i.test(query);
-        
         let blocks = [];
-        let pickupRec = "Puente / Humbucker";
-        let desc = "";
-
-        if (isClean) {
-            pickupRec = "Mástil / Posición Intermedia";
-            desc = "(Modo Local) Cadena optimizada para sonido limpio/funky.";
-            blocks.push({ type: "COMP", model: COMP[2].name, knobs: COMP[2].knobs() });
-            blocks.push({ type: "AMP", model: "102: Jazz 120", knobs: {"Gain": 35, "Bass": 50, "Mid": 55, "Treble": 65, "Mode": "Original", "Tube": "US DLX 6L6", "Preamp Out": 70, "Presence": 60, "Bias": 40, "Master": 80} });
-            blocks.push({ type: "CAB", model: "16: Jazz 212", knobs: CAB[15].knobs() });
-            blocks.push({ type: "FXA", model: "26: 70s Chorus", knobs: FXA[25].knobs() });
-            blocks.push({ type: "REVERB", model: REVERB[0].name, knobs: REVERB[0].knobs() });
-        } else if (isMetal) {
-            pickupRec = "Puente / Humbucker Activa";
-            desc = "(Modo Local) Cadena High Gain extrema.";
-            blocks.push({ type: "DS/OD", model: DS_OD[1].name, knobs: {"Gain": 10, "Bass": 40, "Mid": 60, "Treble": 70, "Output": 85} });
-            blocks.push({ type: "AMP", model: "55: EV 5050 DS", knobs: {"Gain": 75, "Bass": 60, "Mid": 45, "Treble": 65, "Mode": "Original", "Tube": "UK EL34", "Preamp Out": 70, "Presence": 55, "Bias": 40, "Master": 70} });
-            blocks.push({ type: "CAB", model: "23: EV 5050 412", knobs: CAB[22].knobs() });
-            blocks.push({ type: "NS", model: NS[0].name, knobs: {"Threshold": 45, "Output": "0dB"} });
-            blocks.push({ type: "EQ", model: EQ[2].name, knobs: EQ[2].knobs() });
-        } else if (isRock) {
-            desc = "(Modo Local) Sonido Crunch clásico de Rock.";
-            blocks.push({ type: "DS/OD", model: DS_OD[0].name, knobs: {"Gain": 40, "Bass": 50, "Mid": 55, "Treble": 55, "Output": 50} });
-            blocks.push({ type: "AMP", model: "10: J800", knobs: {"Gain": 60, "Bass": 55, "Mid": 65, "Treble": 60, "Mode": "Original", "Tube": "UK EL34", "Preamp Out": 70, "Presence": 50, "Bias": 40, "Master": 75} });
-            blocks.push({ type: "CAB", model: "6: 1960 412", knobs: CAB[5].knobs() });
-            blocks.push({ type: "NS", model: NS[0].name, knobs: {"Threshold": 25, "Output": "0dB"} });
-            blocks.push({ type: "REVERB", model: REVERB[0].name, knobs: REVERB[0].knobs() });
-        } else {
-            desc = "(Modo Local) Cadena genérica armada al azar sin conexión a internet.";
-            blocks.push({ type: "COMP", model: COMP[absHash % COMP.length].name, knobs: COMP[absHash % COMP.length].knobs() });
-            blocks.push({ type: "AMP", model: AMP[absHash % AMP.length].name, knobs: AMP[absHash % AMP.length].knobs() });
-            blocks.push({ type: "CAB", model: CAB[absHash % CAB.length].name, knobs: CAB[absHash % CAB.length].knobs() });
-            if (absHash % 2 === 0) blocks.push({ type: "DS/OD", model: DS_OD[absHash % DS_OD.length].name, knobs: DS_OD[absHash % DS_OD.length].knobs() });
-            blocks.push({ type: "REVERB", model: REVERB[1].name, knobs: REVERB[1].knobs() });
-        }
+        let desc = "(Modo Local) Cadena genérica armada al azar sin conexión a internet.";
+        blocks.push({ type: "COMP", model: COMP[absHash % COMP.length].name, knobs: COMP[absHash % COMP.length].knobs() });
+        blocks.push({ type: "AMP", model: AMP[absHash % AMP.length].name, knobs: AMP[absHash % AMP.length].knobs() });
+        blocks.push({ type: "CAB", model: CAB[absHash % CAB.length].name, knobs: CAB[absHash % CAB.length].knobs() });
+        blocks.push({ type: "REVERB", model: REVERB[1].name, knobs: REVERB[1].knobs() });
         blocks.push({ type: "VOL", model: VOL[0].name, knobs: VOL[0].knobs() });
 
         return {
           title: `Preset GE300: ${query.toUpperCase()}`,
-          bank: `${((absHash % 30) + 1).toString().padStart(2, '0')}${"ABCD"[absHash % 4]}`,
+          bank: `01A`,
           desc: desc,
-          pickup: pickupRec,
+          pickup: "Puente / Humbucker",
           vol: "10 (Abierto Total)",
-          ctrls: ["CTRL 1: Drive On/Off", "CTRL 2: Delay/Reverb", "EXP 1: Master Vol", "EXP 2: FX Param"],
+          ctrls: ["CTRL 1: Drive", "CTRL 2: Mod/Delay", "EXP 1: Vol", "EXP 2: FX"],
           blocks: blocks
         };
     }
@@ -319,33 +326,14 @@
               const aiData = await fetchAITone(query, apiKey);
               
               let blocks = [];
-              if (aiData.comp && aiData.comp !== "None") {
-                  let b = COMP.find(x => x.name === aiData.comp) || COMP[0];
-                  blocks.push({ type: "COMP", model: b.name, knobs: b.knobs() });
-              }
-              if (aiData.ds_od && aiData.ds_od !== "None") {
-                  let b = DS_OD.find(x => x.name === aiData.ds_od) || DS_OD[0];
-                  blocks.push({ type: "DS/OD", model: b.name, knobs: b.knobs() });
-              }
+              let bComp = buildBlock(aiData.comp, COMP, "COMP"); if(bComp) blocks.push(bComp);
+              let bOd = buildBlock(aiData.ds_od, DS_OD, "DS/OD"); if(bOd) blocks.push(bOd);
+              let bAmp = buildBlock(aiData.amp, AMP, "AMP"); if(bAmp) blocks.push(bAmp);
+              let bCab = buildBlock(aiData.cab, CAB, "CAB"); if(bCab) blocks.push(bCab);
+              let bMod = buildBlock(aiData.mod, FXA, "FXA"); if(bMod) blocks.push(bMod);
+              let bDly = buildBlock(aiData.delay, DELAY, "DELAY"); if(bDly) blocks.push(bDly);
+              let bRev = buildBlock(aiData.reverb, REVERB, "REVERB"); if(bRev) blocks.push(bRev);
               
-              let ampBlock = AMP.find(x => x.name === aiData.amp) || AMP[0];
-              blocks.push({ type: "AMP", model: ampBlock.name, knobs: ampBlock.knobs() });
-              
-              let cabBlock = CAB.find(x => x.name === aiData.cab) || CAB[0];
-              blocks.push({ type: "CAB", model: cabBlock.name, knobs: cabBlock.knobs() });
-
-              if (aiData.mod && aiData.mod !== "None") {
-                  let b = FXA.find(x => x.name === aiData.mod) || FXA[0];
-                  blocks.push({ type: "FXA", model: b.name, knobs: b.knobs() });
-              }
-              if (aiData.delay && aiData.delay !== "None") {
-                  let b = DELAY.find(x => x.name === aiData.delay) || DELAY[0];
-                  blocks.push({ type: "DELAY", model: b.name, knobs: b.knobs() });
-              }
-              if (aiData.reverb && aiData.reverb !== "None") {
-                  let b = REVERB.find(x => x.name === aiData.reverb) || REVERB[0];
-                  blocks.push({ type: "REVERB", model: b.name, knobs: b.knobs() });
-              }
               blocks.push({ type: "VOL", model: VOL[0].name, knobs: VOL[0].knobs() });
 
               finalPreset = {
@@ -364,7 +352,7 @@
           }
       } catch (error) {
           console.error("Error capturado:", error);
-          alert(`Fallo en la conexión a Gemini.\n\nMotivo exacto:\n${error.message}\n\nActivando motor local de emergencia.`);
+          alert(`Fallo en la conexión.\n\nMotivo:\n${error.message}\n\nActivando motor local.`);
           let hash = 0;
           for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
           finalPreset = generateOfflineTone(query, Math.abs(hash));
@@ -429,7 +417,7 @@
     });
 
     function showTab(tab) {
-      if (tab === 'catalog') alert("Catálogo GE300 v6.1.0: Conectado nativamente a Gemini 3.8 Flash.");
+      if (tab === 'catalog') alert("Catálogo GE300 v7.0.0: Fuzzy Finder y Smart Knobs activos.");
       else if (tab === 'tools') alert("Calculadora BPM / ms: 120 BPM = 500 ms (1/4) | 250 ms (1/8)");
     }
   </script>

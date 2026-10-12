@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 Pro AI Tone Studio v7.0.0</title>
+  <title>MOOER GE300 Pro AI Tone Studio v7.1.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
@@ -27,9 +27,9 @@
       </div>
       <div>
         <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
-          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v7.0.0</span>
+          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v7.1.0</span>
         </h1>
-        <p class="text-[11px] text-brand-muted" id="apiStatusText">Fuzzy Finder & Smart Knobs Activos</p>
+        <p class="text-[11px] text-brand-muted" id="apiStatusText">Smart Knobs Estrictos + WAH Activado</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -43,7 +43,7 @@
   <section class="p-3.5 bg-brand-panel/50 border-b border-brand-border shrink-0">
     <form id="aiToneForm" class="relative flex items-center">
       <i class="fa-solid fa-wand-magic-sparkles absolute left-3.5 text-brand-accent text-xs"></i>
-      <input type="text" id="toneSearchInput" placeholder="Busca un tono (Ej. Like a Stone, Nirvana)..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-20 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" required />
+      <input type="text" id="toneSearchInput" placeholder="Busca un tono (Ej. Like a Stone solo, Nirvana)..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-20 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" required />
       <button type="submit" id="searchBtn" class="absolute right-1 bg-brand-accent hover:bg-brand-accentHover text-brand-bg font-bold text-xs px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
         <span id="btnText">Buscar</span>
         <i id="btnIcon" class="fa-solid fa-arrow-right text-[10px]"></i>
@@ -194,10 +194,10 @@
     const REVERB=[m("1: Room",{"Pre Delay":"8ms","Decay":35,"Low Cut":"80Hz","High Cut":"5000Hz","Mix":25,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("2: Hall",{"Pre Delay":"30ms","Decay":30,"Low Cut":"80Hz","High Cut":"4000Hz","Mix":20,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("3: Plate",{"Pre Delay":"15ms","Decay":23,"Low Cut":"60Hz","High Cut":"5700Hz","Mix":13,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("4: Filter-Reverb",{"Pre Delay":"30ms","Decay":35,"Low Cut":"40Hz","High Cut":"4500Hz","Mix":30,"Rate":45,"Peak":90,"Q":60,"Filter Output":90,"Output Mode":"Stereo"}),m("5: Fl-Reverb",{"Pre Delay":"30ms","Decay":45,"Low Cut":"40Hz","High Cut":"5500Hz","Mix":35,"Rate":45,"Feedback":45,"Mod Delay":50,"Mod Output":60,"Output Mode":"Stereo"}),m("6: Reverse-Reverb",{"Pre Delay":"20ms","Decay":45,"Low Cut":"60Hz","High Cut":"3800Hz","Mix":35,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("7: Swell-Reverb",{"Pre Delay":"30ms","Decay":45,"Low Cut":"60Hz","High Cut":"6700Hz","Mix":35,"Attack":45,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("8: Spring",{"Pre Delay":"0ms","Decay":10,"Low Cut":"80Hz","High Cut":"4800Hz","Mix":12,"Spring Length":50,"Spring Depth":76,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("9: Mod",{"Pre Delay":"35ms","Decay":45,"Low Cut":"40Hz","High Cut":"5400Hz","Mix":35,"Rate":30,"Depth":40,"Mod Output":80,"Output Mode":"Stereo","Output":"0dB"}),m("10: Shimmer",{"Pre Delay":"30ms","Decay":56,"Low Cut":"100Hz","High Cut":"5600Hz","Mix":50,"Shimmer":75,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("11: Dist-Reverb",{"Pre Delay":"40ms","Decay":50,"Low Cut":"200Hz","High Cut":"7330Hz","Mix":40,"Gain":60,"Dist lvl":65,"Tone":45,"Cab":"Off","Output Mode":"Stereo"})];
     const VOL=[m("Vol",{"Position":100,"Min":0,"Max":100,"Curve":"Log"})];
 
-    // FUZZY FINDER PARA ENCONTRAR NOMBRES SIMILARES
+    // BUSCADOR DE SIMILITUDES (FUZZY FINDER)
     function fuzzyMatch(list, query) {
         if (!query || query === "None") return null;
-        let q = query.toLowerCase().replace(/[^a-z0-9]/g, ''); // Quitamos espacios y símbolos
+        let q = query.toLowerCase().replace(/[^a-z0-9]/g, ''); 
         
         let match = list.find(x => {
             let n = x.name.toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -205,15 +205,14 @@
         });
         if (match) return match;
         
-        // Excepciones comunes que la IA suele nombrar diferente al hardware
         if (q.includes("jcm800")) return list.find(x => x.name.includes("J800"));
         if (q.includes("whammy") || q.includes("pitch")) return list.find(x => x.name.includes("Pitch"));
         if (q.includes("ts808") || q.includes("screamer")) return list.find(x => x.name.includes("808"));
         
-        return list[0]; // Si definitivamente no hay nada, devuelve el primero de la lista (Fallback)
+        return list[0]; 
     }
 
-    // CONSTRUCTOR DE BLOQUES CON PERILLAS DINÁMICAS
+    // CONSTRUCTOR DE BLOQUES CON CERROJO ANTIFALSIFICACIÓN
     function buildBlock(aiDataNode, list, type) {
         if (!aiDataNode || !aiDataNode.name || aiDataNode.name === "None") return null;
         
@@ -222,13 +221,14 @@
         
         let finalKnobs = { ...b.knobs() };
         
-        // Si la IA nos mandó perillas específicas, las sobrescribimos
+        // Solo actualizamos perillas si la IA envía datos Y si esa perilla existe realmente en la Mooer
         if (aiDataNode.p) {
             for (let k in aiDataNode.p) {
-                // Buscamos la perilla ignorando mayúsculas/minúsculas
                 let realKey = Object.keys(finalKnobs).find(x => x.toLowerCase() === k.toLowerCase());
-                if (realKey) finalKnobs[realKey] = aiDataNode.p[k];
-                else finalKnobs[k] = aiDataNode.p[k]; // Si la perilla no existía, la forzamos
+                if (realKey) {
+                    finalKnobs[realKey] = aiDataNode.p[k];
+                }
+                // ELIMINADO: Ya no forzamos la creación de perillas inventadas como "Cap Edge" o "MIC".
             }
         }
         return { type: type, model: b.name, knobs: finalKnobs };
@@ -244,20 +244,22 @@
         AMPS: ${AMP.map(a=>a.name).join(', ')}
         CABS: ${CAB.map(c=>c.name).join(', ')}
         DS_OD: ${DS_OD.map(d=>d.name).join(', ')}
-        MOD: ${FXA.map(f=>f.name).join(', ')}
+        WAH (Usa este para Wah, AutoWah, Talkbox): ${WAH.map(w=>w.name).join(', ')}
+        MOD (Usa este para Chorus, Phaser, Pitch/Whammy): ${FXA.map(f=>f.name).join(', ')}
         DELAY: ${DELAY.map(d=>d.name).join(', ')}
         REVERB: ${REVERB.map(r=>r.name).join(', ')}
         COMP: ${COMP.map(c=>c.name).join(', ')}
         
-        Devuelve ÚNICAMENTE un JSON estricto con esta estructura (incluyendo los valores 'p' (parameters) clave para el tono como Gain, Bass, Mix, Time, etc.):
+        Devuelve ÚNICAMENTE un JSON estricto con esta estructura (incluyendo los valores 'p' (parameters) clave para el tono como Gain, Bass, Mix, Time, etc.). No incluyas texto extra:
         {
-          "comp": {"name": "nombre o None", "p": {"Sustain": 50, "Output": "+2dB"}},
-          "ds_od": {"name": "nombre o None", "p": {"Gain": 30, "Output": 70}},
-          "amp": {"name": "nombre", "p": {"Gain": 60, "Bass": 50, "Mid": 60, "Treble": 55}},
+          "comp": {"name": "nombre o None", "p": {}},
+          "wah": {"name": "nombre o None", "p": {}},
+          "ds_od": {"name": "nombre o None", "p": {}},
+          "amp": {"name": "nombre", "p": {}},
           "cab": {"name": "nombre", "p": {}},
-          "mod": {"name": "nombre o None", "p": {"Pitch": "+24.0"}},
-          "delay": {"name": "nombre o None", "p": {"Time": "400ms", "Mix": 25}},
-          "reverb": {"name": "nombre o None", "p": {"Decay": 30, "Mix": 20}},
+          "fxa": {"name": "nombre o None", "p": {}},
+          "delay": {"name": "nombre o None", "p": {}},
+          "reverb": {"name": "nombre o None", "p": {}},
           "pickup": "Mástil / Single Coil o Puente / Humbucker",
           "desc": "Breve explicación técnica."
         }`;
@@ -327,12 +329,13 @@
               
               let blocks = [];
               let bComp = buildBlock(aiData.comp, COMP, "COMP"); if(bComp) blocks.push(bComp);
-              let bOd = buildBlock(aiData.ds_od, DS_OD, "DS/OD"); if(bOd) blocks.push(bOd);
-              let bAmp = buildBlock(aiData.amp, AMP, "AMP"); if(bAmp) blocks.push(bAmp);
-              let bCab = buildBlock(aiData.cab, CAB, "CAB"); if(bCab) blocks.push(bCab);
-              let bMod = buildBlock(aiData.mod, FXA, "FXA"); if(bMod) blocks.push(bMod);
-              let bDly = buildBlock(aiData.delay, DELAY, "DELAY"); if(bDly) blocks.push(bDly);
-              let bRev = buildBlock(aiData.reverb, REVERB, "REVERB"); if(bRev) blocks.push(bRev);
+              let bWah  = buildBlock(aiData.wah, WAH, "WAH"); if(bWah) blocks.push(bWah);
+              let bOd   = buildBlock(aiData.ds_od, DS_OD, "DS/OD"); if(bOd) blocks.push(bOd);
+              let bAmp  = buildBlock(aiData.amp, AMP, "AMP"); if(bAmp) blocks.push(bAmp);
+              let bCab  = buildBlock(aiData.cab, CAB, "CAB"); if(bCab) blocks.push(bCab);
+              let bMod  = buildBlock(aiData.fxa, FXA, "FXA"); if(bMod) blocks.push(bMod);
+              let bDly  = buildBlock(aiData.delay, DELAY, "DELAY"); if(bDly) blocks.push(bDly);
+              let bRev  = buildBlock(aiData.reverb, REVERB, "REVERB"); if(bRev) blocks.push(bRev);
               
               blocks.push({ type: "VOL", model: VOL[0].name, knobs: VOL[0].knobs() });
 
@@ -417,7 +420,7 @@
     });
 
     function showTab(tab) {
-      if (tab === 'catalog') alert("Catálogo GE300 v7.0.0: Fuzzy Finder y Smart Knobs activos.");
+      if (tab === 'catalog') alert("Catálogo GE300 v7.1.0: Cerrojo Antifalsificación y WAH restablecido.");
       else if (tab === 'tools') alert("Calculadora BPM / ms: 120 BPM = 500 ms (1/4) | 250 ms (1/8)");
     }
   </script>

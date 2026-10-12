@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 Pro AI Tone Studio v7.1.0</title>
+  <title>MOOER GE300 Pro AI Tone Studio v7.3.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
@@ -27,9 +27,9 @@
       </div>
       <div>
         <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
-          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v7.1.0</span>
+          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v7.3.0</span>
         </h1>
-        <p class="text-[11px] text-brand-muted" id="apiStatusText">Smart Knobs Estrictos + WAH Activado</p>
+        <p class="text-[11px] text-brand-muted" id="apiStatusText">Cadena 100% Completa GE300 (Sin omitir efectos)</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -194,114 +194,110 @@
     const REVERB=[m("1: Room",{"Pre Delay":"8ms","Decay":35,"Low Cut":"80Hz","High Cut":"5000Hz","Mix":25,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("2: Hall",{"Pre Delay":"30ms","Decay":30,"Low Cut":"80Hz","High Cut":"4000Hz","Mix":20,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("3: Plate",{"Pre Delay":"15ms","Decay":23,"Low Cut":"60Hz","High Cut":"5700Hz","Mix":13,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("4: Filter-Reverb",{"Pre Delay":"30ms","Decay":35,"Low Cut":"40Hz","High Cut":"4500Hz","Mix":30,"Rate":45,"Peak":90,"Q":60,"Filter Output":90,"Output Mode":"Stereo"}),m("5: Fl-Reverb",{"Pre Delay":"30ms","Decay":45,"Low Cut":"40Hz","High Cut":"5500Hz","Mix":35,"Rate":45,"Feedback":45,"Mod Delay":50,"Mod Output":60,"Output Mode":"Stereo"}),m("6: Reverse-Reverb",{"Pre Delay":"20ms","Decay":45,"Low Cut":"60Hz","High Cut":"3800Hz","Mix":35,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("7: Swell-Reverb",{"Pre Delay":"30ms","Decay":45,"Low Cut":"60Hz","High Cut":"6700Hz","Mix":35,"Attack":45,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("8: Spring",{"Pre Delay":"0ms","Decay":10,"Low Cut":"80Hz","High Cut":"4800Hz","Mix":12,"Spring Length":50,"Spring Depth":76,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("9: Mod",{"Pre Delay":"35ms","Decay":45,"Low Cut":"40Hz","High Cut":"5400Hz","Mix":35,"Rate":30,"Depth":40,"Mod Output":80,"Output Mode":"Stereo","Output":"0dB"}),m("10: Shimmer",{"Pre Delay":"30ms","Decay":56,"Low Cut":"100Hz","High Cut":"5600Hz","Mix":50,"Shimmer":75,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("11: Dist-Reverb",{"Pre Delay":"40ms","Decay":50,"Low Cut":"200Hz","High Cut":"7330Hz","Mix":40,"Gain":60,"Dist lvl":65,"Tone":45,"Cab":"Off","Output Mode":"Stereo"})];
     const VOL=[m("Vol",{"Position":100,"Min":0,"Max":100,"Curve":"Log"})];
 
-    // BUSCADOR DE SIMILITUDES (FUZZY FINDER)
     function fuzzyMatch(list, query) {
         if (!query || query === "None") return null;
         let q = query.toLowerCase().replace(/[^a-z0-9]/g, ''); 
-        
         let match = list.find(x => {
             let n = x.name.toLowerCase().replace(/[^a-z0-9]/g, '');
             return n.includes(q) || q.includes(n);
         });
         if (match) return match;
-        
         if (q.includes("jcm800")) return list.find(x => x.name.includes("J800"));
         if (q.includes("whammy") || q.includes("pitch")) return list.find(x => x.name.includes("Pitch"));
         if (q.includes("ts808") || q.includes("screamer")) return list.find(x => x.name.includes("808"));
-        
         return list[0]; 
     }
 
-    // CONSTRUCTOR DE BLOQUES CON CERROJO ANTIFALSIFICACIÓN
     function buildBlock(aiDataNode, list, type) {
         if (!aiDataNode || !aiDataNode.name || aiDataNode.name === "None") return null;
-        
         let b = fuzzyMatch(list, aiDataNode.name);
         if (!b) return null;
-        
         let finalKnobs = { ...b.knobs() };
-        
-        // Solo actualizamos perillas si la IA envía datos Y si esa perilla existe realmente en la Mooer
         if (aiDataNode.p) {
             for (let k in aiDataNode.p) {
                 let realKey = Object.keys(finalKnobs).find(x => x.toLowerCase() === k.toLowerCase());
-                if (realKey) {
-                    finalKnobs[realKey] = aiDataNode.p[k];
-                }
-                // ELIMINADO: Ya no forzamos la creación de perillas inventadas como "Cap Edge" o "MIC".
+                if (realKey) finalKnobs[realKey] = aiDataNode.p[k];
             }
         }
         return { type: type, model: b.name, knobs: finalKnobs };
     }
 
-    async function fetchAITone(query, apiKey) {
+    async function fetchAITone(query, apiKey, retries = 2) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
         
+        // RECETA COMPLETA DE TODOS LOS BLOQUES DE LA GE300 PARA QUE LA IA NO OLVIDE NINGUNO
         const prompt = `Eres un técnico de guitarra experto configurando la pedalera MOOER GE300.
         Crea el tono exacto para la canción o artista: "${query}".
         
-        Usa ESTOS nombres de catálogo (o "None" si no aplica):
-        AMPS: ${AMP.map(a=>a.name).join(', ')}
-        CABS: ${CAB.map(c=>c.name).join(', ')}
-        DS_OD: ${DS_OD.map(d=>d.name).join(', ')}
-        WAH (Usa este para Wah, AutoWah, Talkbox): ${WAH.map(w=>w.name).join(', ')}
-        MOD (Usa este para Chorus, Phaser, Pitch/Whammy): ${FXA.map(f=>f.name).join(', ')}
-        DELAY: ${DELAY.map(d=>d.name).join(', ')}
-        REVERB: ${REVERB.map(r=>r.name).join(', ')}
-        COMP: ${COMP.map(c=>c.name).join(', ')}
+        Usa ESTOS nombres oficiales de catálogo (o "None" si no aplica en la cadena):
+        - SYNTH (Sintetizador): Synth Block
+        - COMP (Compresor): ${COMP.map(c=>c.name).join(', ')}
+        - WAH (Wah / Whammy / Pitch / Talkbox): ${WAH.map(w=>w.name).join(', ')}
+        - FXA (Filtros / Modulación A): ${FXA.map(f=>f.name).join(', ')}
+        - DS/OD (Overdrive / Distorsión): ${DS_OD.map(d=>d.name).join(', ')}
+        - AMP (Amplificador): ${AMP.map(a=>a.name).join(', ')}
+        - CAB (Gabinete): ${CAB.map(c=>c.name).join(', ')}
+        - NS (Noise Suppressor / Puerta de ruido): ${NS.map(n=>n.name).join(', ')}
+        - EQ (Ecualizador): ${EQ.map(e=>e.name).join(', ')}
+        - DELAY: ${DELAY.map(d=>d.name).join(', ')}
+        - REVERB: ${REVERB.map(r=>r.name).join(', ')}
         
-        Devuelve ÚNICAMENTE un JSON estricto con esta estructura (incluyendo los valores 'p' (parameters) clave para el tono como Gain, Bass, Mix, Time, etc.). No incluyas texto extra:
+        Devuelve ÚNICAMENTE un JSON estricto con esta estructura exacta para todos los bloques disponibles. Incluye parámetros 'p' clave (Gain, Mix, Time, Threshold, etc.):
         {
+          "synth": {"name": "None", "p": {}},
           "comp": {"name": "nombre o None", "p": {}},
           "wah": {"name": "nombre o None", "p": {}},
-          "ds_od": {"name": "nombre o None", "p": {}},
-          "amp": {"name": "nombre", "p": {}},
-          "cab": {"name": "nombre", "p": {}},
           "fxa": {"name": "nombre o None", "p": {}},
+          "ds_od": {"name": "nombre o None", "p": {}},
+          "amp": {"name": "nombre exacto", "p": {}},
+          "cab": {"name": "nombre exacto", "p": {}},
+          "ns": {"name": "nombre o None", "p": {}},
+          "eq": {"name": "nombre o None", "p": {}},
           "delay": {"name": "nombre o None", "p": {}},
           "reverb": {"name": "nombre o None", "p": {}},
           "pickup": "Mástil / Single Coil o Puente / Humbucker",
           "desc": "Breve explicación técnica."
         }`;
 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
+        for (let i = 0; i <= retries; i++) {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
 
-        if (!response.ok) {
-            const errData = await response.json();
-            throw new Error(`Código ${response.status}: ${errData.error?.message || 'Error del servidor'}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    let rawText = data.candidates[0].content.parts[0].text;
+                    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) rawText = jsonMatch[0];
+                    return JSON.parse(rawText);
+                } else if (response.status === 503 && i < retries) {
+                    await new Promise(r => setTimeout(r, 1500));
+                    continue;
+                } else {
+                    const errData = await response.json();
+                    throw new Error(`Código ${response.status}: ${errData.error?.message || 'Error del servidor'}`);
+                }
+            } catch (err) {
+                if (i === retries) throw err;
+                await new Promise(r => setTimeout(r, 1500));
+            }
         }
-        
-        const data = await response.json();
-        let rawText = data.candidates[0].content.parts[0].text;
-        
-        const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-            rawText = jsonMatch[0];
-        } else {
-            throw new Error("Gemini no devolvió JSON.");
-        }
-        
-        return JSON.parse(rawText);
     }
 
     function generateOfflineTone(query, absHash) {
-        let isClean = /clean|funk|daft punk|get lucky|chic|jazz|pop|acoustic|indie|soda|prisioneros/i.test(query);
         let blocks = [];
-        let desc = "(Modo Local) Cadena genérica armada al azar sin conexión a internet.";
         blocks.push({ type: "COMP", model: COMP[absHash % COMP.length].name, knobs: COMP[absHash % COMP.length].knobs() });
         blocks.push({ type: "AMP", model: AMP[absHash % AMP.length].name, knobs: AMP[absHash % AMP.length].knobs() });
         blocks.push({ type: "CAB", model: CAB[absHash % CAB.length].name, knobs: CAB[absHash % CAB.length].knobs() });
         blocks.push({ type: "REVERB", model: REVERB[1].name, knobs: REVERB[1].knobs() });
         blocks.push({ type: "VOL", model: VOL[0].name, knobs: VOL[0].knobs() });
-
         return {
           title: `Preset GE300: ${query.toUpperCase()}`,
           bank: `01A`,
-          desc: desc,
+          desc: "(Modo Local) Cadena de emergencia local.",
           pickup: "Puente / Humbucker",
           vol: "10 (Abierto Total)",
           ctrls: ["CTRL 1: Drive", "CTRL 2: Mod/Delay", "EXP 1: Vol", "EXP 2: FX"],
@@ -326,14 +322,17 @@
       try {
           if (apiKey && apiKey.trim() !== '') {
               const aiData = await fetchAITone(query, apiKey);
-              
               let blocks = [];
+              
+              // CONSTRUCCIÓN ORDENADA DE TODOS LOS BLOQUES DE LA GE300
               let bComp = buildBlock(aiData.comp, COMP, "COMP"); if(bComp) blocks.push(bComp);
               let bWah  = buildBlock(aiData.wah, WAH, "WAH"); if(bWah) blocks.push(bWah);
+              let bMod  = buildBlock(aiData.fxa, FXA, "FXA"); if(bMod) blocks.push(bMod);
               let bOd   = buildBlock(aiData.ds_od, DS_OD, "DS/OD"); if(bOd) blocks.push(bOd);
               let bAmp  = buildBlock(aiData.amp, AMP, "AMP"); if(bAmp) blocks.push(bAmp);
               let bCab  = buildBlock(aiData.cab, CAB, "CAB"); if(bCab) blocks.push(bCab);
-              let bMod  = buildBlock(aiData.fxa, FXA, "FXA"); if(bMod) blocks.push(bMod);
+              let bNs   = buildBlock(aiData.ns, NS, "NS"); if(bNs) blocks.push(bNs);
+              let bEq   = buildBlock(aiData.eq, EQ, "EQ"); if(bEq) blocks.push(bEq);
               let bDly  = buildBlock(aiData.delay, DELAY, "DELAY"); if(bDly) blocks.push(bDly);
               let bRev  = buildBlock(aiData.reverb, REVERB, "REVERB"); if(bRev) blocks.push(bRev);
               
@@ -420,7 +419,7 @@
     });
 
     function showTab(tab) {
-      if (tab === 'catalog') alert("Catálogo GE300 v7.1.0: Cerrojo Antifalsificación y WAH restablecido.");
+      if (tab === 'catalog') alert("Catálogo GE300 v7.3.0: Mapeo completo de todos los bloques de efectos.");
       else if (tab === 'tools') alert("Calculadora BPM / ms: 120 BPM = 500 ms (1/4) | 250 ms (1/8)");
     }
   </script>

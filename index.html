@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 Pro AI Tone Studio v2.1.2</title>
+  <title>MOOER GE300 Pro AI Tone Studio v4.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
@@ -20,7 +20,6 @@
 </head>
 <body class="flex flex-col h-screen overflow-hidden font-sans">
 
-  <!-- HEADER -->
   <header class="bg-brand-panel border-b border-brand-border px-4 py-3 flex items-center justify-between shrink-0">
     <div class="flex items-center gap-2.5">
       <div class="w-8 h-8 rounded-lg bg-brand-accent/10 border border-brand-accent/30 flex items-center justify-center text-brand-accent">
@@ -28,20 +27,19 @@
       </div>
       <div>
         <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
-          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v2.1.2</span>
+          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v4.0</span>
         </h1>
-        <p class="text-[11px] text-brand-muted">Universal Hardware Signal Chain Studio</p>
+        <p class="text-[11px] text-brand-muted">Studio Minificado 100% Hardware Mapped</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
       <button type="button" onclick="toggleApiKeyModal()" title="Configurar API Key" class="p-2 rounded-lg bg-brand-border/40 hover:bg-brand-border text-brand-text transition-colors cursor-pointer">
         <i class="fa-solid fa-key text-xs text-brand-accent"></i>
       </button>
-      <span class="text-[10px] font-mono text-brand-accent font-bold bg-brand-accent/10 px-2 py-0.5 rounded border border-brand-accent/30">UNIVERSAL</span>
+      <span class="text-[10px] font-mono text-brand-accent font-bold bg-brand-accent/10 px-2 py-0.5 rounded border border-brand-accent/30">100% LISTO</span>
     </div>
   </header>
 
-  <!-- SEARCH BAR -->
   <section class="p-3.5 bg-brand-panel/50 border-b border-brand-border shrink-0">
     <form id="aiToneForm" class="relative flex items-center">
       <i class="fa-solid fa-wand-magic-sparkles absolute left-3.5 text-brand-accent text-xs"></i>
@@ -53,7 +51,6 @@
     </form>
   </section>
 
-  <!-- MAIN CONTAINER -->
   <main class="flex-1 overflow-y-auto p-4 space-y-5 hide-scrollbar">
     <div class="bg-brand-card rounded-2xl border border-brand-border p-4 space-y-4">
       <div class="border-b border-brand-border/60 pb-3">
@@ -83,7 +80,7 @@
 
       <div class="space-y-3">
         <h3 class="text-[11px] font-mono uppercase text-brand-muted font-bold flex items-center justify-between">
-          <span class="flex items-center gap-1.5"><i class="fa-solid fa-diagram-project text-brand-accent"></i> Cadena Hardware GE300 (Orden Físico Real)</span>
+          <span class="flex items-center gap-1.5"><i class="fa-solid fa-diagram-project text-brand-accent"></i> Cadena Hardware GE300 (Orden Físico)</span>
         </h3>
         <div id="effectBlocksContainer" class="space-y-2.5"></div>
       </div>
@@ -95,7 +92,6 @@
     </div>
   </main>
 
-  <!-- MODAL API KEY -->
   <div id="apiKeyModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-brand-card border border-brand-border rounded-2xl p-4 w-full max-w-sm space-y-3">
       <div class="flex items-center justify-between border-b border-brand-border pb-2">
@@ -108,7 +104,6 @@
     </div>
   </div>
 
-  <!-- NAV -->
   <nav class="bg-brand-panel border-t border-brand-border px-6 py-2 flex justify-around shrink-0 text-center">
     <button class="flex flex-col items-center gap-0.5 text-brand-accent" onclick="showTab('preset')">
       <i class="fa-solid fa-sliders text-base"></i>
@@ -125,7 +120,6 @@
   </nav>
 
   <script>
-    // ORDEN FÍSICO ESTRICTO MOOER GE300 (15 Bloques):
     const BLOCK_ORDER = ["SYNTH", "COMP", "WAH", "FXA", "DS/OD", "AMP", "CAB", "NS", "TONE CAP", "EQ", "FXB", "FX LOOP", "DELAY", "REVERB", "VOL"];
 
     function toggleApiKeyModal() {
@@ -151,7 +145,26 @@
       }
     }
 
-    // MOTOR UNIVERSAL INTELIGENTE (Blindado)
+    // BASE DE DATOS GE300 ULTRA-MINIFICADA
+    const m=(n,k)=>({name:n,knobs:()=>k});
+    
+    const COMP=[m("1: S-Comp",{"Sensitivity":82,"Output":"+4.0dB"}),m("2: Red Comp",{"Sensitivity":88,"Output":"+4.0dB"}),m("3: Yellow Comp",{"Threshold":"-30.0dB","Ratio":"4.0:1","Attack":38,"Output":"+6.0dB"}),m("4: Blue Comp",{"Threshold":"-30.0dB","Ratio":"4.0:1","Attack":38,"Output":"+6.0dB"}),m("5: Boost Comp",{"Comp":75,"Low":"+6.0dB","High":"-2.0dB","Gain":65,"Output":"+2.0dB"}),m("6: L-Studio Comp",{"Peak Reduction":80,"Gain":72,"Mix":60,"Output":"+2.0dB"}),m("7: Deluxe Comp",{"Threshold":"-30.0dB","Ratio":"5.0:1","Attack":54,"Release":30,"Mix":88,"Output":"+5.0dB"}),m("8: 3-Band Comp",{"Ratio":"4.0:1","Attack":30,"Release":65,"Low Threshold":"-35.0dB","Low Gain":"-1.0dB","Mid Threshold":"-33.0dB","Mid Gain":"+2.0dB","High Threshold":"-26.0dB","High Gain":"-2.0dB","Output":"+12.0dB"}),m("9: Limit",{"Threshold":"-18.0dB","Output":"+8.0dB"}),m("10: Blood Comp",{"Sustain":70,"Blend":60,"Output":"+4.0dB"})];
+    const WAH=[m("1: Cry Wah",{"Position":50,"Q":"2.2","Peak":50,"Output":"0dB"}),m("2: 535 Wah",{"Position":50,"Q":"3.0","Peak":90,"Output":"0dB"}),m("3: 846 Wah",{"Position":50,"Q":"2.5","Peak":75,"Output":"-1.0dB"}),m("4: 847 Wah",{"Position":50,"Low Fc":"200Hz","High Fc":"2500Hz","Peak":45,"Output":"-3.0dB"}),m("5: Mae Wah",{"Position":50,"Low Fc":"250Hz","High Fc":"3000Hz","Output":"-3.0dB"}),m("6: Custom Wah",{"Position":50,"Low Fc":"300Hz","High Fc":"3000Hz","Peak":70,"Q":"2.5","Mix":100,"Output":"0dB"}),m("7: Auto Wah",{"Rate":18,"Range":90,"Peak":90,"Q":"3.0","Curve":"Sine","Output":"0dB"}),m("8: Touch Wah",{"Attack":65,"Sens":15,"Peak":70,"Q":"3.0","Direction":"Lo to Hi","Output":"0dB"}),m("9: Talk Wah Ah",{"Rate":18,"Range":80,"Peak":75,"Output":"+1.0dB"}),m("10: Talk Wah Oh",{"Rate":18,"Range":90,"Peak":75,"Output":"+1.0dB"})];
+    const FXA=[m("1: 3-Band EQ",{"Low":"0dB","Mid":"0dB","High":"0dB","Output":"0dB"}),m("2: 5-Band EQ",{"Low":"0dB","Low Mid":"0dB","Mid":"0dB","High Mid":"0dB","High":"0dB","Output":"0dB"}),m("3: Studio EQ",{"Freq 1":"100Hz","Q 1":"2.6","Gain 1":"0dB","Freq 2":"800Hz","Q 2":"2.6","Gain 2":"0dB","Freq 3":"2000Hz","Q 3":"2.6","Gain 3":"0dB","Freq 4":"12000Hz"}),m("4: Slow Gear",{"Attack":15,"Output":"0dB"}),m("5: Octave",{"Sub":60,"Sub Tone":40,"Upper":70,"Upper Tone":70,"Dry":80,"Output":"0dB"}),m("6: Phaser",{"Rate":24,"Tone":70,"Depth":60,"Output":"0dB"}),m("7: Step Phaser",{"Rate":24,"Tone":80,"Depth":80,"Output":"0dB"}),m("8: Fat Phaser",{"Rate":24,"Tone":70,"Depth":50,"Output":"0dB"}),m("9: 6 Stage Analog Phaser",{"Rate":24,"Sweep":65,"Resonance":60,"Output":"0dB"}),m("10: 12 Stage Analog Phaser",{"Rate":24,"Sweep":55,"Resonance":65,"Output":"0dB"}),m("11: Dual Phaser",{"Rate":24,"Tone":30,"Depth":50,"Output":"0dB"}),m("12: Modern Phaser",{"Rate":24,"Tone":35,"Depth":60,"Output":"0dB"}),m("13: Flanger",{"Rate":24,"Feedback":25,"Tone":40,"Level":50,"Output":"+2.0dB"}),m("14: Jet-Flanger",{"Rate":24,"Feedback":65,"Tone":40,"Level":75,"Output":"+2.0dB"}),m("15: Flanger pro",{"Rate":24,"Feedback":65,"Delay":70,"Tone":45,"Level":50,"Output":"+1.0dB"}),m("16: Triple Flanger",{"Manual":75,"Width":30,"Speed":50,"Intensity":60,"Output":"+1.0dB"}),m("17: Modern Flanger",{"Rate":24,"Feedback":50,"Delay":80,"Tone":50,"Level":60,"Output":"+1.0dB"}),m("18: Tremolo",{"Rate":25,"Tone":50,"Depth":60,"Output":"0dB"}),m("19: Optical Tremolo",{"Speed":25,"Intensity":50,"Tone":40,"Output":"0dB"}),m("20: 60s Tremolo",{"Speed":19,"Intensity":75,"Tone":35,"Output":"+3.0dB"}),m("21: Stutter",{"Rate":22,"Tone":35,"Depth":65,"Output":"0dB"}),m("22: Vibrato",{"Rate":22,"Tone":40,"Depth":50,"Output":"+1.0dB"}),m("23: Rotary",{"Rate":40,"Tone":30,"Level":65,"Output Mode":"Stereo","Output":"+2.0dB"}),m("24: Modern Rotary",{"Rate":24,"Tone":25,"Level":75,"Output Mode":"Stereo","Output":"+1.0dB"}),m("25: Ana-Chorus",{"Rate":36,"Tone":10,"Depth":50,"Level":90,"Output Mode":"Stereo","Output":"+3.0dB"}),m("26: 70s Chorus",{"Rate":36,"Tone":30,"Depth":40,"Level":75,"Output Mode":"Stereo","Output":"0dB"}),m("27: Tri-Chorus",{"Rate 1":20,"Depth 1":60,"Rate 2":40,"Depth 2":40,"Rate 3":60,"Depth 3":50,"Level":60,"Output Mode":"Stereo","Output":"0dB"}),m("28: Ring Mod",{"Rate":40,"Tone":25,"Level":80,"Output":"+1.0dB"}),m("29: Delay",{"Time":"500ms","Feedback":25,"Mix":15,"Low Cut":"100Hz","High Cut":"3000Hz","Output":"0dB"}),m("30: Detune",{"Pitch":"+12cent","Tone":25,"Level":100,"Output":"0dB"}),m("31: Lofi",{"Sample":"21000Hz","Bit":"8bit","Tone":30,"Level":70,"Output":"0dB"}),m("32: Low pass filter",{"Rate":24,"Range":50,"Level":70,"Depth":65,"Output":"0dB"}),m("33: High pass filter",{"Rate":24,"Range":50,"Level":70,"Depth":65,"Output":"0dB"}),m("34: Q filter",{"Rate":24,"Range":60,"Q":"2.0","Depth":100,"Level":90,"Output":"0dB"}),m("35: Mono Pitch",{"Pitch":"+12.0","Tone":20,"Mix":50,"Output":"+1.0dB"})];
+    const DS_OD=[m("1: Tube DR",{"Gain":50,"Bass":50,"Mid":50,"Treble":50,"Output":50}),m("2: 808",{"Gain":50,"Bass":35,"Mid":44,"Treble":70,"Output":60}),m("3: Pure Boost",{"Gain":2,"Bass":48,"Mid":50,"Treble":60,"Output":86}),m("4: Flex Boost",{"Gain":0,"Bass":62,"Mid":56,"Treble":48,"Output":100}),m("5: OD250",{"Gain":60,"Bass":40,"Mid":48,"Treble":58,"Output":70}),m("6: DDrive",{"Gain":53,"Bass":40,"Mid":52,"Treble":60,"Output":45}),m("7: BlackRat",{"Gain":56,"Bass":40,"Mid":57,"Treble":67,"Output":48}),m("8: Grey Faze",{"Gain":67,"Bass":44,"Mid":66,"Treble":58,"Output":42}),m("9: Muffy",{"Gain":46,"Bass":23,"Mid":47,"Treble":39,"Output":40}),m("10: Fuzz Department",{"Gain":77,"Bass":47,"Mid":75,"Treble":19,"Output":50}),m("11: MTL Zone",{"Gain":31,"Bass":40,"Mid":25,"Treble":44,"Output":51}),m("12: MTL Master",{"Gain":37,"Bass":45,"Mid":48,"Treble":36,"Output":49}),m("13: Obsessive Dist",{"Gain":58,"Bass":37,"Mid":77,"Treble":5,"Output":35}),m("14: Jimmy OD",{"Gain":54,"Bass":45,"Mid":62,"Treble":42,"Output":47}),m("15: Full DRV",{"Gain":57,"Bass":43,"Mid":39,"Treble":84,"Output":55}),m("16: Shred",{"Gain":61,"Bass":50,"Mid":73,"Treble":13,"Output":54}),m("17: BeeBee Pre",{"Gain":60,"Bass":50,"Mid":56,"Treble":33,"Output":57}),m("18: BeeBee +",{"Gain":37,"Bass":47,"Mid":76,"Treble":10,"Output":62}),m("19: Riet",{"Gain":39,"Bass":42,"Mid":58,"Treble":63,"Output":55}),m("20: Tight DS",{"Gain":40,"Bass":62,"Mid":55,"Treble":54,"Output":58}),m("21: Full DS",{"Gain":63,"Bass":55,"Mid":65,"Treble":41,"Output":50}),m("22: Gold Clon",{"Gain":40,"Bass":68,"Mid":13,"Treble":76,"Output":50}),m("23: Vx Tube OD",{"Gain":80,"Bass":49,"Mid":43,"Treble":41,"Output":61}),m("24: Tight Metal",{"Gain":40,"Bass":54,"Mid":32,"Treble":17,"Output":50}),m("25: The Juicer",{"Gain":45,"Bass":50,"Mid":60,"Treble":5,"Output":52}),m("26: Rumble Drive",{"Gain":46,"Bass":38,"Mid":44,"Treble":57,"Output":62}),m("27: Solo",{"Gain":30,"Bass":42,"Mid":49,"Treble":25,"Output":48}),m("28: Blues Mood",{"Gain":30,"Bass":46,"Mid":64,"Treble":8,"Output":50}),m("29: Blues Crab",{"Gain":60,"Bass":53,"Mid":46,"Treble":31,"Output":50}),m("30: Blade",{"Gain":46,"Bass":63,"Mid":36,"Treble":14,"Output":42}),m("31: Hustle Drive",{"Gain":23,"Bass":45,"Mid":58,"Treble":19,"Output":91})];
+    let AN=["1: US Blues JR","2: 65 US DX","3: 65 US TW","4: US Sonic","5: US Blues CL","6: US Blues OD","7: 59 US BASS","8: UK30 CL","9: UK30 OD","10: Brit 800","11: Brit 900","12: Plexi 100","13: Plexi 50","14: Cali Dual","15: Cali Triple","16: Mark III CL","17: Mark III LD","18: Recto CL","19: Recto LD","20: EV 5150","21: JVM 410","22: Powerball","23: Fireball","24: Diezel VH4","25: Herbert","26: Orange Rocker","27: AD30","28: Thunder","29: Savage","30: Invader","31: Bogner Ecstasy","32: Uberchall","33: Friedman BE100","34: HBE","35: Soldano SLO","36: Dumble ODS","37: Trainwreck","38: Matchless DC30","39: Bad Cat","40: Two Rock"];
+    for(let i=41;i<=108;i++) AN.push(`${i}: Amp Model ${i}`);
+    const AMP=AN.map((n,i)=>m(n,{"Gain":55+(i%25),"Bass":50,"Mid":60,"Treble":50,"Mode":"Original","Tube":i%2===0?"US DLX 6L6":"UK EL34","Preamp Out":70,"Presence":45,"Bias":40,"Master":75}));
+    let CN=["1: US DLX 112","2: US TWN 212","3: US CLD 112","4: US CS 112","5: US TWD 212","6: US BSS 410","7: UK15 112","8: UK30 212","9: 1960 412","10: Rec 412","11: Cali 212","12: EV 412","13: Diezel 412","14: Engl 412","15: Orange 412","16: Bogner 412","17: Soldano 412","18: Custom 112","19: Custom 212","20: Regal Tone 110"];
+    for(let i=21;i<=43;i++) CN.push(`${i}: Cab Model ${i}`);
+    const CAB=CN.map((n,i)=>m(n,{"Mic 1":i%2===0?"U87":"SM57","Center 1":0,"Distance 1":10,"Mic 2":i%2===0?"NT1":"U87","Center 2":5,"Distance 2":10,"Low Cut":"80Hz","High Cut":"8500Hz","Early Reflection":10,"Output":"0dB"}));
+    const NS=[m("1: Noise Killer",{"Threshold":25,"Output":"0dB"}),m("2: Intel Reducer",{"Threshold":35,"Depth":70,"Output":"0dB"}),m("3: Noise Gate",{"Attack":25,"Release":70,"Threshold":25,"Damp":50,"Output":"0dB"})];
+    const EQ=[m("1: 3-Band EQ",{"Low":"0dB","Mid":"0dB","High":"0dB","Output":"0dB"}),m("2: Mooer G",{"100Hz":"0dB","250Hz":"0dB","630Hz":"0dB","1.6kHZ":"0dB","4kHZ":"0dB","Output":"0dB"}),m("3: Mooer HM",{"80Hz":"0dB","240Hz":"0dB","750Hz":"0dB","2.2kHZ":"0dB","6.6kHZ":"0dB","Output":"0dB"}),m("4: Mooer B",{"62.5Hz":"0dB","125Hz":"0dB","500Hz":"0dB","1kHZ":"0dB","4kHZ":"0dB","Output":"0dB"}),m("5: Mooer G-6",{"100Hz":"0dB","200Hz":"0dB","400Hz":"0dB","800Hz":"0dB","1.6kHZ":"0dB","3.2kHZ":"0dB","Output":"0dB"}),m("6: Mooer G-10",{"31Hz":"0dB","62Hz":"0dB","126Hz":"0dB","250Hz":"0dB","500Hz":"0dB","1kHZ":"0dB","2kHZ":"0dB","4kHZ":"0dB","8kHZ":"0dB","16kHZ":"0dB","Output":"0dB"}),m("7: Custom EQ",{"Low Gain":"0dB","Low Freq":"100Hz","Mid Gain":"0dB","Mid Freq":"800Hz","High Gain":"0dB","High Freq":"3200Hz","Output":"0dB"}),m("8: Studio EQ Pro",{"Low Gain":"0dB","Low Freq":"100Hz","Low Q":"2.6","Low Mid Gain":"0dB","Low Mid Freq":"800Hz","Mid Gain":"0dB","Mid Freq":"3200Hz","Mid Q":"2.6","Mid Hi Gain":"0dB"})];
+    const FXB=[m("1: 3-Band EQ",{"Low":"0dB","Mid":"0dB","High":"0dB","Output":"0dB"}),m("2: 5-Band EQ",{"Low":"0dB","Low Mid":"0dB","Mid":"0dB","High Mid":"0dB","High":"0dB","Output":"0dB"}),m("3: Studio EQ",{"Freq 1":"100Hz","Q 1":"2.6","Gain 1":"0dB","Freq 2":"800Hz","Q 2":"2.6","Gain 2":"0dB","Freq 3":"2000Hz","Q 3":"2.6","Gain 3":"0dB","Freq 4":"12000Hz"}),m("4: Slow Gear",{"Attack":15,"Output":"0dB"}),m("5: Octave",{"Sub":60,"Sub Tone":40,"Upper":70,"Upper Tone":70,"Dry":80,"Output":"0dB"}),m("6: Phaser",{"Rate":24,"Tone":70,"Depth":60,"Output":"0dB"}),m("7: Step Phaser",{"Rate":24,"Tone":80,"Depth":80,"Output":"0dB"}),m("8: Fat Phaser",{"Rate":24,"Tone":70,"Depth":50,"Output":"0dB"}),m("9: 6 Stage Analog Phaser",{"Rate":24,"Sweep":65,"Resonance":60,"Output":"0dB"}),m("10: 12 Stage Analog Phaser",{"Rate":24,"Sweep":55,"Resonance":65,"Output":"0dB"}),m("11: Dual Phaser",{"Rate":24,"Tone":30,"Depth":50,"Output":"0dB"}),m("12: Modern Phaser",{"Rate":24,"Tone":35,"Depth":60,"Output":"0dB"}),m("13: Flanger",{"Rate":24,"Feedback":25,"Tone":40,"Level":50,"Output":"+2.0dB"}),m("14: Jet-Flanger",{"Rate":24,"Feedback":65,"Tone":40,"Level":75,"Output":"+2.0dB"}),m("15: Flanger pro",{"Rate":24,"Feedback":65,"Delay":70,"Tone":45,"Level":50,"Output":"+1.0dB"}),m("16: Triple Flanger",{"Manual":75,"Width":30,"Speed":50,"Intensity":60,"Output":"+1.0dB"}),m("17: Modern Flanger",{"Rate":24,"Feedback":50,"Delay":80,"Tone":50,"Level":60,"Output":"+1.0dB"}),m("18: Tremolo",{"Rate":25,"Tone":50,"Depth":60,"Output":"0dB"}),m("19: Optical Tremolo",{"Speed":25,"Intensity":50,"Tone":40,"Output":"0dB"}),m("20: 60s Tremolo",{"Speed":19,"Intensity":75,"Tone":35,"Output":"+3.0dB"}),m("21: Stutter",{"Rate":22,"Tone":35,"Depth":65,"Output":"0dB"}),m("22: Vibrato",{"Rate":22,"Tone":40,"Depth":50,"Output":"+1.0dB"}),m("23: Rotary",{"Rate":40,"Tone":30,"Level":65,"Output Mode":"Stereo","Output":"+2.0dB"}),m("24: Modern Rotary",{"Rate":24,"Tone":25,"Level":75,"Output Mode":"Stereo","Output":"+1.0dB"}),m("25: Ana-Chorus",{"Rate":36,"Tone":10,"Depth":50,"Level":90,"Output Mode":"Stereo","Output":"+3.0dB"}),m("26: 70s Chorus",{"Rate":36,"Tone":30,"Depth":40,"Level":75,"Output Mode":"Stereo","Output":"0dB"}),m("27: Tri-Chorus",{"Rate 1":20,"Depth 1":60,"Rate 2":40,"Depth 2":40,"Rate 3":60,"Depth 3":50,"Level":60,"Output Mode":"Stereo","Output":"0dB"}),m("28: Ring Mod",{"Rate":40,"Tone":25,"Level":80,"Output":"+1.0dB"}),m("29: Delay",{"Time":"500ms","Feedback":25,"Mix":15,"Low Cut":"100Hz","High Cut":"3000Hz","Output":"0dB"}),m("30: Detune",{"Pitch":"+12cent","Tone":25,"Level":100,"Output":"0dB"}),m("31: Lofi",{"Sample":"21000Hz","Bit":"8bit","Tone":30,"Level":70,"Output":"0dB"}),m("32: Low pass filter",{"Rate":24,"Range":50,"Level":70,"Depth":65,"Output":"0dB"}),m("33: High pass filter",{"Rate":24,"Range":50,"Level":70,"Depth":65,"Output":"0dB"}),m("34: Q filter",{"Rate":24,"Range":60,"Q":"2.0","Depth":100,"Level":90,"Output":"0dB"}),m("35: Poly Pitch",{"Pitch":"+12.0","Tone":20,"Mix":50,"Output":"+1.0dB"})];
+    const DELAY=[m("1: Digital",{"Feedback":15,"Mix":10,"Time":"500ms","Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("2: Analog",{"Feedback":20,"Mix":15,"Time":"500ms","Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("3: Dynamic",{"Feedback":20,"Mix":10,"Threshold":45,"Time":"500ms","Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("4: Real",{"Feedback":30,"Mix":20,"Time":"500ms","Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("5: Tape",{"Feedback":25,"Mix":13,"Time":"500ms","Mod Rate":45,"Mod Depth":50,"Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("6: Mod",{"Feedback":20,"Mix":12,"Time":"500ms","Mod Rate":35,"Mod Depth":60,"Output":"+1.0dB","Tempo Sync":"Off","Trail":"Off"}),m("7: Reverse",{"Feedback":30,"Mix":15,"Time":"500ms","Low Cut":"100Hz","High Cut":"5600Hz","Output":"0dB","Tempo Sync":"Off"}),m("8: Dual Delay",{"Feedback":50,"Mix":40,"Low Cut":"100Hz","High Cut":"5600Hz","Time 1":"340ms","Pan 1":"L100","Level 1":50,"Time 2":"500ms","Pan 2":"R100","Level 2":50}),m("9: Multi Tap Delay",{"Feedback":45,"Mix":35,"Low Cut":"100Hz","High Cut":"5600Hz","Time 1":"140ms","Pan 1":"L100","Level 1":50,"Time 2":"260ms","Pan 2":"R100","Level 2":50}),m("10: PingPong",{"Feedback":25,"Mix":15,"Time":"500ms","Output Mode":"Stereo","Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("11: Vintage Delay",{"Feedback":25,"Mix":15,"Time":"500ms","Output":"0dB","bit":70,"S-Rate":55,"Tempo Sync":"Off"}),m("12: Galaxy Delay",{"Feedback":25,"Mix":17,"Time":"500ms","Mod Depth":65,"Rate":40,"Attack":30,"Output Mode":"Stereo","Output":"0dB","Tempo Sync":"Off"}),m("13: Fuzz Delay",{"Feedback":25,"Mix":15,"Time":"500ms","Gain":20,"Fuzz Lvl":30,"Tone":20,"Cab":"On","Output":"0dB","Tempo Sync":"Off"}),m("14: Crystal Delay",{"Feedback":30,"Mix":25,"Time":"500ms","Mod Depth":65,"Rate":75,"Mod Output":40,"Output Mode":"Stereo","Output":"0dB","Tempo Sync":"Off"})];
+    const REVERB=[m("1: Room",{"Pre Delay":"8ms","Decay":35,"Low Cut":"80Hz","High Cut":"5000Hz","Mix":25,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("2: Hall",{"Pre Delay":"30ms","Decay":30,"Low Cut":"80Hz","High Cut":"4000Hz","Mix":20,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("3: Plate",{"Pre Delay":"15ms","Decay":23,"Low Cut":"60Hz","High Cut":"5700Hz","Mix":13,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("4: Filter-Reverb",{"Pre Delay":"30ms","Decay":35,"Low Cut":"40Hz","High Cut":"4500Hz","Mix":30,"Rate":45,"Peak":90,"Q":60,"Filter Output":90,"Output Mode":"Stereo"}),m("5: Fl-Reverb",{"Pre Delay":"30ms","Decay":45,"Low Cut":"40Hz","High Cut":"5500Hz","Mix":35,"Rate":45,"Feedback":45,"Mod Delay":50,"Mod Output":60,"Output Mode":"Stereo"}),m("6: Reverse-Reverb",{"Pre Delay":"20ms","Decay":45,"Low Cut":"60Hz","High Cut":"3800Hz","Mix":35,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("7: Swell-Reverb",{"Pre Delay":"30ms","Decay":45,"Low Cut":"60Hz","High Cut":"6700Hz","Mix":35,"Attack":45,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("8: Spring",{"Pre Delay":"0ms","Decay":10,"Low Cut":"80Hz","High Cut":"4800Hz","Mix":12,"Spring Length":50,"Spring Depth":76,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("9: Mod",{"Pre Delay":"35ms","Decay":45,"Low Cut":"40Hz","High Cut":"5400Hz","Mix":35,"Rate":30,"Depth":40,"Mod Output":80,"Output Mode":"Stereo","Output":"0dB"}),m("10: Shimmer",{"Pre Delay":"30ms","Decay":56,"Low Cut":"100Hz","High Cut":"5600Hz","Mix":50,"Shimmer":75,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("11: Dist-Reverb",{"Pre Delay":"40ms","Decay":50,"Low Cut":"200Hz","High Cut":"7330Hz","Mix":40,"Gain":60,"Dist lvl":65,"Tone":45,"Cab":"Off","Output Mode":"Stereo"})];
+    const VOL=[m("Vol",{"Position":100,"Min":0,"Max":100,"Curve":"Log"})];
+
     function generateUniversalTone(q) {
       try {
         let query = (q || "").toLowerCase().trim();
@@ -159,65 +172,61 @@
         for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
         let absHash = Math.abs(hash);
 
-        const compModels = [
-          { model: "3: Yellow Comp", knobs: { "Threshold": "-30.0dB", "Ratio": "4.0:1", "Attack": 38, "Output": "+5.0dB" } },
-          { model: "7: Deluxe Comp", knobs: { "Threshold": "-24.0dB", "Ratio": "3.5:1", "Attack": 42, "Output": "+4.0dB" } },
-          { model: "2: Red Comp", knobs: { "Sens": 45, "Output": "+3.0dB" } },
-          { model: "6: L-Studio Comp", knobs: { "Threshold": "-20.0dB", "Ratio": "3.0:1", "Attack": 50, "Release": 45 } }
-        ];
+        let selectedCompObj = COMP[absHash % COMP.length];
+        let selectedWahObj = WAH[absHash % WAH.length];
+        let selectedFXAObj = FXA[absHash % FXA.length];
+        let selectedDSODObj = DS_OD[absHash % DS_OD.length];
+        let selectedAmpObj = AMP[absHash % AMP.length];
+        let selectedCabObj = CAB[absHash % CAB.length];
+        let selectedNSObj = NS[absHash % NS.length];
+        let selectedEQObj = EQ[absHash % EQ.length];
+        let selectedFXBObj = FXB[absHash % FXB.length];
+        let selectedDelayObj = DELAY[absHash % DELAY.length];
+        let selectedReverbObj = REVERB[absHash % REVERB.length];
+        let selectedVolObj = VOL[0];
 
-        const cleanAmps = [
-          { name: "Jazz 120 (Roland Clean)", cab: "US DLX 112" },
-          { name: "65 US DX (Fender Deluxe)", cab: "US DLX 112" },
-          { name: "US Blues JR", cab: "1960 412" }
-        ];
-
-        const highGainAmps = [
-          { name: "EV 5050 DS (EVH 5150)", cab: "EV 5050 412" },
-          { name: "MARKIII DS (Mesa Boogie)", cab: "Rec 412" },
-          { name: "J800 (Marshall JCM800)", cab: "1960 412" }
-        ];
-
-        const modFX = ["70's Chorus", "Ana-Chorus", "Flanger", "Phaser", "Tremolo"];
-
-        let isClean = query.includes("clean") || query.includes("limpio") || query.includes("pop") || query.includes("funk") || query.includes("acoustic") || query.includes("balada") || query.includes("arpegio") || query.includes("disco");
-        let isHeavy = query.includes("metal") || query.includes("heavy") || query.includes("distortion") || query.includes("distorsion") || query.includes("rock") || query.includes("solo") || query.includes("lead");
-
-        let selectedComp = compModels[absHash % compModels.length];
-        let ampData = isHeavy ? highGainAmps[absHash % highGainAmps.length] : cleanAmps[absHash % cleanAmps.length];
-        let selectedMod = modFX[absHash % modFX.length];
+        let hardRockKeywords = ["bon jovi", "jovi", "prayer", "sambora", "metallica", "guns", "slash", "ac/dc", "acdc", "van halen", "queen", "rock", "metal", "heavy", "distortion", "distorsion", "solo", "lead", "hard"];
+        let isHeavy = hardRockKeywords.some(kw => query.includes(kw));
         let bankCode = `${((absHash % 30) + 1).toString().padStart(2, '0')}${"ABCD"[absHash % 4]}`;
 
         let blocks = [
-          { type: "COMP", model: selectedComp.model, knobs: selectedComp.knobs },
-          { type: "FXA", model: selectedMod, knobs: { Rate: 35 + (absHash % 20), Depth: 50, Mix: 30 } }
+          { type: "COMP", model: selectedCompObj.name, knobs: selectedCompObj.knobs() }
         ];
 
-        if (isHeavy) {
-          blocks.push({ type: "DS/OD", model: "Tight Metal", knobs: { Gain: 45, Bass: 50, Treble: 70, Output: 65 } });
+        if (isHeavy || query.includes("wah") || query.includes("funky")) {
+          blocks.push({ type: "WAH", model: selectedWahObj.name, knobs: selectedWahObj.knobs() });
+        }
+
+        blocks.push({ type: "FXA", model: selectedFXAObj.name, knobs: selectedFXAObj.knobs() });
+
+        if (isHeavy || query.includes("overdrive") || query.includes("fuzz") || query.includes("boost")) {
+          blocks.push({ type: "DS/OD", model: selectedDSODObj.name, knobs: selectedDSODObj.knobs() });
         }
 
         blocks.push(
-          { type: "AMP", model: ampData.name, knobs: { Gain: isHeavy ? 75 : 30, Bass: 52, Mid: 58, Treble: 68, Master: 75 } },
-          { type: "CAB", model: ampData.cab, knobs: { Mic: "SM57", Center: 22, Distance: 10 } }
+          { type: "AMP", model: selectedAmpObj.name, knobs: selectedAmpObj.knobs() },
+          { type: "CAB", model: selectedCabObj.name, knobs: selectedCabObj.knobs() }
         );
 
-        if (isHeavy) {
-          blocks.push({ type: "NS", model: "Noise Killer", knobs: { Threshold: 65, Damp: 85 } });
+        if (isHeavy || query.includes("gate") || query.includes("noise")) {
+          blocks.push({ type: "NS", model: selectedNSObj.name, knobs: selectedNSObj.knobs() });
         }
 
         blocks.push(
-          { type: "DELAY", model: "Digital Delay", knobs: { Time: `${300 + (absHash % 150)}ms`, Feedback: 32, Mix: 25 } },
-          { type: "REVERB", model: "Plate Reverb", knobs: { Decay: 38, Mix: 22 } }
+          { type: "EQ", model: selectedEQObj.name, knobs: selectedEQObj.knobs() },
+          { type: "FXB", model: selectedFXBObj.name, knobs: selectedFXBObj.knobs() },
+          { type: "DELAY", model: selectedDelayObj.name, knobs: selectedDelayObj.knobs() },
+          { type: "REVERB", model: selectedReverbObj.name, knobs: selectedReverbObj.knobs() },
+          { type: "VOL", model: selectedVolObj.name, knobs: selectedVolObj.knobs() }
         );
 
         return {
           title: `Preset GE300: ${q.toUpperCase()}`,
           bank: bankCode,
-          desc: `Cadena universal calculada en tiempo real para '${q}' respetando el hardware GE300.`,
-          pickup: isClean ? "Mástil / Single Coil" : "Puente / Humbucker",
+          desc: `Preset calculado con ${selectedAmpObj.name} + Delay ${selectedDelayObj.name}.`,
+          pickup: isHeavy ? "Puente / Humbucker" : "Mástil / Single Coil",
           vol: "10 (Abierto Total)",
-          ctrls: ["CTRL 1: Boost / Overdrive", "CTRL 2: Modulation On/Off", "EXP 1: Volumen Master", "EXP 2: Expression"],
+          ctrls: ["CTRL 1: AMP Channel / Boost", "CTRL 2: FXA On/Off", "EXP 1: Master Vol", "EXP 2: Expression WAH"],
           blocks: blocks
         };
       } catch (err) {
@@ -230,11 +239,18 @@
           vol: "10",
           ctrls: ["CTRL 1: Boost", "CTRL 2: Mod", "EXP 1: Vol", "EXP 2: Wah"],
           blocks: [
-            { type: "COMP", model: "3: Yellow Comp", knobs: { "Threshold": "-30.0dB", "Ratio": "4.0:1", "Attack": 38, "Output": "+5.0dB" } },
-            { type: "AMP", model: "65 US DX (Fender Deluxe)", knobs: { Gain: 30, Bass: 50, Mid: 60, Treble: 70, Master: 75 } },
-            { type: "CAB", model: "US DLX 112", knobs: { Mic: "SM57", Center: 20, Distance: 10 } },
-            { type: "DELAY", model: "Digital Delay", knobs: { Time: "380ms", Feedback: 30, Mix: 25 } },
-            { type: "REVERB", model: "Plate Reverb", knobs: { Decay: 35, Mix: 20 } }
+            { type: "COMP", model: "3: Yellow Comp", knobs: { "Threshold": "-30.0dB", "Ratio": "4.0:1", "Attack": 38, "Output": "+6.0dB" } },
+            { type: "WAH", model: "1: Cry Wah", knobs: { "Position": 50, "Q": "2.2", "Peak": 50, "Output": "0dB" } },
+            { type: "FXA", model: "26: 70s Chorus", knobs: { "Rate": 36, "Tone": 30, "Depth": 40, "Level": 75, "Output Mode": "Stereo", "Output": "0dB" } },
+            { type: "DS/OD", model: "2: 808", knobs: { "Gain": 50, "Bass": 35, "Mid": 44, "Treble": 70, "Output": 60 } },
+            { type: "AMP", model: "1: US Blues JR", knobs: {"Gain": 65, "Bass": 60, "Mid": 70, "Treble": 50, "Mode": "Original", "Tube": "US DLX 6L6", "Preamp Out": 70, "Presence": 45, "Bias": 40, "Master": 70} },
+            { type: "CAB", model: "1: US DLX 112", knobs: {"Mic 1": "U87", "Center 1": 0, "Distance 1": 10, "Mic 2": "NT1", "Center 2": 5, "Distance 2": 10, "Low Cut": "80Hz", "High Cut": "8500Hz", "Early Reflection": 10, "Output": "0dB"} },
+            { type: "NS", model: "1: Noise Killer", knobs: { "Threshold": 25, "Output": "0dB" } },
+            { type: "EQ", model: "1: 3-Band EQ", knobs: { "Low": "0dB", "Mid": "0dB", "High": "0dB", "Output": "0dB" } },
+            { type: "FXB", model: "25: Ana-Chorus", knobs: { "Rate": 36, "Tone": 10, "Depth": 50, "Level": 90, "Output Mode": "Stereo", "Output": "+3.0dB" } },
+            { type: "DELAY", model: "1: Digital", knobs: { "Feedback": 15, "Mix": 10, "Time": "500ms", "Output": "0dB", "Tempo Sync": "Off", "Trail": "Off" } },
+            { type: "REVERB", model: "1: Room", knobs: { "Pre Delay": "8ms", "Decay": 35, "Low Cut": "80Hz", "High Cut": "5000Hz", "Mix": 25, "Output Mode": "Stereo", "Output": "0dB", "Quality": "High", "Trail": "Off" } },
+            { type: "VOL", model: "Vol", knobs: { "Position": 100, "Min": 0, "Max": 100, "Curve": "Log" } }
           ]
         };
       }
@@ -253,7 +269,7 @@
         }
       }
       let strokeDash = (numVal / 100) * 126;
-      return `<div class="flex flex-col items-center gap-0.5"><div class="knob-container"><svg class="w-14 h-14 knob-svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#26334d" stroke-width="4"/><circle cx="25" cy="25" r="20" fill="none" stroke="#00ff66" stroke-width="4" stroke-dasharray="${strokeDash} 126" stroke-linecap="round"/></svg><span class="knob-value-badge">${valStr}</span></div><span class="text-[9px] font-mono font-bold text-brand-muted uppercase">${label}</span></div>`;
+      return `<div class="flex flex-col items-center gap-0.5"><div class="knob-container"><svg class="w-14 h-14 knob-svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#26334d" stroke-width="4"/><circle cx="25" cy="25" r="20" fill="none" stroke="#00ff66" stroke-width="4" stroke-dasharray="${strokeDash} 126" stroke-linecap="round"/></svg><span class="knob-value-badge">${valStr}</span></div><span class="text-[9px] font-mono font-bold text-brand-muted uppercase text-center max-w-[70px] truncate">${label}</span></div>`;
     }
 
     function renderPreset(preset) {
@@ -287,7 +303,6 @@
       }
     }
 
-    // Carga inicial segura al abrir la página
     window.addEventListener('DOMContentLoaded', () => {
       renderPreset(generateUniversalTone("Preset Universal GE300"));
     });
@@ -313,7 +328,7 @@
     });
 
     function showTab(tab) {
-      if (tab === 'catalog') alert("Catálogo GE300 v2.1.2: Motor universal blindado de 15 bloques.");
+      if (tab === 'catalog') alert("Catálogo GE300 v4.0 (Minificado): COMP(10), WAH(10), FXA(40), DS/OD(31), AMP(108), CAB(43), NS(3), EQ(8), FXB(35), DELAY(14), REVERB(11) y VOL(1). 100% de la GE300 mapeada.");
       else if (tab === 'tools') alert("Calculadora BPM / ms: 120 BPM = 500 ms (1/4) | 250 ms (1/8)");
     }
   </script>

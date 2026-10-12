@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 Pro AI Tone Studio v5.1.0</title>
+  <title>MOOER GE300 Pro AI Tone Studio v5.2.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
@@ -27,9 +27,9 @@
       </div>
       <div>
         <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
-          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v5.1.0</span>
+          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v5.2.0</span>
         </h1>
-        <p class="text-[11px] text-brand-muted" id="apiStatusText">Soporte nativo para claves AQ.</p>
+        <p class="text-[11px] text-brand-muted" id="apiStatusText">Conexión API Optimizada (CORS Fix)</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -98,8 +98,8 @@
         <h3 class="font-bold text-xs text-brand-text flex items-center gap-1.5"><i class="fa-solid fa-key text-brand-accent"></i> Clave Gemini API</h3>
         <button type="button" onclick="toggleApiKeyModal()" class="text-brand-muted hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <p class="text-[11px] text-brand-muted leading-relaxed">Pega tu clave Gemini API (Formato AQ. o AIza) para habilitar la búsqueda inteligente en la nube.</p>
-      <input type="password" id="apiKeyInput" placeholder="AQ.A..." class="w-full bg-brand-bg text-xs font-mono text-brand-text p-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" />
+      <p class="text-[11px] text-brand-muted leading-relaxed">Pega tu clave Gemini API sin espacios en blanco al inicio o al final.</p>
+      <input type="password" id="apiKeyInput" placeholder="AQ o AIza..." class="w-full bg-brand-bg text-xs font-mono text-brand-text p-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" />
       <button type="button" onclick="saveApiKey()" class="w-full bg-brand-accent text-brand-bg font-bold text-xs py-2 rounded-xl hover:bg-brand-accentHover cursor-pointer">Guardar Clave</button>
     </div>
   </div>
@@ -149,7 +149,7 @@
         const key = keyInput.value.trim();
         if (key) {
           localStorage.setItem('GE300_GEMINI_KEY', key);
-          alert('API Key guardada. Motor de IA en la nube en línea.');
+          alert('API Key guardada correctamente.');
           updateApiStatus();
           toggleApiKeyModal();
         } else {
@@ -160,7 +160,7 @@
       }
     }
 
-    // BASE DE DATOS GE300 (Minificada)
+    // BASE DE DATOS GE300 MINIFICADA
     const m=(n,k)=>({name:n,knobs:()=>k});
     const COMP=[m("1: S-Comp",{"Sensitivity":82,"Output":"+4.0dB"}),m("2: Red Comp",{"Sensitivity":88,"Output":"+4.0dB"}),m("3: Yellow Comp",{"Threshold":"-30.0dB","Ratio":"4.0:1","Attack":38,"Output":"+6.0dB"}),m("4: Blue Comp",{"Threshold":"-30.0dB","Ratio":"4.0:1","Attack":38,"Output":"+6.0dB"}),m("5: Boost Comp",{"Comp":75,"Low":"+6.0dB","High":"-2.0dB","Gain":65,"Output":"+2.0dB"}),m("6: L-Studio Comp",{"Peak Reduction":80,"Gain":72,"Mix":60,"Output":"+2.0dB"}),m("7: Deluxe Comp",{"Threshold":"-30.0dB","Ratio":"5.0:1","Attack":54,"Release":30,"Mix":88,"Output":"+5.0dB"}),m("8: 3-Band Comp",{"Ratio":"4.0:1","Attack":30,"Release":65,"Low Threshold":"-35.0dB","Low Gain":"-1.0dB","Mid Threshold":"-33.0dB","Mid Gain":"+2.0dB","High Threshold":"-26.0dB","High Gain":"-2.0dB","Output":"+12.0dB"}),m("9: Limit",{"Threshold":"-18.0dB","Output":"+8.0dB"}),m("10: Blood Comp",{"Sustain":70,"Blend":60,"Output":"+4.0dB"})];
     const WAH=[m("1: Cry Wah",{"Position":50,"Q":"2.2","Peak":50,"Output":"0dB"}),m("2: 535 Wah",{"Position":50,"Q":"3.0","Peak":90,"Output":"0dB"}),m("3: 846 Wah",{"Position":50,"Q":"2.5","Peak":75,"Output":"-1.0dB"}),m("4: 847 Wah",{"Position":50,"Low Fc":"200Hz","High Fc":"2500Hz","Peak":45,"Output":"-3.0dB"}),m("5: Mae Wah",{"Position":50,"Low Fc":"250Hz","High Fc":"3000Hz","Output":"-3.0dB"}),m("6: Custom Wah",{"Position":50,"Low Fc":"300Hz","High Fc":"3000Hz","Peak":70,"Q":"2.5","Mix":100,"Output":"0dB"}),m("7: Auto Wah",{"Rate":18,"Range":90,"Peak":90,"Q":"3.0","Curve":"Sine","Output":"0dB"}),m("8: Touch Wah",{"Attack":65,"Sens":15,"Peak":70,"Q":"3.0","Direction":"Lo to Hi","Output":"0dB"}),m("9: Talk Wah Ah",{"Rate":18,"Range":80,"Peak":75,"Output":"+1.0dB"}),m("10: Talk Wah Oh",{"Rate":18,"Range":90,"Peak":75,"Output":"+1.0dB"})];
@@ -194,10 +194,9 @@
     const REVERB=[m("1: Room",{"Pre Delay":"8ms","Decay":35,"Low Cut":"80Hz","High Cut":"5000Hz","Mix":25,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("2: Hall",{"Pre Delay":"30ms","Decay":30,"Low Cut":"80Hz","High Cut":"4000Hz","Mix":20,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("3: Plate",{"Pre Delay":"15ms","Decay":23,"Low Cut":"60Hz","High Cut":"5700Hz","Mix":13,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("4: Filter-Reverb",{"Pre Delay":"30ms","Decay":35,"Low Cut":"40Hz","High Cut":"4500Hz","Mix":30,"Rate":45,"Peak":90,"Q":60,"Filter Output":90,"Output Mode":"Stereo"}),m("5: Fl-Reverb",{"Pre Delay":"30ms","Decay":45,"Low Cut":"40Hz","High Cut":"5500Hz","Mix":35,"Rate":45,"Feedback":45,"Mod Delay":50,"Mod Output":60,"Output Mode":"Stereo"}),m("6: Reverse-Reverb",{"Pre Delay":"20ms","Decay":45,"Low Cut":"60Hz","High Cut":"3800Hz","Mix":35,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("7: Swell-Reverb",{"Pre Delay":"30ms","Decay":45,"Low Cut":"60Hz","High Cut":"6700Hz","Mix":35,"Attack":45,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("8: Spring",{"Pre Delay":"0ms","Decay":10,"Low Cut":"80Hz","High Cut":"4800Hz","Mix":12,"Spring Length":50,"Spring Depth":76,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("9: Mod",{"Pre Delay":"35ms","Decay":45,"Low Cut":"40Hz","High Cut":"5400Hz","Mix":35,"Rate":30,"Depth":40,"Mod Output":80,"Output Mode":"Stereo","Output":"0dB"}),m("10: Shimmer",{"Pre Delay":"30ms","Decay":56,"Low Cut":"100Hz","High Cut":"5600Hz","Mix":50,"Shimmer":75,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("11: Dist-Reverb",{"Pre Delay":"40ms","Decay":50,"Low Cut":"200Hz","High Cut":"7330Hz","Mix":40,"Gain":60,"Dist lvl":65,"Tone":45,"Cab":"Off","Output Mode":"Stereo"})];
     const VOL=[m("Vol",{"Position":100,"Min":0,"Max":100,"Curve":"Log"})];
 
-    // CONEXIÓN CORREGIDA PARA CLAVES AQ.
+    // CONEXIÓN CORREGIDA: Usando parámetro en la URL en lugar de headers
     async function fetchAITone(query, apiKey) {
-        // Usa x-goog-api-key en el header en lugar de query param para compatibilidad total con claves AQ.
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
         
         const prompt = `Eres un técnico de guitarra experto configurando la pedalera MOOER GE300.
         Crea el tono exacto para la canción o artista: "${query}".
@@ -227,15 +226,14 @@
         const response = await fetch(url, {
             method: 'POST',
             headers: { 
-                'Content-Type': 'application/json',
-                'x-goog-api-key': apiKey
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
         });
 
         if (!response.ok) {
             const errData = await response.json();
-            throw new Error(`Error API: ${response.status} - ${errData.error?.message || 'Desconocido'}`);
+            throw new Error(`Error API: ${response.status}`);
         }
         
         const data = await response.json();
@@ -313,7 +311,7 @@
 
       try {
           if (apiKey && apiKey.trim() !== '') {
-              // 1. CONEXIÓN A GEMINI API USANDO HEADERS PARA AQ.
+              // 1. CONEXIÓN A GEMINI API
               const aiData = await fetchAITone(query, apiKey);
               
               let blocks = [];
@@ -428,7 +426,7 @@
     });
 
     function showTab(tab) {
-      if (tab === 'catalog') alert("Catálogo GE300 v5.1.0: Inteligencia Artificial en la nube conectada nativamente.");
+      if (tab === 'catalog') alert("Catálogo GE300 v5.2.0: Inteligencia Artificial en la nube conectada nativamente.");
       else if (tab === 'tools') alert("Calculadora BPM / ms: 120 BPM = 500 ms (1/4) | 250 ms (1/8)");
     }
   </script>

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 Pro AI Tone Studio v8.2.0</title>
+  <title>MOOER GE300 Pro AI Tone Studio v8.3.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
@@ -21,7 +21,8 @@
     .view-mode .knob-container { cursor: default !important; }
   </style>
 </head>
-<body class="flex flex-col h-screen overflow-hidden font-sans">
+<!-- Usamos h-[100dvh] para evitar que el navegador móvil corte el menú de abajo -->
+<body class="flex flex-col h-[100dvh] overflow-hidden font-sans">
 
   <header class="bg-brand-panel border-b border-brand-border px-4 py-3 flex items-center justify-between shrink-0 z-10">
     <div class="flex items-center gap-2.5">
@@ -30,9 +31,9 @@
       </div>
       <div>
         <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
-          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v8.2.0</span>
+          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v8.3.0</span>
         </h1>
-        <p class="text-[11px] text-brand-muted" id="apiStatusText">Biblioteca Universal & Modo Seguro</p>
+        <p class="text-[11px] text-brand-muted" id="apiStatusText">UI Completada & Conexión Total</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -56,7 +57,8 @@
       </form>
     </section>
 
-    <main class="flex-1 overflow-y-auto p-4 space-y-5 hide-scrollbar view-mode" id="mainPresetContainer">
+    <!-- Agregamos pb-6 para asegurar que se pueda scrollear hasta el final cómodamente -->
+    <main class="flex-1 overflow-y-auto p-4 pb-10 space-y-5 hide-scrollbar view-mode" id="mainPresetContainer">
       <div class="bg-brand-card rounded-2xl border border-brand-border p-4 space-y-4 shadow-lg shadow-black/20">
         
         <div class="border-b border-brand-border/60 pb-3 space-y-2.5">
@@ -115,12 +117,18 @@
           </h3>
           <div id="effectBlocksContainer" class="space-y-2.5"></div>
         </div>
+
+        <div class="bg-brand-bg/80 rounded-xl p-3 border border-brand-border/60 text-[11px] space-y-1.5 mt-2">
+          <span class="block font-mono text-[9px] uppercase font-bold text-brand-accent">Asignaciones CTRL & EXP</span>
+          <div class="grid grid-cols-2 gap-1.5 text-brand-muted" id="ctrlAssignments"></div>
+        </div>
+        
       </div>
     </main>
   </div>
 
   <!-- VISTA BIBLIOTECA: FAVORITOS Y DESTACADOS -->
-  <div id="viewLibrary" class="hidden flex-col flex-1 overflow-y-auto bg-brand-bg p-4 space-y-6 hide-scrollbar">
+  <div id="viewLibrary" class="hidden flex-col flex-1 overflow-y-auto bg-brand-bg p-4 space-y-6 pb-10 hide-scrollbar">
     
     <div class="space-y-3">
       <h2 class="text-xs font-bold font-mono text-brand-accent uppercase flex items-center gap-1.5 border-b border-brand-border pb-1">
@@ -142,7 +150,7 @@
 
   </div>
 
-  <!-- MODAL API -->
+  <!-- MODAL API (CON TODAS SUS FUNCIONES RESTAURADAS) -->
   <div id="apiKeyModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-brand-card border border-brand-border rounded-2xl p-4 w-full max-w-sm space-y-3">
       <div class="flex items-center justify-between border-b border-brand-border pb-2">
@@ -155,8 +163,8 @@
     </div>
   </div>
 
-  <!-- NAVEGACIÓN INFERIOR -->
-  <nav class="bg-brand-panel border-t border-brand-border px-6 py-2 flex justify-around shrink-0 text-center z-10">
+  <!-- NAVEGACIÓN INFERIOR (ASEGURADA CON SHRINK-0 Y Z-10) -->
+  <nav class="bg-brand-panel border-t border-brand-border px-6 py-2 flex justify-around shrink-0 text-center z-20 w-full relative">
     <button class="flex flex-col items-center gap-0.5 text-brand-accent w-16" id="navSearch" onclick="switchTab('search')">
       <i class="fa-solid fa-sliders text-base"></i>
       <span class="text-[9px] font-bold">Tone AI</span>
@@ -215,24 +223,64 @@
         }
     };
 
-    // VARIABLES GLOBALES
     let currentCacheKey = '';
     let isEditMode = false;
 
-    // --- FUNCIONES DE BASE DE DATOS MOOER (MINIFICADAS) ---
-    const m=(n,k)=>({name:n,knobs:()=>k});
-    const COMP=[m("1: S-Comp",{"Sensitivity":82,"Output":"+4.0dB"}),m("3: Yellow Comp",{"Threshold":"-30.0dB","Ratio":"4.0:1","Attack":38,"Output":"+6.0dB"}),m("6: L-Studio Comp",{"Peak Reduction":80,"Gain":72,"Mix":60,"Output":"+2.0dB"})];
-    const WAH=[m("1: Cry Wah",{"Position":50,"Q":"2.2","Peak":50,"Output":"0dB"}),m("6: Custom Wah",{"Position":50,"Low Fc":"300Hz","High Fc":"3000Hz","Peak":70,"Q":"2.5","Mix":100,"Output":"0dB"}),m("35: Mono Pitch",{"Pitch":"+12.0","Tone":20,"Mix":50,"Output":"+1.0dB"})];
-    const FXA=[m("1: 3-Band EQ",{"Low":"0dB","Mid":"0dB","High":"0dB","Output":"0dB"}),m("6: Phaser",{"Rate":24,"Tone":70,"Depth":60,"Output":"0dB"}),m("13: Flanger",{"Rate":24,"Feedback":25,"Tone":40,"Level":50,"Output":"+2.0dB"}),m("26: 70s Chorus",{"Rate":36,"Tone":30,"Depth":40,"Level":75,"Output Mode":"Stereo","Output":"0dB"})];
-    const DS_OD=[m("2: 808",{"Gain":50,"Bass":35,"Mid":44,"Treble":70,"Output":60}),m("6: DDrive",{"Gain":53,"Bass":40,"Mid":52,"Treble":60,"Output":45}),m("7: BlackRat",{"Gain":56,"Bass":40,"Mid":57,"Treble":67,"Output":48}),m("29: Blues Crab",{"Gain":60,"Bass":53,"Mid":46,"Treble":31,"Output":50})];
-    const AMP=[m("2: 65 US DX",{"Gain":55,"Bass":50,"Mid":60,"Treble":50,"Mode":"Original","Tube":"US DLX 6L6","Preamp Out":70,"Presence":45,"Bias":40,"Master":75}),m("10: J800",{"Gain":60,"Bass":50,"Mid":60,"Treble":50,"Mode":"Original","Tube":"UK EL34","Preamp Out":70,"Presence":45,"Bias":40,"Master":75}),m("102: Jazz 120",{"Gain":40,"Bass":50,"Mid":60,"Treble":50,"Mode":"Original","Tube":"UK EL34","Preamp Out":70,"Presence":45,"Bias":40,"Master":75})];
-    const CAB=[m("1: US DLX 112",{"Mic 1":"SM57","Center 1":0,"Distance 1":10,"Mic 2":"NT1","Center 2":5,"Distance 2":10,"Low Cut":"80Hz","High Cut":"8500Hz","Early Reflection":10,"Output":"0dB"}),m("6: 1960 412",{"Mic 1":"SM57","Center 1":0,"Distance 1":10,"Mic 2":"U87","Center 2":5,"Distance 2":10,"Low Cut":"80Hz","High Cut":"8500Hz","Early Reflection":10,"Output":"0dB"}),m("16: Jazz 212",{"Mic 1":"SM57","Center 1":0,"Distance 1":10,"Mic 2":"U87","Center 2":5,"Distance 2":10,"Low Cut":"80Hz","High Cut":"8500Hz","Early Reflection":10,"Output":"0dB"})];
-    const NS=[m("1: Noise Killer",{"Threshold":25,"Output":"0dB"})];
-    const EQ=[m("1: 3-Band EQ",{"Low":"0dB","Mid":"0dB","High":"0dB","Output":"0dB"})];
-    const DELAY=[m("1: Digital",{"Feedback":15,"Mix":10,"Time":"500ms","Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("2: Analog",{"Feedback":20,"Mix":15,"Time":"500ms","Output":"0dB","Tempo Sync":"Off","Trail":"Off"})];
-    const REVERB=[m("1: Room",{"Pre Delay":"8ms","Decay":35,"Low Cut":"80Hz","High Cut":"5000Hz","Mix":25,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("2: Hall",{"Pre Delay":"30ms","Decay":30,"Low Cut":"80Hz","High Cut":"4000Hz","Mix":20,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"})];
-    const VOL=[m("Vol",{"Position":100,"Min":0,"Max":100,"Curve":"Log"})];
+    // --- FUNCIONES COMPLETAS DE API KEY RESTAURADAS ---
+    function updateApiStatus() {
+        const key = localStorage.getItem('GE300_GEMINI_KEY');
+        const icon = document.getElementById('keyIcon');
+        if (key && key.trim() !== '') {
+            icon.classList.add('text-brand-accent');
+            icon.classList.remove('text-brand-muted');
+        } else {
+            icon.classList.remove('text-brand-accent');
+            icon.classList.add('text-brand-muted');
+        }
+    }
 
+    function toggleApiKeyModal() {
+        const modal = document.getElementById('apiKeyModal');
+        if (modal) {
+            modal.classList.toggle('hidden');
+            // Restaurado: Cargar la clave guardada en el input al abrir el modal
+            const savedKey = localStorage.getItem('GE300_GEMINI_KEY');
+            if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
+        }
+    }
+
+    function saveApiKey() {
+        const keyInput = document.getElementById('apiKeyInput');
+        if (keyInput) {
+            const key = keyInput.value.trim();
+            if (key) {
+                localStorage.setItem('GE300_GEMINI_KEY', key);
+                alert('API Key guardada correctamente.');
+                updateApiStatus();
+                toggleApiKeyModal();
+            } else {
+                localStorage.removeItem('GE300_GEMINI_KEY');
+                updateApiStatus();
+                toggleApiKeyModal();
+            }
+        }
+    }
+
+    // --- BASE DE DATOS MOOER (COMPLETA) ---
+    const m=(n,k)=>({name:n,knobs:()=>k});
+    const COMP=[m("1: S-Comp",{"Sensitivity":82,"Output":"+4.0dB"}),m("2: Red Comp",{"Sensitivity":88,"Output":"+4.0dB"}),m("3: Yellow Comp",{"Threshold":"-30.0dB","Ratio":"4.0:1","Attack":38,"Output":"+6.0dB"}),m("4: Blue Comp",{"Threshold":"-30.0dB","Ratio":"4.0:1","Attack":38,"Output":"+6.0dB"}),m("5: Boost Comp",{"Comp":75,"Low":"+6.0dB","High":"-2.0dB","Gain":65,"Output":"+2.0dB"}),m("6: L-Studio Comp",{"Peak Reduction":80,"Gain":72,"Mix":60,"Output":"+2.0dB"}),m("7: Deluxe Comp",{"Threshold":"-30.0dB","Ratio":"5.0:1","Attack":54,"Release":30,"Mix":88,"Output":"+5.0dB"}),m("8: 3-Band Comp",{"Ratio":"4.0:1","Attack":30,"Release":65,"Low Threshold":"-35.0dB","Low Gain":"-1.0dB","Mid Threshold":"-33.0dB","Mid Gain":"+2.0dB","High Threshold":"-26.0dB","High Gain":"-2.0dB","Output":"+12.0dB"}),m("9: Limit",{"Threshold":"-18.0dB","Output":"+8.0dB"}),m("10: Blood Comp",{"Sustain":70,"Blend":60,"Output":"+4.0dB"})];
+    const WAH=[m("1: Cry Wah",{"Position":50,"Q":"2.2","Peak":50,"Output":"0dB"}),m("2: 535 Wah",{"Position":50,"Q":"3.0","Peak":90,"Output":"0dB"}),m("3: 846 Wah",{"Position":50,"Q":"2.5","Peak":75,"Output":"-1.0dB"}),m("4: 847 Wah",{"Position":50,"Low Fc":"200Hz","High Fc":"2500Hz","Peak":45,"Output":"-3.0dB"}),m("5: Mae Wah",{"Position":50,"Low Fc":"250Hz","High Fc":"3000Hz","Output":"-3.0dB"}),m("6: Custom Wah",{"Position":50,"Low Fc":"300Hz","High Fc":"3000Hz","Peak":70,"Q":"2.5","Mix":100,"Output":"0dB"}),m("7: Auto Wah",{"Rate":18,"Range":90,"Peak":90,"Q":"3.0","Curve":"Sine","Output":"0dB"}),m("8: Touch Wah",{"Attack":65,"Sens":15,"Peak":70,"Q":"3.0","Direction":"Lo to Hi","Output":"0dB"}),m("9: Talk Wah Ah",{"Rate":18,"Range":80,"Peak":75,"Output":"+1.0dB"}),m("10: Talk Wah Oh",{"Rate":18,"Range":90,"Peak":75,"Output":"+1.0dB"})];
+    const FXA=[m("1: 3-Band EQ",{"Low":"0dB","Mid":"0dB","High":"0dB","Output":"0dB"}),m("2: 5-Band EQ",{"Low":"0dB","Low Mid":"0dB","Mid":"0dB","High Mid":"0dB","High":"0dB","Output":"0dB"}),m("3: Studio EQ",{"Freq 1":"100Hz","Q 1":"2.6","Gain 1":"0dB","Freq 2":"800Hz","Q 2":"2.6","Gain 2":"0dB","Freq 3":"2000Hz","Q 3":"2.6","Gain 3":"0dB","Freq 4":"12000Hz"}),m("4: Slow Gear",{"Attack":15,"Output":"0dB"}),m("5: Octave",{"Sub":60,"Sub Tone":40,"Upper":70,"Upper Tone":70,"Dry":80,"Output":"0dB"}),m("6: Phaser",{"Rate":24,"Tone":70,"Depth":60,"Output":"0dB"}),m("7: Step Phaser",{"Rate":24,"Tone":80,"Depth":80,"Output":"0dB"}),m("8: Fat Phaser",{"Rate":24,"Tone":70,"Depth":50,"Output":"0dB"}),m("9: 6 Stage Analog Phaser",{"Rate":24,"Sweep":65,"Resonance":60,"Output":"0dB"}),m("10: 12 Stage Analog Phaser",{"Rate":24,"Sweep":55,"Resonance":65,"Output":"0dB"}),m("11: Dual Phaser",{"Rate":24,"Tone":30,"Depth":50,"Output":"0dB"}),m("12: Modern Phaser",{"Rate":24,"Tone":35,"Depth":60,"Output":"0dB"}),m("13: Flanger",{"Rate":24,"Feedback":25,"Tone":40,"Level":50,"Output":"+2.0dB"}),m("14: Jet-Flanger",{"Rate":24,"Feedback":65,"Tone":40,"Level":75,"Output":"+2.0dB"}),m("15: Flanger pro",{"Rate":24,"Feedback":65,"Delay":70,"Tone":45,"Level":50,"Output":"+1.0dB"}),m("16: Triple Flanger",{"Manual":75,"Width":30,"Speed":50,"Intensity":60,"Output":"+1.0dB"}),m("17: Modern Flanger",{"Rate":24,"Feedback":50,"Delay":80,"Tone":50,"Level":60,"Output":"+1.0dB"}),m("18: Tremolo",{"Rate":25,"Tone":50,"Depth":60,"Output":"0dB"}),m("19: Optical Tremolo",{"Speed":25,"Intensity":50,"Tone":40,"Output":"0dB"}),m("20: 60s Tremolo",{"Speed":19,"Intensity":75,"Tone":35,"Output":"+3.0dB"}),m("21: Stutter",{"Rate":22,"Tone":35,"Depth":65,"Output":"0dB"}),m("22: Vibrato",{"Rate":22,"Tone":40,"Depth":50,"Output":"+1.0dB"}),m("23: Rotary",{"Rate":40,"Tone":30,"Level":65,"Output Mode":"Stereo","Output":"+2.0dB"}),m("24: Modern Rotary",{"Rate":24,"Tone":25,"Level":75,"Output Mode":"Stereo","Output":"+1.0dB"}),m("25: Ana-Chorus",{"Rate":36,"Tone":10,"Depth":50,"Level":90,"Output Mode":"Stereo","Output":"+3.0dB"}),m("26: 70s Chorus",{"Rate":36,"Tone":30,"Depth":40,"Level":75,"Output Mode":"Stereo","Output":"0dB"}),m("27: Tri-Chorus",{"Rate 1":20,"Depth 1":60,"Rate 2":40,"Depth 2":40,"Rate 3":60,"Depth 3":50,"Level":60,"Output Mode":"Stereo","Output":"0dB"}),m("28: Ring Mod",{"Rate":40,"Tone":25,"Level":80,"Output":"+1.0dB"}),m("29: Delay",{"Time":"500ms","Feedback":25,"Mix":15,"Low Cut":"100Hz","High Cut":"3000Hz","Output":"0dB"}),m("30: Detune",{"Pitch":"+12cent","Tone":25,"Level":100,"Output":"0dB"}),m("31: Lofi",{"Sample":"21000Hz","Bit":"8bit","Tone":30,"Level":70,"Output":"0dB"}),m("32: Low pass filter",{"Rate":24,"Range":50,"Level":70,"Depth":65,"Output":"0dB"}),m("33: High pass filter",{"Rate":24,"Range":50,"Level":70,"Depth":65,"Output":"0dB"}),m("34: Q filter",{"Rate":24,"Range":60,"Q":"2.0","Depth":100,"Level":90,"Output":"0dB"}),m("35: Mono Pitch",{"Pitch":"+12.0","Tone":20,"Mix":50,"Output":"+1.0dB"})];
+    const DS_OD=[m("1: Tube DR",{"Gain":50,"Bass":50,"Mid":50,"Treble":50,"Output":50}),m("2: 808",{"Gain":50,"Bass":35,"Mid":44,"Treble":70,"Output":60}),m("3: Pure Boost",{"Gain":2,"Bass":48,"Mid":50,"Treble":60,"Output":86}),m("4: Flex Boost",{"Gain":0,"Bass":62,"Mid":56,"Treble":48,"Output":100}),m("5: OD250",{"Gain":60,"Bass":40,"Mid":48,"Treble":58,"Output":70}),m("6: DDrive",{"Gain":53,"Bass":40,"Mid":52,"Treble":60,"Output":45}),m("7: BlackRat",{"Gain":56,"Bass":40,"Mid":57,"Treble":67,"Output":48}),m("8: Grey Faze",{"Gain":67,"Bass":44,"Mid":66,"Treble":58,"Output":42}),m("9: Muffy",{"Gain":46,"Bass":23,"Mid":47,"Treble":39,"Output":40}),m("10: Fuzz Department",{"Gain":77,"Bass":47,"Mid":75,"Treble":19,"Output":50}),m("11: MTL Zone",{"Gain":31,"Bass":40,"Mid":25,"Treble":44,"Output":51}),m("12: MTL Master",{"Gain":37,"Bass":45,"Mid":48,"Treble":36,"Output":49}),m("13: Obsessive Dist",{"Gain":58,"Bass":37,"Mid":77,"Treble":5,"Output":35}),m("14: Jimmy OD",{"Gain":54,"Bass":45,"Mid":62,"Treble":42,"Output":47}),m("15: Full DRV",{"Gain":57,"Bass":43,"Mid":39,"Treble":84,"Output":55}),m("16: Shred",{"Gain":61,"Bass":50,"Mid":73,"Treble":13,"Output":54}),m("17: BeeBee Pre",{"Gain":60,"Bass":50,"Mid":56,"Treble":33,"Output":57}),m("18: BeeBee +",{"Gain":37,"Bass":47,"Mid":76,"Treble":10,"Output":62}),m("19: Riet",{"Gain":39,"Bass":42,"Mid":58,"Treble":63,"Output":55}),m("20: Tight DS",{"Gain":40,"Bass":62,"Mid":55,"Treble":54,"Output":58}),m("21: Full DS",{"Gain":63,"Bass":55,"Mid":65,"Treble":41,"Output":50}),m("22: Gold Clon",{"Gain":40,"Bass":68,"Mid":13,"Treble":76,"Output":50}),m("23: Vx Tube OD",{"Gain":80,"Bass":49,"Mid":43,"Treble":41,"Output":61}),m("24: Tight Metal",{"Gain":40,"Bass":54,"Mid":32,"Treble":17,"Output":50}),m("25: The Juicer",{"Gain":45,"Bass":50,"Mid":60,"Treble":5,"Output":52}),m("26: Rumble Drive",{"Gain":46,"Bass":38,"Mid":44,"Treble":57,"Output":62}),m("27: Solo",{"Gain":30,"Bass":42,"Mid":49,"Treble":25,"Output":48}),m("28: Blues Mood",{"Gain":30,"Bass":46,"Mid":64,"Treble":8,"Output":50}),m("29: Blues Crab",{"Gain":60,"Bass":53,"Mid":46,"Treble":31,"Output":50}),m("30: Blade",{"Gain":46,"Bass":63,"Mid":36,"Treble":14,"Output":42}),m("31: Hustle Drive",{"Gain":23,"Bass":45,"Mid":58,"Treble":19,"Output":91})];
+    const AN=["1: US Blues JR", "2: 65 US DX", "3: 65 US TW", "4: US Sonic", "5: US Blues CL", "6: US Blues OD", "7: 59 US BASS", "8: UK30 CL", "9: UK30 OD", "10: J800", "11: J900", "12: PLX 100", "13: J2525 CH1", "14: J2525 CH2", "15: J410 CL", "16: J410 DS", "17: US Gold 100 CL", "18: US Gold 100 DS", "19: US Gold 50A", "20: US Gold 50B", "21: Cali LS CH1", "22: Cali LS CH2", "23: Cali Dual 1", "24: Cali Dual 2", "25: TRI REC CL", "26: TRI REC DS", "27: MARKIII CL", "28: MARKIII DS", "29: Cali MK4 A", "30: Cali MK4 B", "31: Cali MK4 C", "32: MARKV CL", "33: MARKV DS", "34: Cali JP A", "35: Cali JP B", "36: Cali JP C", "37: Eagle FB CH1", "38: Eagle FB CH2", "39: Powerbell CL", "40: Powerbell DS", "41: Blacknight CL", "42: Blacknight DS", "43: Eagle 670 CL", "44: Eagle 670 CR", "45: Eagle 670 L1", "46: Eagle 670 L2", "47: Satsuma TH200A", "48: Satsuma TH200B", "49: Satsuma TH30A", "50: Satsuma TH30B", "51: Rock Vrb CL", "52: Rock Vrb DS", "53: Citrus 30", "54: EV 5050 CL", "55: EV 5050 DS", "56: PV 5050 CL", "57: PV 5050 DS", "58: Petey 6550 A", "59: Petey 6550 B", "60: Petey Satch CL", "61: Petey Satch CR", "62: Petey Satch UL", "63: Herby CH1", "64: Herby CH2", "65: Herby CH3", "66: VHS CH1", "67: VHS CH2", "68: VHS CH3", "69: VHS CH4", "70: Hugen CL", "71: Hugen OD", "72: Hugen DS", "73: Randy Devil CL", "74: Randy Devil DS", "75: SLOW 100 CR", "76: SLOW 100 DS", "77: JET 100H CL", "78: JET 100H OD", "79: Koche OD", "80: Koche DS", "81: Blueno UG 30A", "82: Blueno UG 30B", "83: Custom 100 CH1", "84: Custom 100 CH2", "85: Custom 100 CH3", "86: Mr. Smith CL", "87: Mr. Smith DS", "88: Taxidea Taxus A", "89: Taxidea Taxus B", "90: Shittcow GR", "91: Shittcow RD", "92: Doctor3 a", "93: Doctor3 B", "94: Matchbox 30 CL", "95: Matchbox 30 OD", "96: Regal Tone CL", "97: Regal Tone OD1", "98: Regal Tone OD2", "99: Carol CL", "100: Carol OD", "101: Cardeff", "102: Jazz 120", "103: HWT 103", "104: HT Club CL", "105: HT Club DS", "106: Acoustic 1", "107: Acoustic 2", "108: Acoustic 3"];
+    const AMP=AN.map((n,i)=>m(n,{"Gain":55+(i%25),"Bass":50,"Mid":60,"Treble":50,"Mode":"Original","Tube":i%2===0?"US DLX 6L6":"UK EL34","Preamp Out":70,"Presence":45,"Bias":40,"Master":75}));
+    const CN=["1: US DLX 112", "2: US TWN 212", "3: US Bass 410", "4: Sonic 112", "5: Blues 112", "6: 1960 412", "7: Eagle P412", "8: Eagle S412", "9: Mark 112", "10: Rec 412", "11: Citrus 412", "12: Citrus 212", "13: Slow 412", "14: DR.ZEE 112", "15: DR.ZEE 212", "16: Jazz 212", "17: UK 212", "18: HWT 412", "19: PV 5050 412", "20: Regal Tone 110", "21: Two Stones 212", "22: Cardeff 112", "23: EV 5050 412", "24: HT 412", "25: Gas Station 412", "26: Blueno 212", "27: Custom 212", "28: Herby 412", "29: VHS 412", "30: Doctor3 112", "31: US Gold 412", "32: US Gold 112", "33: Matchbox 30 112", "34: Cali 412-1", "35: Cali 412-2", "36: Satsuma 212", "37: Petey 412", "38: Petey 212", "39: Mr Smith 112", "40: Randy Devil 412", "41: Taxidea Taxus 112", "42: Shittcow 412", "43: Acoustic 112"];
+    const CAB=CN.map((n,i)=>m(n,{"Mic 1":i%2===0?"U87":"SM57","Center 1":0,"Distance 1":10,"Mic 2":i%2===0?"NT1":"U87","Center 2":5,"Distance 2":10,"Low Cut":"80Hz","High Cut":"8500Hz","Early Reflection":10,"Output":"0dB"}));
+    const NS=[m("1: Noise Killer",{"Threshold":25,"Output":"0dB"}),m("2: Intel Reducer",{"Threshold":35,"Depth":70,"Output":"0dB"}),m("3: Noise Gate",{"Attack":25,"Release":70,"Threshold":25,"Damp":50,"Output":"0dB"})];
+    const EQ=[m("1: 3-Band EQ",{"Low":"0dB","Mid":"0dB","High":"0dB","Output":"0dB"}),m("2: Mooer G",{"100Hz":"0dB","250Hz":"0dB","630Hz":"0dB","1.6kHZ":"0dB","4kHZ":"0dB","Output":"0dB"}),m("3: Mooer HM",{"80Hz":"0dB","240Hz":"0dB","750Hz":"0dB","2.2kHZ":"0dB","6.6kHZ":"0dB","Output":"0dB"}),m("4: Mooer B",{"62.5Hz":"0dB","125Hz":"0dB","500Hz":"0dB","1kHZ":"0dB","4kHZ":"0dB","Output":"0dB"}),m("5: Mooer G-6",{"100Hz":"0dB","200Hz":"0dB","400Hz":"0dB","800Hz":"0dB","1.6kHZ":"0dB","3.2kHZ":"0dB","Output":"0dB"}),m("6: Mooer G-10",{"31Hz":"0dB","62Hz":"0dB","126Hz":"0dB","250Hz":"0dB","500Hz":"0dB","1kHZ":"0dB","2kHZ":"0dB","4kHZ":"0dB","8kHZ":"0dB","16kHZ":"0dB","Output":"0dB"}),m("7: Custom EQ",{"Low Gain":"0dB","Low Freq":"100Hz","Mid Gain":"0dB","Mid Freq":"800Hz","High Gain":"0dB","High Freq":"3200Hz","Output":"0dB"}),m("8: Studio EQ Pro",{"Low Gain":"0dB","Low Freq":"100Hz","Low Q":"2.6","Low Mid Gain":"0dB","Low Mid Freq":"800Hz","Mid Gain":"0dB","Mid Freq":"3200Hz","Mid Q":"2.6","Mid Hi Gain":"0dB"})];
+    const DELAY=[m("1: Digital",{"Feedback":15,"Mix":10,"Time":"500ms","Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("2: Analog",{"Feedback":20,"Mix":15,"Time":"500ms","Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("3: Dynamic",{"Feedback":20,"Mix":10,"Threshold":45,"Time":"500ms","Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("4: Real",{"Feedback":30,"Mix":20,"Time":"500ms","Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("5: Tape",{"Feedback":25,"Mix":13,"Time":"500ms","Mod Rate":45,"Mod Depth":50,"Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("6: Mod",{"Feedback":20,"Mix":12,"Time":"500ms","Mod Rate":35,"Mod Depth":60,"Output":"+1.0dB","Tempo Sync":"Off","Trail":"Off"}),m("7: Reverse",{"Feedback":30,"Mix":15,"Time":"500ms","Low Cut":"100Hz","High Cut":"5600Hz","Output":"0dB","Tempo Sync":"Off"}),m("8: Dual Delay",{"Feedback":50,"Mix":40,"Low Cut":"100Hz","High Cut":"5600Hz","Time 1":"340ms","Pan 1":"L100","Level 1":50,"Time 2":"500ms","Pan 2":"R100","Level 2":50}),m("9: Multi Tap Delay",{"Feedback":45,"Mix":35,"Low Cut":"100Hz","High Cut":"5600Hz","Time 1":"140ms","Pan 1":"L100","Level 1":50,"Time 2":"260ms","Pan 2":"R100","Level 2":50}),m("10: PingPong",{"Feedback":25,"Mix":15,"Time":"500ms","Output Mode":"Stereo","Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("11: Vintage Delay",{"Feedback":25,"Mix":15,"Time":"500ms","Output":"0dB","bit":70,"S-Rate":55,"Tempo Sync":"Off"}),m("12: Galaxy Delay",{"Feedback":25,"Mix":17,"Time":"500ms","Mod Depth":65,"Rate":40,"Attack":30,"Output Mode":"Stereo","Output":"0dB","Tempo Sync":"Off"}),m("13: Fuzz Delay",{"Feedback":25,"Mix":15,"Time":"500ms","Gain":20,"Fuzz Lvl":30,"Tone":20,"Cab":"On","Output":"0dB","Tempo Sync":"Off"}),m("14: Crystal Delay",{"Feedback":30,"Mix":25,"Time":"500ms","Mod Depth":65,"Rate":75,"Mod Output":40,"Output Mode":"Stereo","Output":"0dB","Tempo Sync":"Off"})];
+    const REVERB=[m("1: Room",{"Pre Delay":"8ms","Decay":35,"Low Cut":"80Hz","High Cut":"5000Hz","Mix":25,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("2: Hall",{"Pre Delay":"30ms","Decay":30,"Low Cut":"80Hz","High Cut":"4000Hz","Mix":20,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("3: Plate",{"Pre Delay":"15ms","Decay":23,"Low Cut":"60Hz","High Cut":"5700Hz","Mix":13,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("4: Filter-Reverb",{"Pre Delay":"30ms","Decay":35,"Low Cut":"40Hz","High Cut":"4500Hz","Mix":30,"Rate":45,"Peak":90,"Q":60,"Filter Output":90,"Output Mode":"Stereo"}),m("5: Fl-Reverb",{"Pre Delay":"30ms","Decay":45,"Low Cut":"40Hz","High Cut":"5500Hz","Mix":35,"Rate":45,"Feedback":45,"Mod Delay":50,"Mod Output":60,"Output Mode":"Stereo"}),m("6: Reverse-Reverb",{"Pre Delay":"20ms","Decay":45,"Low Cut":"60Hz","High Cut":"3800Hz","Mix":35,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("7: Swell-Reverb",{"Pre Delay":"30ms","Decay":45,"Low Cut":"60Hz","High Cut":"6700Hz","Mix":35,"Attack":45,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("8: Spring",{"Pre Delay":"0ms","Decay":10,"Low Cut":"80Hz","High Cut":"4800Hz","Mix":12,"Spring Length":50,"Spring Depth":76,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("9: Mod",{"Pre Delay":"35ms","Decay":45,"Low Cut":"40Hz","High Cut":"5400Hz","Mix":35,"Rate":30,"Depth":40,"Mod Output":80,"Output Mode":"Stereo","Output":"0dB"}),m("10: Shimmer",{"Pre Delay":"30ms","Decay":56,"Low Cut":"100Hz","High Cut":"5600Hz","Mix":50,"Shimmer":75,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("11: Dist-Reverb",{"Pre Delay":"40ms","Decay":50,"Low Cut":"200Hz","High Cut":"7330Hz","Mix":40,"Gain":60,"Dist lvl":65,"Tone":45,"Cab":"Off","Output Mode":"Stereo"})];
+    const VOL=[m("Vol",{"Position":100,"Min":0,"Max":100,"Curve":"Log"})];
 
     // --- CONTROL DE PESTAÑAS (TABS) ---
     function switchTab(tab) {
@@ -353,7 +401,111 @@
         }
     }
 
-    // --- LÓGICA DE BÚSQUEDA (INTEGRA UNIVERSALES) ---
+    // --- FUNCIONES DEL MOTOR IA (RESTAURADAS AL 100%) ---
+    function fuzzyMatch(list, query) {
+        if (!query || query === "None") return null;
+        let q = query.toLowerCase().replace(/[^a-z0-9]/g, ''); 
+        let match = list.find(x => {
+            let n = x.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+            return n.includes(q) || q.includes(n);
+        });
+        if (match) return match;
+        if (q.includes("jcm800")) return list.find(x => x.name.includes("J800"));
+        if (q.includes("whammy") || q.includes("pitch")) return list.find(x => x.name.includes("Pitch"));
+        if (q.includes("ts808") || q.includes("screamer")) return list.find(x => x.name.includes("808"));
+        return null; 
+    }
+
+    function buildBlock(aiDataNode, list, type) {
+        if (!aiDataNode || !aiDataNode.name || aiDataNode.name === "None") return null;
+        let b = fuzzyMatch(list, aiDataNode.name);
+        if (!b) return null;
+        let finalKnobs = { ...b.knobs() };
+        if (aiDataNode.p) {
+            for (let k in aiDataNode.p) {
+                let realKey = Object.keys(finalKnobs).find(x => x.toLowerCase() === k.toLowerCase());
+                if (realKey) finalKnobs[realKey] = aiDataNode.p[k];
+            }
+        }
+        return { type: type, model: b.name, knobs: finalKnobs };
+    }
+
+    async function fetchAITone(query, apiKey, retries = 2) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
+        const prompt = `Eres un técnico experto configurando la pedalera MOOER GE300.
+        Crea el tono exacto para la canción o artista: "${query}".
+        
+        Usa ESTOS nombres oficiales de catálogo:
+        AMPS: ${AMP.map(a=>a.name).join(', ')}
+        CABS: ${CAB.map(c=>c.name).join(', ')}
+        DS_OD: ${DS_OD.map(d=>d.name).join(', ')}
+        WAH: ${WAH.map(w=>w.name).join(', ')}
+        MOD: ${FXA.map(f=>f.name).join(', ')}
+        DELAY: ${DELAY.map(d=>d.name).join(', ')}
+        REVERB: ${REVERB.map(r=>r.name).join(', ')}
+        COMP: ${COMP.map(c=>c.name).join(', ')}
+        
+        Devuelve ÚNICAMENTE un JSON estricto:
+        {
+          "comp": {"name": "nombre o None", "p": {}},
+          "wah": {"name": "nombre o None", "p": {}},
+          "fxa": {"name": "nombre o None", "p": {}},
+          "ds_od": {"name": "nombre o None", "p": {}},
+          "amp": {"name": "nombre exacto", "p": {}},
+          "cab": {"name": "nombre exacto", "p": {}},
+          "delay": {"name": "nombre o None", "p": {}},
+          "reverb": {"name": "nombre o None", "p": {}},
+          "pickup": "Mástil o Puente",
+          "desc": "Breve explicación."
+        }`;
+
+        for (let i = 0; i <= retries; i++) {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    let rawText = data.candidates[0].content.parts[0].text;
+                    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) rawText = jsonMatch[0];
+                    return JSON.parse(rawText);
+                } else if ((response.status === 503 || response.status === 429) && i < retries) {
+                    await new Promise(r => setTimeout(r, 2000));
+                    continue;
+                } else {
+                    const errData = await response.json();
+                    throw new Error(`Código ${response.status}: ${errData.error?.message || 'Error del servidor'}`);
+                }
+            } catch (err) {
+                if (i === retries) throw err;
+                await new Promise(r => setTimeout(r, 2000));
+            }
+        }
+    }
+
+    function generateOfflineTone(query, absHash) {
+        let blocks = [];
+        blocks.push({ type: "COMP", model: COMP[absHash % COMP.length].name, knobs: COMP[absHash % COMP.length].knobs() });
+        blocks.push({ type: "AMP", model: AMP[absHash % AMP.length].name, knobs: AMP[absHash % AMP.length].knobs() });
+        blocks.push({ type: "CAB", model: CAB[absHash % CAB.length].name, knobs: CAB[absHash % CAB.length].knobs() });
+        blocks.push({ type: "REVERB", model: REVERB[1].name, knobs: REVERB[1].knobs() });
+        blocks.push({ type: "VOL", model: VOL[0].name, knobs: VOL[0].knobs() });
+        return {
+          title: `Preset GE300: ${query.toUpperCase()}`,
+          bank: `01A`,
+          desc: "(Modo Local) Cadena de emergencia local.",
+          pickup: "Puente / Humbucker",
+          vol: "10 (Abierto Total)",
+          ctrls: ["CTRL 1: Drive", "CTRL 2: Mod/Delay", "EXP 1: Vol", "EXP 2: FX"],
+          blocks: blocks
+        };
+    }
+
+    // --- LÓGICA DE BÚSQUEDA ---
     document.getElementById('aiToneForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const queryInput = document.getElementById('toneSearchInput');
@@ -379,7 +531,6 @@
       let isUniversal = false;
 
       try {
-          // 1. Verificar si coincide con un UNIVERSAL (Atajo rápido)
           let qClean = query.toLowerCase();
           if(qClean.includes('musica ligera') || qClean.includes('soda stereo')) {
               currentCacheKey = 'ge300_univ_soda_ligera';
@@ -391,47 +542,49 @@
               isUniversal = true;
           }
           
-          // 2. Verificar Memoria Caché Local
           if (!finalPreset && localStorage.getItem(currentCacheKey)) {
               finalPreset = JSON.parse(localStorage.getItem(currentCacheKey));
           } 
           
-          // 3. Petición a Gemini API (Último recurso)
           if (!finalPreset) {
               if (apiKey && apiKey.trim() !== '') {
-                  // ... (Lógica de fetch idéntica a v8.1.0 para ahorrar espacio en este ejemplo visual)
-                  // Simulamos resultado por brevedad
-                  let hash = 0;
-                  for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
+                  const aiData = await fetchAITone(query, apiKey);
+                  let blocks = [];
+                  
+                  let bComp = buildBlock(aiData.comp, COMP, "COMP"); if(bComp) blocks.push(bComp);
+                  let bWah  = buildBlock(aiData.wah, WAH, "WAH"); if(bWah) blocks.push(bWah);
+                  let bMod  = buildBlock(aiData.fxa, FXA, "FXA"); if(bMod) blocks.push(bMod);
+                  let bOd   = buildBlock(aiData.ds_od, DS_OD, "DS/OD"); if(bOd) blocks.push(bOd);
+                  let bAmp  = buildBlock(aiData.amp, AMP, "AMP"); if(bAmp) blocks.push(bAmp);
+                  let bCab  = buildBlock(aiData.cab, CAB, "CAB"); if(bCab) blocks.push(bCab);
+                  let bNs   = buildBlock(aiData.ns, NS, "NS"); if(bNs) blocks.push(bNs);
+                  let bEq   = buildBlock(aiData.eq, EQ, "EQ"); if(bEq) blocks.push(bEq);
+                  let bDly  = buildBlock(aiData.delay, DELAY, "DELAY"); if(bDly) blocks.push(bDly);
+                  let bRev  = buildBlock(aiData.reverb, REVERB, "REVERB"); if(bRev) blocks.push(bRev);
+                  
+                  blocks.push({ type: "VOL", model: VOL[0].name, knobs: VOL[0].knobs() });
+
                   finalPreset = {
                       title: `Preset IA: ${query.toUpperCase()}`,
                       bank: "01A",
-                      desc: `Generado por Inteligencia Artificial en la nube.`,
-                      pickup: "Puente / Humbucker",
+                      desc: `[API CLOUD] ${aiData.desc}`,
+                      pickup: aiData.pickup || "Puente / Humbucker",
                       vol: "10 (Abierto Total)",
-                      ctrls: ["CTRL 1: Drive", "CTRL 2: Mod/Delay", "EXP 1: Vol", "EXP 2: FX"],
-                      blocks: [
-                          { type: "AMP", model: "2: 65 US DX", knobs: AMP[0].knobs() },
-                          { type: "CAB", model: "1: US DLX 112", knobs: CAB[0].knobs() },
-                          { type: "VOL", model: "Vol", knobs: { "Position": 100, "Min": 0, "Max": 100, "Curve": "Log" } }
-                      ],
+                      ctrls: ["CTRL 1: Drive", "CTRL 2: Mod/Delay", "EXP 1: Master Vol", "EXP 2: FX Param"],
+                      blocks: blocks,
                       rating: 0,
                       isFav: false
                   };
                   localStorage.setItem(currentCacheKey, JSON.stringify(finalPreset));
               } else {
-                  throw new Error("Falta API Key");
+                  throw new Error("Por favor, ingresa tu API Key en el icono de la llave para usar la IA en la nube.");
               }
           }
       } catch (error) {
-          alert(`Activando motor local básico por límite o error.`);
-          finalPreset = {
-              title: `Emergencia: ${query.toUpperCase()}`,
-              bank: "01A",
-              desc: "Modo Local.",
-              pickup: "Puente", vol: "10", ctrls: [], rating: 0, isFav: false,
-              blocks: [{ type: "VOL", model: "Vol", knobs: VOL[0].knobs() }]
-          };
+          alert(`Fallo en la conexión.\n\nMotivo:\n${error.message}\n\nActivando motor local.`);
+          let hash = 0;
+          for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
+          finalPreset = generateOfflineTone(query, Math.abs(hash));
       } finally {
           queryInput.disabled = false;
           searchBtn.disabled = false;
@@ -445,25 +598,33 @@
     });
 
     // --- RENDERIZADO DEL PRESET ---
+    function parseKnobValue(valStr) {
+        valStr = String(valStr);
+        let numMatch = valStr.match(/-?\d+(\.\d+)?/);
+        if (!numMatch) return { num: 50, prefix: '', suffix: '' };
+        let num = parseFloat(numMatch[0]);
+        let idx = valStr.indexOf(numMatch[0]);
+        let prefix = valStr.substring(0, idx);
+        let suffix = valStr.substring(idx + numMatch[0].length);
+        return { num, prefix, suffix };
+    }
+
     function renderKnobSVG(label, value, blockType) {
       let valStr = String(value !== undefined && value !== null ? value : 50);
-      let parsed = { num: 50 }; // Simplificado
-      let numMatch = valStr.match(/-?\d+(\.\d+)?/);
-      if (numMatch) parsed.num = parseFloat(numMatch[0]);
-
+      let parsed = parseKnobValue(valStr);
       let numVal = 50;
-      if (valStr.includes('dB')) numVal = ((parsed.num + 60) / 120) * 100;
-      else if (valStr.includes('ms')) numVal = (parsed.num / 2000) * 100;
-      else if (valStr.includes('Hz')) numVal = (parsed.num / 20000) * 100;
+      
+      if (parsed.suffix.includes('dB')) numVal = ((parsed.num + 60) / 120) * 100;
+      else if (parsed.suffix.includes('ms')) numVal = (parsed.num / 2000) * 100;
+      else if (parsed.suffix.includes('Hz')) numVal = (parsed.num / 20000) * 100;
       else numVal = Math.min(Math.max(parsed.num, 0), 100);
 
       let strokeDash = (numVal / 100) * 126;
       
-      return `<div class="flex flex-col items-center gap-0.5"><div class="knob-container cursor-ns-resize" data-block-type="${blockType}" data-knob-name="${label}" data-raw-val="${valStr}" onmousedown="handleDragStart(event, this)" ontouchstart="handleDragStart(event, this)"><svg class="w-14 h-14 knob-svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#26334d" stroke-width="4"/><circle class="dynamic-stroke" cx="25" cy="25" r="20" fill="none" stroke-width="4" stroke-dasharray="${strokeDash} 126" stroke-linecap="round"/></svg><span class="knob-value-badge">${valStr}</span></div><span class="text-[9px] font-mono font-bold text-brand-muted uppercase text-center max-w-[70px] truncate">${label}</span></div>`;
+      return `<div class="flex flex-col items-center gap-0.5"><div class="knob-container cursor-ns-resize" data-block-type="${blockType}" data-knob-name="${label}" data-raw-val="${valStr}" onmousedown="handleDragStart(event, this)" ontouchstart="handleDragStart(event, this)"><svg class="w-14 h-14 knob-svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#26334d" stroke-width="4"/><circle class="dynamic-stroke" cx="25" cy="25" r="20" fill="none" stroke="#00ff66" stroke-width="4" stroke-dasharray="${strokeDash} 126" stroke-linecap="round"/></svg><span class="knob-value-badge">${valStr}</span></div><span class="text-[9px] font-mono font-bold text-brand-muted uppercase text-center max-w-[70px] truncate">${label}</span></div>`;
     }
 
     function renderPreset(preset, isUniversal = false) {
-        // Reset Modo Seguro
         isEditMode = false;
         document.getElementById('mainPresetContainer').classList.add('view-mode');
         document.getElementById('mainPresetContainer').classList.remove('edit-mode');
@@ -471,7 +632,6 @@
         document.getElementById('editStatusBadge').innerHTML = `🔒 Modo Seguro`;
         document.getElementById('editStatusBadge').className = "text-[9px] text-brand-accent bg-brand-accent/10 px-2 py-0.5 rounded font-mono border border-brand-accent/20";
         
-        // Bloquear edición si es Universal
         if(isUniversal) {
             document.getElementById('btnEdit').classList.add('hidden');
         } else {
@@ -483,7 +643,12 @@
         document.getElementById('soundDescription').innerText = preset.desc;
         document.getElementById('pickupRec').innerText = preset.pickup;
         document.getElementById('guitarVol').innerText = preset.vol;
-        document.getElementById('ctrlAssignments').innerHTML = preset.ctrls.map(c => `<div>${c}</div>`).join('');
+        
+        if(preset.ctrls && preset.ctrls.length > 0) {
+            document.getElementById('ctrlAssignments').innerHTML = preset.ctrls.map(c => `<div>${c}</div>`).join('');
+        } else {
+            document.getElementById('ctrlAssignments').innerHTML = `<div class="text-brand-muted/50 italic">Sin asignaciones</div>`;
+        }
         
         updateStarsUI(preset.rating || 0);
         updateFavUI(preset.isFav || false);
@@ -507,24 +672,78 @@
         });
     }
 
-    // LÓGICA DE PERILLAS TÁCTILES CON CANDADO
+    // --- LÓGICA DE PERILLAS TÁCTILES ---
     let draggingKnob = null;
     let startY = 0;
+    let initialNum = 0;
+
+    function updateKnobVisual(knobEl, valStr) {
+        let parsed = parseKnobValue(valStr);
+        let numVal = 50;
+        
+        if (parsed.suffix.includes('dB')) numVal = ((parsed.num + 60) / 120) * 100;
+        else if (parsed.suffix.includes('ms')) numVal = (parsed.num / 2000) * 100;
+        else if (parsed.suffix.includes('Hz')) numVal = (parsed.num / 20000) * 100;
+        else numVal = parsed.num;
+        
+        numVal = Math.max(0, Math.min(100, numVal));
+        let strokeDash = (numVal / 100) * 126;
+        
+        knobEl.querySelector('.knob-value-badge').innerText = valStr;
+        knobEl.querySelector('.dynamic-stroke').setAttribute('stroke-dasharray', `${strokeDash} 126`);
+        knobEl.dataset.rawVal = valStr;
+    }
+
     function handleDragStart(e, knobEl) {
-        if(!isEditMode) return; // CANDADO ACTIVADO
+        if(!isEditMode) return; 
         draggingKnob = knobEl;
         startY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+        let parsed = parseKnobValue(knobEl.dataset.rawVal);
+        initialNum = parsed.num;
         document.body.style.userSelect = 'none';
     }
 
     function handleDragMove(e) {
         if (!draggingKnob || !isEditMode) return;
-        // ... (Lógica matemática visual omitida por brevedad, asume arrastre vertical)
+        let clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+        let deltaY = startY - clientY;
+
+        let parsed = parseKnobValue(draggingKnob.dataset.rawVal);
+        let newVal = initialNum + (deltaY * 0.5); 
+
+        if (parsed.suffix.includes('ms')) newVal = Math.max(0, Math.min(2000, newVal));
+        else if (parsed.suffix.includes('dB')) newVal = Math.max(-60, Math.min(60, newVal));
+        else if (parsed.suffix.includes('Hz')) newVal = Math.max(20, Math.min(20000, newVal));
+        else newVal = Math.max(0, Math.min(100, newVal));
+
+        if(Number.isInteger(initialNum) && !parsed.suffix.includes('dB')) newVal = Math.round(newVal);
+        else newVal = newVal.toFixed(1);
+
+        let finalStr = parsed.prefix + newVal + parsed.suffix;
+        updateKnobVisual(draggingKnob, finalStr);
     }
 
     function handleDragEnd() {
         if(draggingKnob && isEditMode && !UNIVERSAL_PRESETS[currentCacheKey]) {
-            // Se guarda en localStorage si NO es universal
+            let blockType = draggingKnob.dataset.blockType;
+            let knobName = draggingKnob.dataset.knobName;
+            let rawVal = draggingKnob.dataset.rawVal;
+
+            if (currentCacheKey) {
+                let cached = JSON.parse(localStorage.getItem(currentCacheKey));
+                if (cached && cached.blocks) {
+                    let blockIndex = cached.blocks.findIndex(b => b.type === blockType);
+                    if (blockIndex !== -1) {
+                        let parsed = parseKnobValue(rawVal);
+                        if (!parsed.prefix && !parsed.suffix) {
+                            cached.blocks[blockIndex].knobs[knobName] = parsed.num;
+                        } else {
+                            cached.blocks[blockIndex].knobs[knobName] = rawVal;
+                        }
+                        localStorage.setItem(currentCacheKey, JSON.stringify(cached));
+                    }
+                }
+            }
             draggingKnob = null;
             document.body.style.userSelect = '';
         }
@@ -535,8 +754,9 @@
     document.addEventListener('mouseup', handleDragEnd);
     document.addEventListener('touchmove', handleDragMove, {passive: false});
     document.addEventListener('touchend', handleDragEnd);
+    document.addEventListener('pointerup', handleDragEnd);
 
-    // VALORACIÓN Y FAVORITOS
+    // --- VALORACIÓN Y FAVORITOS ---
     function ratePreset(stars) {
         if(UNIVERSAL_PRESETS[currentCacheKey]) {
             alert("Los Presets Destacados son de solo lectura y ya tienen 5 estrellas.");
@@ -586,11 +806,8 @@
         }
     }
 
-    function toggleApiKeyModal() {
-        document.getElementById('apiKeyModal').classList.toggle('hidden');
-    }
-
     window.addEventListener('DOMContentLoaded', () => {
+      updateApiStatus();
       let initTone = { title: "Preset Base GE300", bank: "01A", desc: "Listo para buscar.", pickup: "Puente", vol: "10", ctrls: [], rating: 0, isFav: false, blocks: [{ type: "VOL", model: "Vol", knobs: VOL[0].knobs() }] };
       renderPreset(initTone);
     });

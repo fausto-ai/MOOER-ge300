@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 Pro AI Tone Studio v8.0.0</title>
+  <title>MOOER GE300 Pro AI Tone Studio v8.1.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
@@ -27,9 +27,9 @@
       </div>
       <div>
         <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
-          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v8.0.0</span>
+          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v8.1.0</span>
         </h1>
-        <p class="text-[11px] text-brand-muted" id="apiStatusText">Caché Instantáneo & Perillas Táctiles</p>
+        <p class="text-[11px] text-brand-muted" id="apiStatusText">Caché Persistente, UI Segura & Auto-Retry</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -43,8 +43,8 @@
   <section class="p-3.5 bg-brand-panel/50 border-b border-brand-border shrink-0">
     <form id="aiToneForm" class="relative flex items-center">
       <i class="fa-solid fa-wand-magic-sparkles absolute left-3.5 text-brand-accent text-xs"></i>
-      <input type="text" id="toneSearchInput" placeholder="Busca un tono (Ej. Héroes del Silencio)..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-20 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" required />
-      <button type="submit" id="searchBtn" class="absolute right-1 bg-brand-accent hover:bg-brand-accentHover text-brand-bg font-bold text-xs px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+      <input type="text" id="toneSearchInput" placeholder="Busca un tono (Ej. Héroes del Silencio)..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-20 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent transition-opacity" required />
+      <button type="submit" id="searchBtn" class="absolute right-1 bg-brand-accent hover:bg-brand-accentHover text-brand-bg font-bold text-xs px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer">
         <span id="btnText">Buscar</span>
         <i id="btnIcon" class="fa-solid fa-arrow-right text-[10px]"></i>
       </button>
@@ -220,7 +220,9 @@
         if (q.includes("jcm800")) return list.find(x => x.name.includes("J800"));
         if (q.includes("whammy") || q.includes("pitch")) return list.find(x => x.name.includes("Pitch"));
         if (q.includes("ts808") || q.includes("screamer")) return list.find(x => x.name.includes("808"));
-        return list[0]; 
+        
+        // TAREA 3: Devolver null en vez de forzar list[0] si no existe.
+        return null; 
     }
 
     function buildBlock(aiDataNode, list, type) {
@@ -280,8 +282,9 @@
                     const jsonMatch = rawText.match(/\{[\s\S]*\}/);
                     if (jsonMatch) rawText = jsonMatch[0];
                     return JSON.parse(rawText);
-                } else if (response.status === 503 && i < retries) {
-                    await new Promise(r => setTimeout(r, 1500));
+                } else if ((response.status === 503 || response.status === 429) && i < retries) {
+                    // TAREA 1: Auto-retry para 503 y 429 esperando 2 segundos.
+                    await new Promise(r => setTimeout(r, 2000));
                     continue;
                 } else {
                     const errData = await response.json();
@@ -289,7 +292,7 @@
                 }
             } catch (err) {
                 if (i === retries) throw err;
-                await new Promise(r => setTimeout(r, 1500));
+                await new Promise(r => setTimeout(r, 2000));
             }
         }
     }
@@ -315,26 +318,33 @@
     document.getElementById('aiToneForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const queryInput = document.getElementById('toneSearchInput');
+      const searchBtn = document.getElementById('searchBtn');
       const query = queryInput.value.trim();
       if (!query) return;
 
       const btnText = document.getElementById('btnText');
       const btnIcon = document.getElementById('btnIcon');
+      
+      // TAREA 2: Bloqueo de UI (Anti-spam)
+      queryInput.disabled = true;
+      searchBtn.disabled = true;
+      queryInput.classList.add('opacity-50');
+      searchBtn.classList.add('opacity-50');
+      
       btnText.innerText = "Pensando...";
       btnIcon.className = "fa-solid fa-spinner animate-spin";
 
       const apiKey = localStorage.getItem('GE300_GEMINI_KEY');
       currentCacheKey = 'GE300_CACHE_' + query.toLowerCase().replace(/[^a-z0-9]/g, '_');
       
-      // MEMORIA CACHÉ: Busca en local primero (Carga Instantánea)
       let cachedData = localStorage.getItem(currentCacheKey);
       let finalPreset;
 
-      if (cachedData) {
-          finalPreset = JSON.parse(cachedData);
-          console.log("Cargado desde Memoria Caché Instantánea");
-      } else {
-          try {
+      try {
+          if (cachedData) {
+              finalPreset = JSON.parse(cachedData);
+              console.log("Cargado desde Memoria Caché Instantánea");
+          } else {
               if (apiKey && apiKey.trim() !== '') {
                   const aiData = await fetchAITone(query, apiKey);
                   let blocks = [];
@@ -363,25 +373,30 @@
                       rating: 0,
                       isFav: false
                   };
-                  // GUARDADO AUTOMÁTICO EN CACHÉ
                   localStorage.setItem(currentCacheKey, JSON.stringify(finalPreset));
               } else {
                   let hash = 0;
                   for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
                   finalPreset = generateOfflineTone(query, Math.abs(hash));
               }
-          } catch (error) {
-              console.error("Error capturado:", error);
-              alert(`Fallo en la conexión.\n\nMotivo:\n${error.message}\n\nActivando motor local.`);
-              let hash = 0;
-              for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
-              finalPreset = generateOfflineTone(query, Math.abs(hash));
           }
+      } catch (error) {
+          console.error("Error capturado:", error);
+          alert(`Fallo en la conexión.\n\nMotivo:\n${error.message}\n\nActivando motor local.`);
+          let hash = 0;
+          for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
+          finalPreset = generateOfflineTone(query, Math.abs(hash));
+      } finally {
+          // Desbloqueo de UI
+          queryInput.disabled = false;
+          searchBtn.disabled = false;
+          queryInput.classList.remove('opacity-50');
+          searchBtn.classList.remove('opacity-50');
+          btnText.innerText = "Buscar";
+          btnIcon.className = "fa-solid fa-arrow-right";
       }
 
       renderPreset(finalPreset);
-      btnText.innerText = "Buscar";
-      btnIcon.className = "fa-solid fa-arrow-right";
     });
 
     // LÓGICA DE PERILLAS TÁCTILES (DRAG & DROP)
@@ -404,7 +419,6 @@
         let parsed = parseKnobValue(valStr);
         let numVal = 50;
         
-        // Mapeo lógico para el llenado del círculo verde (0 a 100%)
         if (parsed.suffix.includes('dB')) numVal = ((parsed.num + 60) / 120) * 100;
         else if (parsed.suffix.includes('ms')) numVal = (parsed.num / 2000) * 100;
         else if (parsed.suffix.includes('Hz')) numVal = (parsed.num / 20000) * 100;
@@ -429,18 +443,16 @@
     function handleDragMove(e) {
         if (!draggingKnob) return;
         let clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
-        let deltaY = startY - clientY; // Arriba es positivo
+        let deltaY = startY - clientY;
 
         let parsed = parseKnobValue(draggingKnob.dataset.rawVal);
-        let newVal = initialNum + (deltaY * 0.5); // Sensibilidad
+        let newVal = initialNum + (deltaY * 0.5); 
 
-        // Límites según el tipo de valor
         if (parsed.suffix.includes('ms')) newVal = Math.max(0, Math.min(2000, newVal));
         else if (parsed.suffix.includes('dB')) newVal = Math.max(-60, Math.min(60, newVal));
         else if (parsed.suffix.includes('Hz')) newVal = Math.max(20, Math.min(20000, newVal));
         else newVal = Math.max(0, Math.min(100, newVal));
 
-        // Mantener enteros si no es decibelio ni fracción
         if(Number.isInteger(initialNum) && !parsed.suffix.includes('dB')) newVal = Math.round(newVal);
         else newVal = newVal.toFixed(1);
 
@@ -448,9 +460,29 @@
         updateKnobVisual(draggingKnob, finalStr);
     }
 
+    // TAREA 4: Guardar el valor exacto en caché al soltar la perilla
     function handleDragEnd() {
         if(draggingKnob) {
-            // Aquí podríamos guardar el valor actualizado en la caché local
+            let blockType = draggingKnob.dataset.blockType;
+            let knobName = draggingKnob.dataset.knobName;
+            let rawVal = draggingKnob.dataset.rawVal;
+
+            if (currentCacheKey) {
+                let cached = JSON.parse(localStorage.getItem(currentCacheKey));
+                if (cached && cached.blocks) {
+                    let blockIndex = cached.blocks.findIndex(b => b.type === blockType);
+                    if (blockIndex !== -1) {
+                        let parsed = parseKnobValue(rawVal);
+                        if (!parsed.prefix && !parsed.suffix) {
+                            cached.blocks[blockIndex].knobs[knobName] = parsed.num;
+                        } else {
+                            cached.blocks[blockIndex].knobs[knobName] = rawVal;
+                        }
+                        localStorage.setItem(currentCacheKey, JSON.stringify(cached));
+                    }
+                }
+            }
+
             draggingKnob = null;
             document.body.style.userSelect = '';
         }
@@ -460,9 +492,10 @@
     document.addEventListener('mouseup', handleDragEnd);
     document.addEventListener('touchmove', handleDragMove, {passive: false});
     document.addEventListener('touchend', handleDragEnd);
+    document.addEventListener('pointerup', handleDragEnd);
 
-
-    function renderKnobSVG(label, value) {
+    // TAREA 4: Inyectar metadata en el HTML para ubicar la perilla al guardar
+    function renderKnobSVG(label, value, blockType) {
       let valStr = String(value !== undefined && value !== null ? value : 50);
       let parsed = parseKnobValue(valStr);
       let numVal = 50;
@@ -474,8 +507,7 @@
 
       let strokeDash = (numVal / 100) * 126;
       
-      // Contenedor interactivo
-      return `<div class="flex flex-col items-center gap-0.5"><div class="knob-container cursor-ns-resize" data-raw-val="${valStr}" onmousedown="handleDragStart(event, this)" ontouchstart="handleDragStart(event, this)"><svg class="w-14 h-14 knob-svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#26334d" stroke-width="4"/><circle class="dynamic-stroke" cx="25" cy="25" r="20" fill="none" stroke="#00ff66" stroke-width="4" stroke-dasharray="${strokeDash} 126" stroke-linecap="round"/></svg><span class="knob-value-badge">${valStr}</span></div><span class="text-[9px] font-mono font-bold text-brand-muted uppercase text-center max-w-[70px] truncate">${label}</span></div>`;
+      return `<div class="flex flex-col items-center gap-0.5"><div class="knob-container cursor-ns-resize" data-block-type="${blockType}" data-knob-name="${label}" data-raw-val="${valStr}" onmousedown="handleDragStart(event, this)" ontouchstart="handleDragStart(event, this)"><svg class="w-14 h-14 knob-svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#26334d" stroke-width="4"/><circle class="dynamic-stroke" cx="25" cy="25" r="20" fill="none" stroke="#00ff66" stroke-width="4" stroke-dasharray="${strokeDash} 126" stroke-linecap="round"/></svg><span class="knob-value-badge">${valStr}</span></div><span class="text-[9px] font-mono font-bold text-brand-muted uppercase text-center max-w-[70px] truncate">${label}</span></div>`;
     }
 
     function renderPreset(preset) {
@@ -487,11 +519,9 @@
         document.getElementById('guitarVol').innerText = preset.vol;
         document.getElementById('ctrlAssignments').innerHTML = preset.ctrls.map(c => `<div>${c}</div>`).join('');
         
-        // Mostrar barra de estrellas y botón de favoritos
         document.getElementById('ratingStars').classList.remove('hidden');
         document.getElementById('favBtn').classList.remove('hidden');
         
-        // Restaurar UI de calificación
         updateStarsUI(preset.rating || 0);
         updateFavUI(preset.isFav || false);
 
@@ -508,7 +538,7 @@
         preset.blocks.forEach(block => {
           const blockEl = document.createElement('div');
           blockEl.className = "bg-brand-bg/90 rounded-xl p-2.5 border border-brand-border/60 space-y-2";
-          let knobsHTML = Object.entries(block.knobs || {}).map(([k, v]) => renderKnobSVG(k, v)).join('');
+          let knobsHTML = Object.entries(block.knobs || {}).map(([k, v]) => renderKnobSVG(k, v, block.type)).join('');
           blockEl.innerHTML = `<div class="flex items-center justify-between border-b border-brand-border/40 pb-1.5"><span class="text-[10px] font-bold font-mono text-brand-accent uppercase bg-brand-accent/10 px-1.5 py-0.5 rounded border border-brand-accent/20">${block.type}</span><span class="text-xs font-semibold text-brand-text">${block.model}</span></div><div class="flex items-center justify-around flex-wrap gap-1.5 pt-0.5">${knobsHTML}</div>`;
           blocksContainer.appendChild(blockEl);
         });
@@ -517,7 +547,6 @@
       }
     }
 
-    // FUNCIONES DE CALIFICACIÓN Y FAVORITOS
     function ratePreset(stars) {
         updateStarsUI(stars);
         if(currentCacheKey) {

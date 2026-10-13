@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 Pro AI Tone Studio v7.3.0</title>
+  <title>MOOER GE300 Pro AI Tone Studio v8.0.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
@@ -12,9 +12,9 @@
   </script>
   <style>
     body { background-color: #0a0d12; color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
-    .knob-container { position: relative; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; }
+    .knob-container { position: relative; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; user-select: none; }
     .knob-svg { transform: rotate(-135deg); }
-    .knob-value-badge { position: absolute; font-size: 0.65rem; font-weight: 700; color: #00ff66; text-align: center; }
+    .knob-value-badge { position: absolute; font-size: 0.65rem; font-weight: 700; color: #00ff66; text-align: center; pointer-events: none;}
     .hide-scrollbar::-webkit-scrollbar { display: none; }
   </style>
 </head>
@@ -27,9 +27,9 @@
       </div>
       <div>
         <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
-          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v7.3.0</span>
+          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v8.0.0</span>
         </h1>
-        <p class="text-[11px] text-brand-muted" id="apiStatusText">Cadena 100% Completa GE300 (Sin omitir efectos)</p>
+        <p class="text-[11px] text-brand-muted" id="apiStatusText">Caché Instantáneo & Perillas Táctiles</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -43,7 +43,7 @@
   <section class="p-3.5 bg-brand-panel/50 border-b border-brand-border shrink-0">
     <form id="aiToneForm" class="relative flex items-center">
       <i class="fa-solid fa-wand-magic-sparkles absolute left-3.5 text-brand-accent text-xs"></i>
-      <input type="text" id="toneSearchInput" placeholder="Busca un tono (Ej. Like a Stone solo, Nirvana)..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-20 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" required />
+      <input type="text" id="toneSearchInput" placeholder="Busca un tono (Ej. Héroes del Silencio)..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-20 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" required />
       <button type="submit" id="searchBtn" class="absolute right-1 bg-brand-accent hover:bg-brand-accentHover text-brand-bg font-bold text-xs px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
         <span id="btnText">Buscar</span>
         <i id="btnIcon" class="fa-solid fa-arrow-right text-[10px]"></i>
@@ -51,14 +51,26 @@
     </form>
   </section>
 
-  <main class="flex-1 overflow-y-auto p-4 space-y-5 hide-scrollbar">
+  <main class="flex-1 overflow-y-auto p-4 space-y-5 hide-scrollbar" id="mainContainer">
     <div class="bg-brand-card rounded-2xl border border-brand-border p-4 space-y-4">
-      <div class="border-b border-brand-border/60 pb-3">
-        <div class="flex items-center gap-2">
-          <span class="text-[10px] font-mono bg-brand-accent/10 text-brand-accent border border-brand-accent/20 px-1.5 py-0.5 rounded font-bold" id="presetBank">01A</span>
-          <h2 class="text-base font-bold text-white" id="songTitle">Studio Master Preset</h2>
+      <div class="border-b border-brand-border/60 pb-3 relative">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-[10px] font-mono bg-brand-accent/10 text-brand-accent border border-brand-accent/20 px-1.5 py-0.5 rounded font-bold" id="presetBank">01A</span>
+            <h2 class="text-base font-bold text-white" id="songTitle">Studio Master Preset</h2>
+          </div>
+          <button id="favBtn" onclick="toggleFavorite()" class="text-brand-muted hover:text-red-500 text-lg transition-colors cursor-pointer hidden"><i class="fa-solid fa-heart"></i></button>
         </div>
-        <p class="text-xs text-brand-muted mt-1" id="soundDescription">Esperando conexión. Añade tu API Key para precisión real.</p>
+        
+        <div class="flex gap-1 mt-1.5 text-brand-muted text-xs hidden" id="ratingStars">
+            <i class="fa-solid fa-star cursor-pointer hover:text-yellow-400 transition-colors" onclick="ratePreset(1)"></i>
+            <i class="fa-solid fa-star cursor-pointer hover:text-yellow-400 transition-colors" onclick="ratePreset(2)"></i>
+            <i class="fa-solid fa-star cursor-pointer hover:text-yellow-400 transition-colors" onclick="ratePreset(3)"></i>
+            <i class="fa-solid fa-star cursor-pointer hover:text-yellow-400 transition-colors" onclick="ratePreset(4)"></i>
+            <i class="fa-solid fa-star cursor-pointer hover:text-yellow-400 transition-colors" onclick="ratePreset(5)"></i>
+        </div>
+
+        <p class="text-xs text-brand-muted mt-2 leading-relaxed" id="soundDescription">Esperando conexión. Añade tu API Key para precisión real.</p>
       </div>
 
       <div class="grid grid-cols-2 gap-2 bg-brand-bg/60 p-2.5 rounded-xl border border-brand-border/40 text-[11px]">
@@ -81,6 +93,7 @@
       <div class="space-y-3">
         <h3 class="text-[11px] font-mono uppercase text-brand-muted font-bold flex items-center justify-between">
           <span class="flex items-center gap-1.5"><i class="fa-solid fa-diagram-project text-brand-accent"></i> Cadena Hardware GE300</span>
+          <span class="text-[9px] text-brand-accent/70 font-normal">Desliza las perillas para editar</span>
         </h3>
         <div id="effectBlocksContainer" class="space-y-2.5"></div>
       </div>
@@ -110,8 +123,8 @@
       <span class="text-[9px] font-bold">Tone AI</span>
     </button>
     <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text" onclick="showTab('catalog')">
-      <i class="fa-solid fa-book-open text-base"></i>
-      <span class="text-[9px] font-bold">Catálogo GE300</span>
+      <i class="fa-solid fa-star text-base"></i>
+      <span class="text-[9px] font-bold">Favoritos</span>
     </button>
     <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text" onclick="showTab('tools')">
       <i class="fa-solid fa-calculator text-base"></i>
@@ -194,6 +207,8 @@
     const REVERB=[m("1: Room",{"Pre Delay":"8ms","Decay":35,"Low Cut":"80Hz","High Cut":"5000Hz","Mix":25,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("2: Hall",{"Pre Delay":"30ms","Decay":30,"Low Cut":"80Hz","High Cut":"4000Hz","Mix":20,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("3: Plate",{"Pre Delay":"15ms","Decay":23,"Low Cut":"60Hz","High Cut":"5700Hz","Mix":13,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("4: Filter-Reverb",{"Pre Delay":"30ms","Decay":35,"Low Cut":"40Hz","High Cut":"4500Hz","Mix":30,"Rate":45,"Peak":90,"Q":60,"Filter Output":90,"Output Mode":"Stereo"}),m("5: Fl-Reverb",{"Pre Delay":"30ms","Decay":45,"Low Cut":"40Hz","High Cut":"5500Hz","Mix":35,"Rate":45,"Feedback":45,"Mod Delay":50,"Mod Output":60,"Output Mode":"Stereo"}),m("6: Reverse-Reverb",{"Pre Delay":"20ms","Decay":45,"Low Cut":"60Hz","High Cut":"3800Hz","Mix":35,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("7: Swell-Reverb",{"Pre Delay":"30ms","Decay":45,"Low Cut":"60Hz","High Cut":"6700Hz","Mix":35,"Attack":45,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("8: Spring",{"Pre Delay":"0ms","Decay":10,"Low Cut":"80Hz","High Cut":"4800Hz","Mix":12,"Spring Length":50,"Spring Depth":76,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("9: Mod",{"Pre Delay":"35ms","Decay":45,"Low Cut":"40Hz","High Cut":"5400Hz","Mix":35,"Rate":30,"Depth":40,"Mod Output":80,"Output Mode":"Stereo","Output":"0dB"}),m("10: Shimmer",{"Pre Delay":"30ms","Decay":56,"Low Cut":"100Hz","High Cut":"5600Hz","Mix":50,"Shimmer":75,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("11: Dist-Reverb",{"Pre Delay":"40ms","Decay":50,"Low Cut":"200Hz","High Cut":"7330Hz","Mix":40,"Gain":60,"Dist lvl":65,"Tone":45,"Cab":"Off","Output Mode":"Stereo"})];
     const VOL=[m("Vol",{"Position":100,"Min":0,"Max":100,"Curve":"Log"})];
 
+    let currentCacheKey = '';
+
     function fuzzyMatch(list, query) {
         if (!query || query === "None") return null;
         let q = query.toLowerCase().replace(/[^a-z0-9]/g, ''); 
@@ -224,39 +239,31 @@
 
     async function fetchAITone(query, apiKey, retries = 2) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
-        
-        // RECETA COMPLETA DE TODOS LOS BLOQUES DE LA GE300 PARA QUE LA IA NO OLVIDE NINGUNO
-        const prompt = `Eres un técnico de guitarra experto configurando la pedalera MOOER GE300.
+        const prompt = `Eres un técnico experto configurando la pedalera MOOER GE300.
         Crea el tono exacto para la canción o artista: "${query}".
         
-        Usa ESTOS nombres oficiales de catálogo (o "None" si no aplica en la cadena):
-        - SYNTH (Sintetizador): Synth Block
-        - COMP (Compresor): ${COMP.map(c=>c.name).join(', ')}
-        - WAH (Wah / Whammy / Pitch / Talkbox): ${WAH.map(w=>w.name).join(', ')}
-        - FXA (Filtros / Modulación A): ${FXA.map(f=>f.name).join(', ')}
-        - DS/OD (Overdrive / Distorsión): ${DS_OD.map(d=>d.name).join(', ')}
-        - AMP (Amplificador): ${AMP.map(a=>a.name).join(', ')}
-        - CAB (Gabinete): ${CAB.map(c=>c.name).join(', ')}
-        - NS (Noise Suppressor / Puerta de ruido): ${NS.map(n=>n.name).join(', ')}
-        - EQ (Ecualizador): ${EQ.map(e=>e.name).join(', ')}
-        - DELAY: ${DELAY.map(d=>d.name).join(', ')}
-        - REVERB: ${REVERB.map(r=>r.name).join(', ')}
+        Usa ESTOS nombres oficiales de catálogo:
+        AMPS: ${AMP.map(a=>a.name).join(', ')}
+        CABS: ${CAB.map(c=>c.name).join(', ')}
+        DS_OD: ${DS_OD.map(d=>d.name).join(', ')}
+        WAH: ${WAH.map(w=>w.name).join(', ')}
+        MOD: ${FXA.map(f=>f.name).join(', ')}
+        DELAY: ${DELAY.map(d=>d.name).join(', ')}
+        REVERB: ${REVERB.map(r=>r.name).join(', ')}
+        COMP: ${COMP.map(c=>c.name).join(', ')}
         
-        Devuelve ÚNICAMENTE un JSON estricto con esta estructura exacta para todos los bloques disponibles. Incluye parámetros 'p' clave (Gain, Mix, Time, Threshold, etc.):
+        Devuelve ÚNICAMENTE un JSON estricto:
         {
-          "synth": {"name": "None", "p": {}},
           "comp": {"name": "nombre o None", "p": {}},
           "wah": {"name": "nombre o None", "p": {}},
           "fxa": {"name": "nombre o None", "p": {}},
           "ds_od": {"name": "nombre o None", "p": {}},
           "amp": {"name": "nombre exacto", "p": {}},
           "cab": {"name": "nombre exacto", "p": {}},
-          "ns": {"name": "nombre o None", "p": {}},
-          "eq": {"name": "nombre o None", "p": {}},
           "delay": {"name": "nombre o None", "p": {}},
           "reverb": {"name": "nombre o None", "p": {}},
-          "pickup": "Mástil / Single Coil o Puente / Humbucker",
-          "desc": "Breve explicación técnica."
+          "pickup": "Mástil o Puente",
+          "desc": "Breve explicación."
         }`;
 
         for (let i = 0; i <= retries; i++) {
@@ -317,47 +324,59 @@
       btnIcon.className = "fa-solid fa-spinner animate-spin";
 
       const apiKey = localStorage.getItem('GE300_GEMINI_KEY');
+      currentCacheKey = 'GE300_CACHE_' + query.toLowerCase().replace(/[^a-z0-9]/g, '_');
+      
+      // MEMORIA CACHÉ: Busca en local primero (Carga Instantánea)
+      let cachedData = localStorage.getItem(currentCacheKey);
       let finalPreset;
 
-      try {
-          if (apiKey && apiKey.trim() !== '') {
-              const aiData = await fetchAITone(query, apiKey);
-              let blocks = [];
-              
-              // CONSTRUCCIÓN ORDENADA DE TODOS LOS BLOQUES DE LA GE300
-              let bComp = buildBlock(aiData.comp, COMP, "COMP"); if(bComp) blocks.push(bComp);
-              let bWah  = buildBlock(aiData.wah, WAH, "WAH"); if(bWah) blocks.push(bWah);
-              let bMod  = buildBlock(aiData.fxa, FXA, "FXA"); if(bMod) blocks.push(bMod);
-              let bOd   = buildBlock(aiData.ds_od, DS_OD, "DS/OD"); if(bOd) blocks.push(bOd);
-              let bAmp  = buildBlock(aiData.amp, AMP, "AMP"); if(bAmp) blocks.push(bAmp);
-              let bCab  = buildBlock(aiData.cab, CAB, "CAB"); if(bCab) blocks.push(bCab);
-              let bNs   = buildBlock(aiData.ns, NS, "NS"); if(bNs) blocks.push(bNs);
-              let bEq   = buildBlock(aiData.eq, EQ, "EQ"); if(bEq) blocks.push(bEq);
-              let bDly  = buildBlock(aiData.delay, DELAY, "DELAY"); if(bDly) blocks.push(bDly);
-              let bRev  = buildBlock(aiData.reverb, REVERB, "REVERB"); if(bRev) blocks.push(bRev);
-              
-              blocks.push({ type: "VOL", model: VOL[0].name, knobs: VOL[0].knobs() });
+      if (cachedData) {
+          finalPreset = JSON.parse(cachedData);
+          console.log("Cargado desde Memoria Caché Instantánea");
+      } else {
+          try {
+              if (apiKey && apiKey.trim() !== '') {
+                  const aiData = await fetchAITone(query, apiKey);
+                  let blocks = [];
+                  
+                  let bComp = buildBlock(aiData.comp, COMP, "COMP"); if(bComp) blocks.push(bComp);
+                  let bWah  = buildBlock(aiData.wah, WAH, "WAH"); if(bWah) blocks.push(bWah);
+                  let bMod  = buildBlock(aiData.fxa, FXA, "FXA"); if(bMod) blocks.push(bMod);
+                  let bOd   = buildBlock(aiData.ds_od, DS_OD, "DS/OD"); if(bOd) blocks.push(bOd);
+                  let bAmp  = buildBlock(aiData.amp, AMP, "AMP"); if(bAmp) blocks.push(bAmp);
+                  let bCab  = buildBlock(aiData.cab, CAB, "CAB"); if(bCab) blocks.push(bCab);
+                  let bNs   = buildBlock(aiData.ns, NS, "NS"); if(bNs) blocks.push(bNs);
+                  let bEq   = buildBlock(aiData.eq, EQ, "EQ"); if(bEq) blocks.push(bEq);
+                  let bDly  = buildBlock(aiData.delay, DELAY, "DELAY"); if(bDly) blocks.push(bDly);
+                  let bRev  = buildBlock(aiData.reverb, REVERB, "REVERB"); if(bRev) blocks.push(bRev);
+                  
+                  blocks.push({ type: "VOL", model: VOL[0].name, knobs: VOL[0].knobs() });
 
-              finalPreset = {
-                  title: `Preset IA: ${query.toUpperCase()}`,
-                  bank: "01A",
-                  desc: `[API CLOUD] ${aiData.desc}`,
-                  pickup: aiData.pickup || "Puente / Humbucker",
-                  vol: "10 (Abierto Total)",
-                  ctrls: ["CTRL 1: Drive", "CTRL 2: Mod/Delay", "EXP 1: Master Vol", "EXP 2: FX Param"],
-                  blocks: blocks
-              };
-          } else {
+                  finalPreset = {
+                      title: `Preset IA: ${query.toUpperCase()}`,
+                      bank: "01A",
+                      desc: `[API CLOUD] ${aiData.desc}`,
+                      pickup: aiData.pickup || "Puente / Humbucker",
+                      vol: "10 (Abierto Total)",
+                      ctrls: ["CTRL 1: Drive", "CTRL 2: Mod/Delay", "EXP 1: Master Vol", "EXP 2: FX Param"],
+                      blocks: blocks,
+                      rating: 0,
+                      isFav: false
+                  };
+                  // GUARDADO AUTOMÁTICO EN CACHÉ
+                  localStorage.setItem(currentCacheKey, JSON.stringify(finalPreset));
+              } else {
+                  let hash = 0;
+                  for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
+                  finalPreset = generateOfflineTone(query, Math.abs(hash));
+              }
+          } catch (error) {
+              console.error("Error capturado:", error);
+              alert(`Fallo en la conexión.\n\nMotivo:\n${error.message}\n\nActivando motor local.`);
               let hash = 0;
               for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
               finalPreset = generateOfflineTone(query, Math.abs(hash));
           }
-      } catch (error) {
-          console.error("Error capturado:", error);
-          alert(`Fallo en la conexión.\n\nMotivo:\n${error.message}\n\nActivando motor local.`);
-          let hash = 0;
-          for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
-          finalPreset = generateOfflineTone(query, Math.abs(hash));
       }
 
       renderPreset(finalPreset);
@@ -365,20 +384,98 @@
       btnIcon.className = "fa-solid fa-arrow-right";
     });
 
-    function renderKnobSVG(label, value) {
-      let numVal = 50;
-      let valStr = String(value !== undefined && value !== null ? value : 50);
-      if (typeof value === 'number') {
-        numVal = Math.min(Math.max(value, 0), 100);
-      } else {
-        let matches = valStr.match(/-?\d+(\.\d+)?/);
-        if (matches) {
-          let parsed = parseFloat(matches[0]);
-          numVal = Math.min(Math.max((parsed + 60) * 1.2, 10), 90);
+    // LÓGICA DE PERILLAS TÁCTILES (DRAG & DROP)
+    let draggingKnob = null;
+    let startY = 0;
+    let initialNum = 0;
+
+    function parseKnobValue(valStr) {
+        valStr = String(valStr);
+        let numMatch = valStr.match(/-?\d+(\.\d+)?/);
+        if (!numMatch) return { num: 50, prefix: '', suffix: '' };
+        let num = parseFloat(numMatch[0]);
+        let idx = valStr.indexOf(numMatch[0]);
+        let prefix = valStr.substring(0, idx);
+        let suffix = valStr.substring(idx + numMatch[0].length);
+        return { num, prefix, suffix };
+    }
+
+    function updateKnobVisual(knobEl, valStr) {
+        let parsed = parseKnobValue(valStr);
+        let numVal = 50;
+        
+        // Mapeo lógico para el llenado del círculo verde (0 a 100%)
+        if (parsed.suffix.includes('dB')) numVal = ((parsed.num + 60) / 120) * 100;
+        else if (parsed.suffix.includes('ms')) numVal = (parsed.num / 2000) * 100;
+        else if (parsed.suffix.includes('Hz')) numVal = (parsed.num / 20000) * 100;
+        else numVal = parsed.num;
+        
+        numVal = Math.max(0, Math.min(100, numVal));
+        let strokeDash = (numVal / 100) * 126;
+        
+        knobEl.querySelector('.knob-value-badge').innerText = valStr;
+        knobEl.querySelector('.dynamic-stroke').setAttribute('stroke-dasharray', `${strokeDash} 126`);
+        knobEl.dataset.rawVal = valStr;
+    }
+
+    function handleDragStart(e, knobEl) {
+        draggingKnob = knobEl;
+        startY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+        let parsed = parseKnobValue(knobEl.dataset.rawVal);
+        initialNum = parsed.num;
+        document.body.style.userSelect = 'none';
+    }
+
+    function handleDragMove(e) {
+        if (!draggingKnob) return;
+        let clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+        let deltaY = startY - clientY; // Arriba es positivo
+
+        let parsed = parseKnobValue(draggingKnob.dataset.rawVal);
+        let newVal = initialNum + (deltaY * 0.5); // Sensibilidad
+
+        // Límites según el tipo de valor
+        if (parsed.suffix.includes('ms')) newVal = Math.max(0, Math.min(2000, newVal));
+        else if (parsed.suffix.includes('dB')) newVal = Math.max(-60, Math.min(60, newVal));
+        else if (parsed.suffix.includes('Hz')) newVal = Math.max(20, Math.min(20000, newVal));
+        else newVal = Math.max(0, Math.min(100, newVal));
+
+        // Mantener enteros si no es decibelio ni fracción
+        if(Number.isInteger(initialNum) && !parsed.suffix.includes('dB')) newVal = Math.round(newVal);
+        else newVal = newVal.toFixed(1);
+
+        let finalStr = parsed.prefix + newVal + parsed.suffix;
+        updateKnobVisual(draggingKnob, finalStr);
+    }
+
+    function handleDragEnd() {
+        if(draggingKnob) {
+            // Aquí podríamos guardar el valor actualizado en la caché local
+            draggingKnob = null;
+            document.body.style.userSelect = '';
         }
-      }
+    }
+
+    document.addEventListener('mousemove', handleDragMove);
+    document.addEventListener('mouseup', handleDragEnd);
+    document.addEventListener('touchmove', handleDragMove, {passive: false});
+    document.addEventListener('touchend', handleDragEnd);
+
+
+    function renderKnobSVG(label, value) {
+      let valStr = String(value !== undefined && value !== null ? value : 50);
+      let parsed = parseKnobValue(valStr);
+      let numVal = 50;
+      
+      if (parsed.suffix.includes('dB')) numVal = ((parsed.num + 60) / 120) * 100;
+      else if (parsed.suffix.includes('ms')) numVal = (parsed.num / 2000) * 100;
+      else if (parsed.suffix.includes('Hz')) numVal = (parsed.num / 20000) * 100;
+      else numVal = Math.min(Math.max(parsed.num, 0), 100);
+
       let strokeDash = (numVal / 100) * 126;
-      return `<div class="flex flex-col items-center gap-0.5"><div class="knob-container"><svg class="w-14 h-14 knob-svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#26334d" stroke-width="4"/><circle cx="25" cy="25" r="20" fill="none" stroke="#00ff66" stroke-width="4" stroke-dasharray="${strokeDash} 126" stroke-linecap="round"/></svg><span class="knob-value-badge">${valStr}</span></div><span class="text-[9px] font-mono font-bold text-brand-muted uppercase text-center max-w-[70px] truncate">${label}</span></div>`;
+      
+      // Contenedor interactivo
+      return `<div class="flex flex-col items-center gap-0.5"><div class="knob-container cursor-ns-resize" data-raw-val="${valStr}" onmousedown="handleDragStart(event, this)" ontouchstart="handleDragStart(event, this)"><svg class="w-14 h-14 knob-svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#26334d" stroke-width="4"/><circle class="dynamic-stroke" cx="25" cy="25" r="20" fill="none" stroke="#00ff66" stroke-width="4" stroke-dasharray="${strokeDash} 126" stroke-linecap="round"/></svg><span class="knob-value-badge">${valStr}</span></div><span class="text-[9px] font-mono font-bold text-brand-muted uppercase text-center max-w-[70px] truncate">${label}</span></div>`;
     }
 
     function renderPreset(preset) {
@@ -389,6 +486,14 @@
         document.getElementById('pickupRec').innerText = preset.pickup;
         document.getElementById('guitarVol').innerText = preset.vol;
         document.getElementById('ctrlAssignments').innerHTML = preset.ctrls.map(c => `<div>${c}</div>`).join('');
+        
+        // Mostrar barra de estrellas y botón de favoritos
+        document.getElementById('ratingStars').classList.remove('hidden');
+        document.getElementById('favBtn').classList.remove('hidden');
+        
+        // Restaurar UI de calificación
+        updateStarsUI(preset.rating || 0);
+        updateFavUI(preset.isFav || false);
 
         if (preset.blocks) {
           preset.blocks.sort((a, b) => {
@@ -412,6 +517,42 @@
       }
     }
 
+    // FUNCIONES DE CALIFICACIÓN Y FAVORITOS
+    function ratePreset(stars) {
+        updateStarsUI(stars);
+        if(currentCacheKey) {
+            let cached = JSON.parse(localStorage.getItem(currentCacheKey));
+            if(cached) {
+                cached.rating = stars;
+                localStorage.setItem(currentCacheKey, JSON.stringify(cached));
+            }
+        }
+    }
+
+    function updateStarsUI(stars) {
+        let starIcons = document.getElementById('ratingStars').children;
+        for(let i=0; i<5; i++) {
+            if(i < stars) starIcons[i].className = "fa-solid fa-star cursor-pointer text-yellow-400 transition-colors";
+            else starIcons[i].className = "fa-solid fa-star cursor-pointer hover:text-yellow-400 transition-colors";
+        }
+    }
+
+    function toggleFavorite() {
+        if(!currentCacheKey) return;
+        let cached = JSON.parse(localStorage.getItem(currentCacheKey));
+        if(!cached) return;
+        
+        cached.isFav = !cached.isFav;
+        localStorage.setItem(currentCacheKey, JSON.stringify(cached));
+        updateFavUI(cached.isFav);
+    }
+
+    function updateFavUI(isFav) {
+        let btn = document.getElementById('favBtn');
+        if(isFav) btn.className = "text-red-500 text-lg transition-colors cursor-pointer";
+        else btn.className = "text-brand-muted hover:text-red-500 text-lg transition-colors cursor-pointer";
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       updateApiStatus();
       let initTone = generateOfflineTone("Preset Base GE300", 12345);
@@ -419,7 +560,7 @@
     });
 
     function showTab(tab) {
-      if (tab === 'catalog') alert("Catálogo GE300 v7.3.0: Mapeo completo de todos los bloques de efectos.");
+      if (tab === 'catalog') alert("Favoritos (Próximamente): Aquí verás todos los presets que has puntuado y guardado en tu memoria caché.");
       else if (tab === 'tools') alert("Calculadora BPM / ms: 120 BPM = 500 ms (1/4) | 250 ms (1/8)");
     }
   </script>

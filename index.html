@@ -20,8 +20,9 @@
     .view-mode .dynamic-stroke { stroke: #00cc52; }
     .view-mode .knob-container { cursor: default !important; }
   </style>
-
-  <!-- GUARDIA DE SEGURIDAD Y CONTROL DE SESIÓN -->
+  <!-- GUARDIA DE SEGURIDAD DE FIREBASE -->
+<script type="module">
+    <!-- GUARDIA DE SEGURIDAD Y CONTROL DE SESIÓN -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
@@ -56,24 +57,8 @@
     };
   </script>
 </head>
-<body class="flex flex-col h-[100dvh] overflow-hidden font-sans">
-
-  <header class="bg-brand-panel border-b border-brand-border px-4 py-3 flex items-center justify-between shrink-0 z-10">
-    <div class="flex items-center gap-2.5">
-      <div class="w-8 h-8 rounded-lg bg-brand-accent/10 border border-brand-accent/30 flex items-center justify-center text-brand-accent">
-        <i class="fa-solid fa-guitar text-sm"></i>
-      </div>
-      <div>
-        <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
-          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v8.6.0</span>
-        </h1>
-        <p class="text-[11px] text-brand-muted" id="apiStatusText">Búsqueda Difusa & Freno IA</p>
-      </div>
-    </div>
-    <div class="flex items-center gap-2">
-      <button onclick="cerrarSesion()" class="bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/40 px-2.5 py-1.5 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5 transition-all">
-        <i class="fa-solid fa-right-from-bracket"></i> Salir
-  
+  <button onclick="cerrarSesion()" class="bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/40 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all">
+  <i class="fa-solid fa-right-from-bracket"></i> Salir
   </button>
   
 <body class="flex flex-col h-[100dvh] overflow-hidden font-sans">

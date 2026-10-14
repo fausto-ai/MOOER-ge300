@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 Pro AI Tone Studio v8.3.0</title>
+  <title>MOOER GE300 Pro AI Tone Studio v8.4.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
@@ -21,7 +21,6 @@
     .view-mode .knob-container { cursor: default !important; }
   </style>
 </head>
-<!-- Usamos h-[100dvh] para evitar que el navegador móvil corte el menú de abajo -->
 <body class="flex flex-col h-[100dvh] overflow-hidden font-sans">
 
   <header class="bg-brand-panel border-b border-brand-border px-4 py-3 flex items-center justify-between shrink-0 z-10">
@@ -31,9 +30,9 @@
       </div>
       <div>
         <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
-          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v8.3.0</span>
+          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v8.4.0</span>
         </h1>
-        <p class="text-[11px] text-brand-muted" id="apiStatusText">UI Completada & Conexión Total</p>
+        <p class="text-[11px] text-brand-muted" id="apiStatusText">UI Minimalista & Motor Eficiente</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -44,7 +43,6 @@
     </div>
   </header>
 
-  <!-- VISTA PRINCIPAL: BUSCADOR Y PEDALES -->
   <div id="viewSearch" class="flex flex-col flex-1 overflow-hidden">
     <section class="p-3.5 bg-brand-panel/50 border-b border-brand-border shrink-0">
       <form id="aiToneForm" class="relative flex items-center">
@@ -57,7 +55,6 @@
       </form>
     </section>
 
-    <!-- Agregamos pb-6 para asegurar que se pueda scrollear hasta el final cómodamente -->
     <main class="flex-1 overflow-y-auto p-4 pb-10 space-y-5 hide-scrollbar view-mode" id="mainPresetContainer">
       <div class="bg-brand-card rounded-2xl border border-brand-border p-4 space-y-4 shadow-lg shadow-black/20">
         
@@ -68,7 +65,6 @@
               <h2 class="text-base font-bold text-white mt-1 leading-tight" id="songTitle">Studio Master Preset</h2>
             </div>
             
-            <!-- ACTION BAR -->
             <div class="flex items-center gap-1.5 shrink-0 bg-brand-bg/50 p-1 rounded-lg border border-brand-border/40">
               <button id="btnEdit" onclick="toggleEditMode()" class="px-2.5 py-1.5 rounded-md text-[10px] font-bold text-brand-muted hover:bg-brand-border/50 transition-colors flex items-center gap-1.5">
                 <i class="fa-solid fa-pen-to-square"></i> <span>Editar</span>
@@ -102,7 +98,7 @@
               <span class="font-semibold" id="pickupRec">Puente / Humbucker</span>
             </div>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 hidden" id="guitarVolContainer">
             <i class="fa-solid fa-volume-high text-brand-accent"></i>
             <div>
               <span class="block text-brand-muted text-[9px] uppercase font-bold">Volumen Guitarra</span>
@@ -127,18 +123,13 @@
     </main>
   </div>
 
-  <!-- VISTA BIBLIOTECA: FAVORITOS Y DESTACADOS -->
   <div id="viewLibrary" class="hidden flex-col flex-1 overflow-y-auto bg-brand-bg p-4 space-y-6 pb-10 hide-scrollbar">
-    
     <div class="space-y-3">
       <h2 class="text-xs font-bold font-mono text-brand-accent uppercase flex items-center gap-1.5 border-b border-brand-border pb-1">
         <i class="fa-solid fa-star"></i> Presets Destacados (Universales)
       </h2>
-      <div class="grid grid-cols-1 gap-3" id="featuredList">
-        <!-- Renderizado dinámico -->
-      </div>
+      <div class="grid grid-cols-1 gap-3" id="featuredList"></div>
     </div>
-
     <div class="space-y-3">
       <h2 class="text-xs font-bold font-mono text-white uppercase flex items-center gap-1.5 border-b border-brand-border pb-1">
         <i class="fa-solid fa-heart text-red-500"></i> Mis Favoritos Locales
@@ -147,10 +138,8 @@
         <p class="text-[11px] text-brand-muted italic">Aún no has guardado favoritos. Busca un tono y presiona el corazón.</p>
       </div>
     </div>
-
   </div>
 
-  <!-- MODAL API (CON TODAS SUS FUNCIONES RESTAURADAS) -->
   <div id="apiKeyModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-brand-card border border-brand-border rounded-2xl p-4 w-full max-w-sm space-y-3">
       <div class="flex items-center justify-between border-b border-brand-border pb-2">
@@ -163,7 +152,6 @@
     </div>
   </div>
 
-  <!-- NAVEGACIÓN INFERIOR (ASEGURADA CON SHRINK-0 Y Z-10) -->
   <nav class="bg-brand-panel border-t border-brand-border px-6 py-2 flex justify-around shrink-0 text-center z-20 w-full relative">
     <button class="flex flex-col items-center gap-0.5 text-brand-accent w-16" id="navSearch" onclick="switchTab('search')">
       <i class="fa-solid fa-sliders text-base"></i>
@@ -180,45 +168,54 @@
   </nav>
 
   <script>
-    const BLOCK_ORDER = ["SYNTH", "COMP", "WAH", "FXA", "DS/OD", "AMP", "CAB", "NS", "TONE CAP", "EQ", "FXB", "FX LOOP", "DELAY", "REVERB", "VOL"];
+    const BLOCK_ORDER = ["SYNTH", "COMP", "WAH", "FXA", "DS/OD", "AMP", "CAB", "NS", "TONE CAP", "EQ", "FXB", "FX LOOP", "DELAY", "REVERB"];
 
-    // BANCO UNIVERSAL DE DESTACADOS (No consumen API)
+    // BASE DE DATOS MOOER (Recortada para el ejemplo visual)
+    const m=(n,k)=>({name:n,knobs:()=>k});
+    const COMP=[m("1: S-Comp",{"Sensitivity":82,"Output":"+4.0dB"}),m("3: Yellow Comp",{"Threshold":"-30.0dB","Ratio":"4.0:1","Attack":38,"Output":"+6.0dB"})];
+    const WAH=[m("1: Cry Wah",{"Position":50,"Q":"2.2","Peak":50,"Output":"0dB"})];
+    const FXA=[m("26: 70s Chorus",{"Rate":36,"Tone":30,"Depth":40,"Level":75,"Output Mode":"Stereo","Output":"0dB"}),m("35: Mono Pitch",{"Pitch":"+12.0","Tone":20,"Mix":50,"Output":"+1.0dB"})];
+    const DS_OD=[m("2: 808",{"Gain":50,"Bass":35,"Mid":44,"Treble":70,"Output":60}),m("6: DDrive",{"Gain":53,"Bass":40,"Mid":52,"Treble":60,"Output":45})];
+    const AMP=[m("10: J800",{"Gain":60,"Bass":50,"Mid":60,"Treble":50,"Mode":"Original","Tube":"UK EL34","Preamp Out":70,"Presence":45,"Bias":40,"Master":75}),m("102: Jazz 120",{"Gain":40,"Bass":50,"Mid":60,"Treble":50,"Mode":"Original","Tube":"UK EL34","Preamp Out":70,"Presence":45,"Bias":40,"Master":75})];
+    const CAB=[m("6: 1960 412",{"Mic 1":"SM57","Center 1":0,"Distance 1":10,"Mic 2":"U87","Center 2":5,"Distance 2":10,"Low Cut":"80Hz","High Cut":"8500Hz","Early Reflection":10,"Output":"0dB"}),m("16: Jazz 212",{"Mic 1":"SM57","Center 1":0,"Distance 1":10,"Mic 2":"U87","Center 2":5,"Distance 2":10,"Low Cut":"80Hz","High Cut":"8500Hz","Early Reflection":10,"Output":"0dB"})];
+    const NS=[m("1: Noise Killer",{"Threshold":25,"Output":"0dB"})];
+    const EQ=[m("1: 3-Band EQ",{"Low":"0dB","Mid":"0dB","High":"0dB","Output":"0dB"})];
+    const DELAY=[m("1: Digital",{"Feedback":15,"Mix":10,"Time":"500ms","Output":"0dB","Tempo Sync":"Off","Trail":"Off"})];
+    const REVERB=[m("2: Hall",{"Pre Delay":"30ms","Decay":30,"Low Cut":"80Hz","High Cut":"4000Hz","Mix":20,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"})];
+
+    // BANCO UNIVERSAL CON LA PROPIEDAD 'displayKnobs' PARA INTERFAZ LIMPIA
     const UNIVERSAL_PRESETS = {
         "ge300_univ_soda_ligera": {
             id: "ge300_univ_soda_ligera",
             title: "SODA STEREO - MÚSICA LIGERA",
             bank: "01A",
-            desc: "Tono Universal Destacado: Sonido brillante estilo Roland Jazz Chorus, compresión fuerte y chorus expansivo ochentero.",
+            desc: "Sonido brillante estilo Roland Jazz Chorus, compresión fuerte y chorus expansivo ochentero.",
             pickup: "Puente / Humbucker",
-            vol: "10 (Abierto Total)",
-            ctrls: ["CTRL 1: Drive", "CTRL 2: Chorus", "EXP 1: Master Vol"],
+            ctrls: ["CTRL 1: Chorus"],
             rating: 5,
             isFav: false,
             blocks: [
-                { type: "COMP", model: "3: Yellow Comp", knobs: { "Threshold": "-30.0dB", "Ratio": "4.0:1", "Attack": 38, "Output": "+6.0dB" } },
-                { type: "AMP", model: "102: Jazz 120", knobs: { "Gain": 30, "Bass": 45, "Mid": 55, "Treble": 70, "Mode": "Original", "Tube": "UK EL34", "Preamp Out": 70, "Presence": 65, "Bias": 40, "Master": 75 } },
-                { type: "CAB", model: "16: Jazz 212", knobs: { "Mic 1": "SM57", "Center 1": 0, "Distance 1": 10, "Mic 2": "U87", "Center 2": 5, "Distance 2": 10, "Low Cut": "80Hz", "High Cut": "8500Hz", "Early Reflection": 10, "Output": "0dB" } },
-                { type: "FXA", model: "26: 70s Chorus", knobs: { "Rate": 36, "Tone": 30, "Depth": 55, "Level": 75, "Output Mode": "Stereo", "Output": "0dB" } },
-                { type: "VOL", model: "Vol", knobs: { "Position": 100, "Min": 0, "Max": 100, "Curve": "Log" } }
+                { type: "COMP", model: "3: Yellow Comp", knobs: COMP[1].knobs(), displayKnobs: { "Threshold": "-30.0dB", "Ratio": "4.0:1" } },
+                { type: "AMP", model: "102: Jazz 120", knobs: AMP[1].knobs(), displayKnobs: { "Gain": 30, "Treble": 70, "Mid": 55 } },
+                { type: "CAB", model: "16: Jazz 212", knobs: CAB[1].knobs(), displayKnobs: { "Mic 1": "SM57" } },
+                { type: "FXA", model: "26: 70s Chorus", knobs: FXA[0].knobs(), displayKnobs: { "Depth": 55, "Level": 75 } }
             ]
         },
         "ge300_univ_audioslave_stone": {
             id: "ge300_univ_audioslave_stone",
-            title: "AUDIOSLAVE - LIKE A STONE (SOLO)",
+            title: "AUDIOSLAVE - LIKE A STONE",
             bank: "02A",
-            desc: "Tono Universal Destacado: Requiere Pedal de Expresión mapeado al bloque WAH (Mono Pitch) configurado a +2 Octavas.",
+            desc: "Requiere Pedal de Expresión mapeado al bloque FXA configurado a +2 Octavas.",
             pickup: "Mástil / Single Coil",
-            vol: "10 (Abierto Total)",
-            ctrls: ["EXP 1: Whammy (Pitch)", "CTRL 1: Delay"],
+            ctrls: ["EXP 1: Whammy (FXA)", "CTRL 1: Delay"],
             rating: 5,
             isFav: false,
             blocks: [
-                { type: "WAH", model: "35: Mono Pitch", knobs: { "Pitch": "+24.0", "Tone": 50, "Mix": 100, "Output": "0dB" } },
-                { type: "DS/OD", model: "6: DDrive", knobs: { "Gain": 55, "Bass": 40, "Mid": 52, "Treble": 60, "Output": 50 } },
-                { type: "AMP", model: "10: J800", knobs: { "Gain": 60, "Bass": 50, "Mid": 65, "Treble": 55, "Mode": "Original", "Tube": "UK EL34", "Preamp Out": 70, "Presence": 45, "Bias": 40, "Master": 75 } },
-                { type: "CAB", model: "6: 1960 412", knobs: { "Mic 1": "SM57", "Center 1": 0, "Distance 1": 10, "Mic 2": "U87", "Center 2": 5, "Distance 2": 10, "Low Cut": "80Hz", "High Cut": "8500Hz", "Early Reflection": 10, "Output": "0dB" } },
-                { type: "DELAY", model: "1: Digital", knobs: { "Feedback": 25, "Mix": 20, "Time": "380ms", "Output": "0dB", "Tempo Sync": "Off", "Trail": "Off" } },
-                { type: "VOL", model: "Vol", knobs: { "Position": 100, "Min": 0, "Max": 100, "Curve": "Log" } }
+                { type: "FXA", model: "35: Mono Pitch", knobs: FXA[1].knobs(), displayKnobs: { "Pitch": "+24.0", "Mix": 100 } },
+                { type: "DS/OD", model: "6: DDrive", knobs: DS_OD[1].knobs(), displayKnobs: { "Gain": 55, "Treble": 60 } },
+                { type: "AMP", model: "10: J800", knobs: AMP[0].knobs(), displayKnobs: { "Gain": 60, "Mid": 65, "Treble": 55 } },
+                { type: "CAB", model: "6: 1960 412", knobs: CAB[0].knobs(), displayKnobs: { "Mic 1": "SM57" } },
+                { type: "DELAY", model: "1: Digital", knobs: DELAY[0].knobs(), displayKnobs: { "Time": "380ms", "Mix": 20 } }
             ]
         }
     };
@@ -226,16 +223,13 @@
     let currentCacheKey = '';
     let isEditMode = false;
 
-    // --- FUNCIONES COMPLETAS DE API KEY RESTAURADAS ---
     function updateApiStatus() {
         const key = localStorage.getItem('GE300_GEMINI_KEY');
         const icon = document.getElementById('keyIcon');
         if (key && key.trim() !== '') {
-            icon.classList.add('text-brand-accent');
-            icon.classList.remove('text-brand-muted');
+            icon.classList.add('text-brand-accent'); icon.classList.remove('text-brand-muted');
         } else {
-            icon.classList.remove('text-brand-accent');
-            icon.classList.add('text-brand-muted');
+            icon.classList.remove('text-brand-accent'); icon.classList.add('text-brand-muted');
         }
     }
 
@@ -243,7 +237,6 @@
         const modal = document.getElementById('apiKeyModal');
         if (modal) {
             modal.classList.toggle('hidden');
-            // Restaurado: Cargar la clave guardada en el input al abrir el modal
             const savedKey = localStorage.getItem('GE300_GEMINI_KEY');
             if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
         }
@@ -255,38 +248,17 @@
             const key = keyInput.value.trim();
             if (key) {
                 localStorage.setItem('GE300_GEMINI_KEY', key);
-                alert('API Key guardada correctamente.');
-                updateApiStatus();
-                toggleApiKeyModal();
+                updateApiStatus(); toggleApiKeyModal();
             } else {
                 localStorage.removeItem('GE300_GEMINI_KEY');
-                updateApiStatus();
-                toggleApiKeyModal();
+                updateApiStatus(); toggleApiKeyModal();
             }
         }
     }
 
-    // --- BASE DE DATOS MOOER (COMPLETA) ---
-    const m=(n,k)=>({name:n,knobs:()=>k});
-    const COMP=[m("1: S-Comp",{"Sensitivity":82,"Output":"+4.0dB"}),m("2: Red Comp",{"Sensitivity":88,"Output":"+4.0dB"}),m("3: Yellow Comp",{"Threshold":"-30.0dB","Ratio":"4.0:1","Attack":38,"Output":"+6.0dB"}),m("4: Blue Comp",{"Threshold":"-30.0dB","Ratio":"4.0:1","Attack":38,"Output":"+6.0dB"}),m("5: Boost Comp",{"Comp":75,"Low":"+6.0dB","High":"-2.0dB","Gain":65,"Output":"+2.0dB"}),m("6: L-Studio Comp",{"Peak Reduction":80,"Gain":72,"Mix":60,"Output":"+2.0dB"}),m("7: Deluxe Comp",{"Threshold":"-30.0dB","Ratio":"5.0:1","Attack":54,"Release":30,"Mix":88,"Output":"+5.0dB"}),m("8: 3-Band Comp",{"Ratio":"4.0:1","Attack":30,"Release":65,"Low Threshold":"-35.0dB","Low Gain":"-1.0dB","Mid Threshold":"-33.0dB","Mid Gain":"+2.0dB","High Threshold":"-26.0dB","High Gain":"-2.0dB","Output":"+12.0dB"}),m("9: Limit",{"Threshold":"-18.0dB","Output":"+8.0dB"}),m("10: Blood Comp",{"Sustain":70,"Blend":60,"Output":"+4.0dB"})];
-    const WAH=[m("1: Cry Wah",{"Position":50,"Q":"2.2","Peak":50,"Output":"0dB"}),m("2: 535 Wah",{"Position":50,"Q":"3.0","Peak":90,"Output":"0dB"}),m("3: 846 Wah",{"Position":50,"Q":"2.5","Peak":75,"Output":"-1.0dB"}),m("4: 847 Wah",{"Position":50,"Low Fc":"200Hz","High Fc":"2500Hz","Peak":45,"Output":"-3.0dB"}),m("5: Mae Wah",{"Position":50,"Low Fc":"250Hz","High Fc":"3000Hz","Output":"-3.0dB"}),m("6: Custom Wah",{"Position":50,"Low Fc":"300Hz","High Fc":"3000Hz","Peak":70,"Q":"2.5","Mix":100,"Output":"0dB"}),m("7: Auto Wah",{"Rate":18,"Range":90,"Peak":90,"Q":"3.0","Curve":"Sine","Output":"0dB"}),m("8: Touch Wah",{"Attack":65,"Sens":15,"Peak":70,"Q":"3.0","Direction":"Lo to Hi","Output":"0dB"}),m("9: Talk Wah Ah",{"Rate":18,"Range":80,"Peak":75,"Output":"+1.0dB"}),m("10: Talk Wah Oh",{"Rate":18,"Range":90,"Peak":75,"Output":"+1.0dB"})];
-    const FXA=[m("1: 3-Band EQ",{"Low":"0dB","Mid":"0dB","High":"0dB","Output":"0dB"}),m("2: 5-Band EQ",{"Low":"0dB","Low Mid":"0dB","Mid":"0dB","High Mid":"0dB","High":"0dB","Output":"0dB"}),m("3: Studio EQ",{"Freq 1":"100Hz","Q 1":"2.6","Gain 1":"0dB","Freq 2":"800Hz","Q 2":"2.6","Gain 2":"0dB","Freq 3":"2000Hz","Q 3":"2.6","Gain 3":"0dB","Freq 4":"12000Hz"}),m("4: Slow Gear",{"Attack":15,"Output":"0dB"}),m("5: Octave",{"Sub":60,"Sub Tone":40,"Upper":70,"Upper Tone":70,"Dry":80,"Output":"0dB"}),m("6: Phaser",{"Rate":24,"Tone":70,"Depth":60,"Output":"0dB"}),m("7: Step Phaser",{"Rate":24,"Tone":80,"Depth":80,"Output":"0dB"}),m("8: Fat Phaser",{"Rate":24,"Tone":70,"Depth":50,"Output":"0dB"}),m("9: 6 Stage Analog Phaser",{"Rate":24,"Sweep":65,"Resonance":60,"Output":"0dB"}),m("10: 12 Stage Analog Phaser",{"Rate":24,"Sweep":55,"Resonance":65,"Output":"0dB"}),m("11: Dual Phaser",{"Rate":24,"Tone":30,"Depth":50,"Output":"0dB"}),m("12: Modern Phaser",{"Rate":24,"Tone":35,"Depth":60,"Output":"0dB"}),m("13: Flanger",{"Rate":24,"Feedback":25,"Tone":40,"Level":50,"Output":"+2.0dB"}),m("14: Jet-Flanger",{"Rate":24,"Feedback":65,"Tone":40,"Level":75,"Output":"+2.0dB"}),m("15: Flanger pro",{"Rate":24,"Feedback":65,"Delay":70,"Tone":45,"Level":50,"Output":"+1.0dB"}),m("16: Triple Flanger",{"Manual":75,"Width":30,"Speed":50,"Intensity":60,"Output":"+1.0dB"}),m("17: Modern Flanger",{"Rate":24,"Feedback":50,"Delay":80,"Tone":50,"Level":60,"Output":"+1.0dB"}),m("18: Tremolo",{"Rate":25,"Tone":50,"Depth":60,"Output":"0dB"}),m("19: Optical Tremolo",{"Speed":25,"Intensity":50,"Tone":40,"Output":"0dB"}),m("20: 60s Tremolo",{"Speed":19,"Intensity":75,"Tone":35,"Output":"+3.0dB"}),m("21: Stutter",{"Rate":22,"Tone":35,"Depth":65,"Output":"0dB"}),m("22: Vibrato",{"Rate":22,"Tone":40,"Depth":50,"Output":"+1.0dB"}),m("23: Rotary",{"Rate":40,"Tone":30,"Level":65,"Output Mode":"Stereo","Output":"+2.0dB"}),m("24: Modern Rotary",{"Rate":24,"Tone":25,"Level":75,"Output Mode":"Stereo","Output":"+1.0dB"}),m("25: Ana-Chorus",{"Rate":36,"Tone":10,"Depth":50,"Level":90,"Output Mode":"Stereo","Output":"+3.0dB"}),m("26: 70s Chorus",{"Rate":36,"Tone":30,"Depth":40,"Level":75,"Output Mode":"Stereo","Output":"0dB"}),m("27: Tri-Chorus",{"Rate 1":20,"Depth 1":60,"Rate 2":40,"Depth 2":40,"Rate 3":60,"Depth 3":50,"Level":60,"Output Mode":"Stereo","Output":"0dB"}),m("28: Ring Mod",{"Rate":40,"Tone":25,"Level":80,"Output":"+1.0dB"}),m("29: Delay",{"Time":"500ms","Feedback":25,"Mix":15,"Low Cut":"100Hz","High Cut":"3000Hz","Output":"0dB"}),m("30: Detune",{"Pitch":"+12cent","Tone":25,"Level":100,"Output":"0dB"}),m("31: Lofi",{"Sample":"21000Hz","Bit":"8bit","Tone":30,"Level":70,"Output":"0dB"}),m("32: Low pass filter",{"Rate":24,"Range":50,"Level":70,"Depth":65,"Output":"0dB"}),m("33: High pass filter",{"Rate":24,"Range":50,"Level":70,"Depth":65,"Output":"0dB"}),m("34: Q filter",{"Rate":24,"Range":60,"Q":"2.0","Depth":100,"Level":90,"Output":"0dB"}),m("35: Mono Pitch",{"Pitch":"+12.0","Tone":20,"Mix":50,"Output":"+1.0dB"})];
-    const DS_OD=[m("1: Tube DR",{"Gain":50,"Bass":50,"Mid":50,"Treble":50,"Output":50}),m("2: 808",{"Gain":50,"Bass":35,"Mid":44,"Treble":70,"Output":60}),m("3: Pure Boost",{"Gain":2,"Bass":48,"Mid":50,"Treble":60,"Output":86}),m("4: Flex Boost",{"Gain":0,"Bass":62,"Mid":56,"Treble":48,"Output":100}),m("5: OD250",{"Gain":60,"Bass":40,"Mid":48,"Treble":58,"Output":70}),m("6: DDrive",{"Gain":53,"Bass":40,"Mid":52,"Treble":60,"Output":45}),m("7: BlackRat",{"Gain":56,"Bass":40,"Mid":57,"Treble":67,"Output":48}),m("8: Grey Faze",{"Gain":67,"Bass":44,"Mid":66,"Treble":58,"Output":42}),m("9: Muffy",{"Gain":46,"Bass":23,"Mid":47,"Treble":39,"Output":40}),m("10: Fuzz Department",{"Gain":77,"Bass":47,"Mid":75,"Treble":19,"Output":50}),m("11: MTL Zone",{"Gain":31,"Bass":40,"Mid":25,"Treble":44,"Output":51}),m("12: MTL Master",{"Gain":37,"Bass":45,"Mid":48,"Treble":36,"Output":49}),m("13: Obsessive Dist",{"Gain":58,"Bass":37,"Mid":77,"Treble":5,"Output":35}),m("14: Jimmy OD",{"Gain":54,"Bass":45,"Mid":62,"Treble":42,"Output":47}),m("15: Full DRV",{"Gain":57,"Bass":43,"Mid":39,"Treble":84,"Output":55}),m("16: Shred",{"Gain":61,"Bass":50,"Mid":73,"Treble":13,"Output":54}),m("17: BeeBee Pre",{"Gain":60,"Bass":50,"Mid":56,"Treble":33,"Output":57}),m("18: BeeBee +",{"Gain":37,"Bass":47,"Mid":76,"Treble":10,"Output":62}),m("19: Riet",{"Gain":39,"Bass":42,"Mid":58,"Treble":63,"Output":55}),m("20: Tight DS",{"Gain":40,"Bass":62,"Mid":55,"Treble":54,"Output":58}),m("21: Full DS",{"Gain":63,"Bass":55,"Mid":65,"Treble":41,"Output":50}),m("22: Gold Clon",{"Gain":40,"Bass":68,"Mid":13,"Treble":76,"Output":50}),m("23: Vx Tube OD",{"Gain":80,"Bass":49,"Mid":43,"Treble":41,"Output":61}),m("24: Tight Metal",{"Gain":40,"Bass":54,"Mid":32,"Treble":17,"Output":50}),m("25: The Juicer",{"Gain":45,"Bass":50,"Mid":60,"Treble":5,"Output":52}),m("26: Rumble Drive",{"Gain":46,"Bass":38,"Mid":44,"Treble":57,"Output":62}),m("27: Solo",{"Gain":30,"Bass":42,"Mid":49,"Treble":25,"Output":48}),m("28: Blues Mood",{"Gain":30,"Bass":46,"Mid":64,"Treble":8,"Output":50}),m("29: Blues Crab",{"Gain":60,"Bass":53,"Mid":46,"Treble":31,"Output":50}),m("30: Blade",{"Gain":46,"Bass":63,"Mid":36,"Treble":14,"Output":42}),m("31: Hustle Drive",{"Gain":23,"Bass":45,"Mid":58,"Treble":19,"Output":91})];
-    const AN=["1: US Blues JR", "2: 65 US DX", "3: 65 US TW", "4: US Sonic", "5: US Blues CL", "6: US Blues OD", "7: 59 US BASS", "8: UK30 CL", "9: UK30 OD", "10: J800", "11: J900", "12: PLX 100", "13: J2525 CH1", "14: J2525 CH2", "15: J410 CL", "16: J410 DS", "17: US Gold 100 CL", "18: US Gold 100 DS", "19: US Gold 50A", "20: US Gold 50B", "21: Cali LS CH1", "22: Cali LS CH2", "23: Cali Dual 1", "24: Cali Dual 2", "25: TRI REC CL", "26: TRI REC DS", "27: MARKIII CL", "28: MARKIII DS", "29: Cali MK4 A", "30: Cali MK4 B", "31: Cali MK4 C", "32: MARKV CL", "33: MARKV DS", "34: Cali JP A", "35: Cali JP B", "36: Cali JP C", "37: Eagle FB CH1", "38: Eagle FB CH2", "39: Powerbell CL", "40: Powerbell DS", "41: Blacknight CL", "42: Blacknight DS", "43: Eagle 670 CL", "44: Eagle 670 CR", "45: Eagle 670 L1", "46: Eagle 670 L2", "47: Satsuma TH200A", "48: Satsuma TH200B", "49: Satsuma TH30A", "50: Satsuma TH30B", "51: Rock Vrb CL", "52: Rock Vrb DS", "53: Citrus 30", "54: EV 5050 CL", "55: EV 5050 DS", "56: PV 5050 CL", "57: PV 5050 DS", "58: Petey 6550 A", "59: Petey 6550 B", "60: Petey Satch CL", "61: Petey Satch CR", "62: Petey Satch UL", "63: Herby CH1", "64: Herby CH2", "65: Herby CH3", "66: VHS CH1", "67: VHS CH2", "68: VHS CH3", "69: VHS CH4", "70: Hugen CL", "71: Hugen OD", "72: Hugen DS", "73: Randy Devil CL", "74: Randy Devil DS", "75: SLOW 100 CR", "76: SLOW 100 DS", "77: JET 100H CL", "78: JET 100H OD", "79: Koche OD", "80: Koche DS", "81: Blueno UG 30A", "82: Blueno UG 30B", "83: Custom 100 CH1", "84: Custom 100 CH2", "85: Custom 100 CH3", "86: Mr. Smith CL", "87: Mr. Smith DS", "88: Taxidea Taxus A", "89: Taxidea Taxus B", "90: Shittcow GR", "91: Shittcow RD", "92: Doctor3 a", "93: Doctor3 B", "94: Matchbox 30 CL", "95: Matchbox 30 OD", "96: Regal Tone CL", "97: Regal Tone OD1", "98: Regal Tone OD2", "99: Carol CL", "100: Carol OD", "101: Cardeff", "102: Jazz 120", "103: HWT 103", "104: HT Club CL", "105: HT Club DS", "106: Acoustic 1", "107: Acoustic 2", "108: Acoustic 3"];
-    const AMP=AN.map((n,i)=>m(n,{"Gain":55+(i%25),"Bass":50,"Mid":60,"Treble":50,"Mode":"Original","Tube":i%2===0?"US DLX 6L6":"UK EL34","Preamp Out":70,"Presence":45,"Bias":40,"Master":75}));
-    const CN=["1: US DLX 112", "2: US TWN 212", "3: US Bass 410", "4: Sonic 112", "5: Blues 112", "6: 1960 412", "7: Eagle P412", "8: Eagle S412", "9: Mark 112", "10: Rec 412", "11: Citrus 412", "12: Citrus 212", "13: Slow 412", "14: DR.ZEE 112", "15: DR.ZEE 212", "16: Jazz 212", "17: UK 212", "18: HWT 412", "19: PV 5050 412", "20: Regal Tone 110", "21: Two Stones 212", "22: Cardeff 112", "23: EV 5050 412", "24: HT 412", "25: Gas Station 412", "26: Blueno 212", "27: Custom 212", "28: Herby 412", "29: VHS 412", "30: Doctor3 112", "31: US Gold 412", "32: US Gold 112", "33: Matchbox 30 112", "34: Cali 412-1", "35: Cali 412-2", "36: Satsuma 212", "37: Petey 412", "38: Petey 212", "39: Mr Smith 112", "40: Randy Devil 412", "41: Taxidea Taxus 112", "42: Shittcow 412", "43: Acoustic 112"];
-    const CAB=CN.map((n,i)=>m(n,{"Mic 1":i%2===0?"U87":"SM57","Center 1":0,"Distance 1":10,"Mic 2":i%2===0?"NT1":"U87","Center 2":5,"Distance 2":10,"Low Cut":"80Hz","High Cut":"8500Hz","Early Reflection":10,"Output":"0dB"}));
-    const NS=[m("1: Noise Killer",{"Threshold":25,"Output":"0dB"}),m("2: Intel Reducer",{"Threshold":35,"Depth":70,"Output":"0dB"}),m("3: Noise Gate",{"Attack":25,"Release":70,"Threshold":25,"Damp":50,"Output":"0dB"})];
-    const EQ=[m("1: 3-Band EQ",{"Low":"0dB","Mid":"0dB","High":"0dB","Output":"0dB"}),m("2: Mooer G",{"100Hz":"0dB","250Hz":"0dB","630Hz":"0dB","1.6kHZ":"0dB","4kHZ":"0dB","Output":"0dB"}),m("3: Mooer HM",{"80Hz":"0dB","240Hz":"0dB","750Hz":"0dB","2.2kHZ":"0dB","6.6kHZ":"0dB","Output":"0dB"}),m("4: Mooer B",{"62.5Hz":"0dB","125Hz":"0dB","500Hz":"0dB","1kHZ":"0dB","4kHZ":"0dB","Output":"0dB"}),m("5: Mooer G-6",{"100Hz":"0dB","200Hz":"0dB","400Hz":"0dB","800Hz":"0dB","1.6kHZ":"0dB","3.2kHZ":"0dB","Output":"0dB"}),m("6: Mooer G-10",{"31Hz":"0dB","62Hz":"0dB","126Hz":"0dB","250Hz":"0dB","500Hz":"0dB","1kHZ":"0dB","2kHZ":"0dB","4kHZ":"0dB","8kHZ":"0dB","16kHZ":"0dB","Output":"0dB"}),m("7: Custom EQ",{"Low Gain":"0dB","Low Freq":"100Hz","Mid Gain":"0dB","Mid Freq":"800Hz","High Gain":"0dB","High Freq":"3200Hz","Output":"0dB"}),m("8: Studio EQ Pro",{"Low Gain":"0dB","Low Freq":"100Hz","Low Q":"2.6","Low Mid Gain":"0dB","Low Mid Freq":"800Hz","Mid Gain":"0dB","Mid Freq":"3200Hz","Mid Q":"2.6","Mid Hi Gain":"0dB"})];
-    const DELAY=[m("1: Digital",{"Feedback":15,"Mix":10,"Time":"500ms","Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("2: Analog",{"Feedback":20,"Mix":15,"Time":"500ms","Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("3: Dynamic",{"Feedback":20,"Mix":10,"Threshold":45,"Time":"500ms","Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("4: Real",{"Feedback":30,"Mix":20,"Time":"500ms","Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("5: Tape",{"Feedback":25,"Mix":13,"Time":"500ms","Mod Rate":45,"Mod Depth":50,"Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("6: Mod",{"Feedback":20,"Mix":12,"Time":"500ms","Mod Rate":35,"Mod Depth":60,"Output":"+1.0dB","Tempo Sync":"Off","Trail":"Off"}),m("7: Reverse",{"Feedback":30,"Mix":15,"Time":"500ms","Low Cut":"100Hz","High Cut":"5600Hz","Output":"0dB","Tempo Sync":"Off"}),m("8: Dual Delay",{"Feedback":50,"Mix":40,"Low Cut":"100Hz","High Cut":"5600Hz","Time 1":"340ms","Pan 1":"L100","Level 1":50,"Time 2":"500ms","Pan 2":"R100","Level 2":50}),m("9: Multi Tap Delay",{"Feedback":45,"Mix":35,"Low Cut":"100Hz","High Cut":"5600Hz","Time 1":"140ms","Pan 1":"L100","Level 1":50,"Time 2":"260ms","Pan 2":"R100","Level 2":50}),m("10: PingPong",{"Feedback":25,"Mix":15,"Time":"500ms","Output Mode":"Stereo","Output":"0dB","Tempo Sync":"Off","Trail":"Off"}),m("11: Vintage Delay",{"Feedback":25,"Mix":15,"Time":"500ms","Output":"0dB","bit":70,"S-Rate":55,"Tempo Sync":"Off"}),m("12: Galaxy Delay",{"Feedback":25,"Mix":17,"Time":"500ms","Mod Depth":65,"Rate":40,"Attack":30,"Output Mode":"Stereo","Output":"0dB","Tempo Sync":"Off"}),m("13: Fuzz Delay",{"Feedback":25,"Mix":15,"Time":"500ms","Gain":20,"Fuzz Lvl":30,"Tone":20,"Cab":"On","Output":"0dB","Tempo Sync":"Off"}),m("14: Crystal Delay",{"Feedback":30,"Mix":25,"Time":"500ms","Mod Depth":65,"Rate":75,"Mod Output":40,"Output Mode":"Stereo","Output":"0dB","Tempo Sync":"Off"})];
-    const REVERB=[m("1: Room",{"Pre Delay":"8ms","Decay":35,"Low Cut":"80Hz","High Cut":"5000Hz","Mix":25,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("2: Hall",{"Pre Delay":"30ms","Decay":30,"Low Cut":"80Hz","High Cut":"4000Hz","Mix":20,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("3: Plate",{"Pre Delay":"15ms","Decay":23,"Low Cut":"60Hz","High Cut":"5700Hz","Mix":13,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("4: Filter-Reverb",{"Pre Delay":"30ms","Decay":35,"Low Cut":"40Hz","High Cut":"4500Hz","Mix":30,"Rate":45,"Peak":90,"Q":60,"Filter Output":90,"Output Mode":"Stereo"}),m("5: Fl-Reverb",{"Pre Delay":"30ms","Decay":45,"Low Cut":"40Hz","High Cut":"5500Hz","Mix":35,"Rate":45,"Feedback":45,"Mod Delay":50,"Mod Output":60,"Output Mode":"Stereo"}),m("6: Reverse-Reverb",{"Pre Delay":"20ms","Decay":45,"Low Cut":"60Hz","High Cut":"3800Hz","Mix":35,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("7: Swell-Reverb",{"Pre Delay":"30ms","Decay":45,"Low Cut":"60Hz","High Cut":"6700Hz","Mix":35,"Attack":45,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"}),m("8: Spring",{"Pre Delay":"0ms","Decay":10,"Low Cut":"80Hz","High Cut":"4800Hz","Mix":12,"Spring Length":50,"Spring Depth":76,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("9: Mod",{"Pre Delay":"35ms","Decay":45,"Low Cut":"40Hz","High Cut":"5400Hz","Mix":35,"Rate":30,"Depth":40,"Mod Output":80,"Output Mode":"Stereo","Output":"0dB"}),m("10: Shimmer",{"Pre Delay":"30ms","Decay":56,"Low Cut":"100Hz","High Cut":"5600Hz","Mix":50,"Shimmer":75,"Output Mode":"Stereo","Output":"0dB","Quality":"High"}),m("11: Dist-Reverb",{"Pre Delay":"40ms","Decay":50,"Low Cut":"200Hz","High Cut":"7330Hz","Mix":40,"Gain":60,"Dist lvl":65,"Tone":45,"Cab":"Off","Output Mode":"Stereo"})];
-    const VOL=[m("Vol",{"Position":100,"Min":0,"Max":100,"Curve":"Log"})];
-
-    // --- CONTROL DE PESTAÑAS (TABS) ---
     function switchTab(tab) {
         document.getElementById('viewSearch').classList.add('hidden');
         document.getElementById('viewLibrary').classList.add('hidden');
-        
         document.getElementById('navSearch').classList.replace('text-brand-accent', 'text-brand-muted');
         document.getElementById('navLib').classList.replace('text-brand-accent', 'text-brand-muted');
 
@@ -302,38 +274,26 @@
         }
     }
 
-    // --- MODO SEGURO (CANDADO) ---
     function toggleEditMode() {
         isEditMode = !isEditMode;
         const container = document.getElementById('mainPresetContainer');
         const btnEdit = document.getElementById('btnEdit');
         const badge = document.getElementById('editStatusBadge');
-        
         if (isEditMode) {
-            container.classList.remove('view-mode');
-            container.classList.add('edit-mode');
+            container.classList.remove('view-mode'); container.classList.add('edit-mode');
             btnEdit.innerHTML = `<i class="fa-solid fa-lock-open text-brand-accent"></i> <span class="text-brand-accent">Listo</span>`;
             badge.innerHTML = `🔓 Modo Edición`;
             badge.className = "text-[9px] text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded font-mono border border-yellow-400/20";
         } else {
-            container.classList.add('view-mode');
-            container.classList.remove('edit-mode');
+            container.classList.add('view-mode'); container.classList.remove('edit-mode');
             btnEdit.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> <span>Editar</span>`;
             badge.innerHTML = `🔒 Modo Seguro`;
             badge.className = "text-[9px] text-brand-accent bg-brand-accent/10 px-2 py-0.5 rounded font-mono border border-brand-accent/20";
         }
     }
 
-    // --- CARGAR PRESETS DESDE BIBLIOTECA ---
     function loadPresetFromLibrary(cacheKey, isUniversal = false) {
-        let presetData;
-        if (isUniversal) {
-            presetData = UNIVERSAL_PRESETS[cacheKey];
-        } else {
-            let cached = localStorage.getItem(cacheKey);
-            if(cached) presetData = JSON.parse(cached);
-        }
-        
+        let presetData = isUniversal ? UNIVERSAL_PRESETS[cacheKey] : JSON.parse(localStorage.getItem(cacheKey));
         if(presetData) {
             currentCacheKey = cacheKey;
             renderPreset(presetData, isUniversal);
@@ -341,28 +301,20 @@
         }
     }
 
-    // --- RENDERIZAR BIBLIOTECA ---
     function renderLibrary() {
-        // Render Destacados
         const featuredContainer = document.getElementById('featuredList');
         featuredContainer.innerHTML = '';
         Object.keys(UNIVERSAL_PRESETS).forEach(key => {
             let p = UNIVERSAL_PRESETS[key];
             featuredContainer.innerHTML += `
                 <div class="bg-brand-panel border border-brand-border/60 p-3 rounded-xl flex items-center justify-between cursor-pointer hover:bg-brand-card transition-colors" onclick="loadPresetFromLibrary('${key}', true)">
-                    <div>
-                        <h4 class="text-xs font-bold text-white">${p.title}</h4>
-                        <div class="flex items-center gap-2 mt-1">
-                            <span class="text-[9px] font-mono text-brand-accent bg-brand-accent/10 px-1 rounded border border-brand-accent/20">UNIVERSAL</span>
-                            <span class="text-[9px] text-yellow-400"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span>
-                        </div>
-                    </div>
+                    <div><h4 class="text-xs font-bold text-white">${p.title}</h4>
+                    <div class="flex items-center gap-2 mt-1"><span class="text-[9px] font-mono text-brand-accent bg-brand-accent/10 px-1 rounded border border-brand-accent/20">UNIVERSAL</span>
+                    <span class="text-[9px] text-yellow-400"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span></div></div>
                     <i class="fa-solid fa-chevron-right text-brand-muted text-xs"></i>
-                </div>
-            `;
+                </div>`;
         });
 
-        // Render Favoritos
         const favContainer = document.getElementById('favoritesList');
         favContainer.innerHTML = '';
         let hasFavs = false;
@@ -377,96 +329,62 @@
                         <div class="bg-brand-panel border border-brand-border/60 p-3 rounded-xl flex items-center justify-between cursor-pointer hover:bg-brand-card transition-colors">
                             <div class="flex-1" onclick="loadPresetFromLibrary('${key}', false)">
                                 <h4 class="text-xs font-bold text-white truncate max-w-[200px]">${p.title}</h4>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <span class="text-[9px] text-brand-muted">${starsHtml}</span>
-                                </div>
+                                <div class="flex items-center gap-2 mt-1"><span class="text-[9px] text-brand-muted">${starsHtml}</span></div>
                             </div>
                             <button onclick="deleteFavorite('${key}')" class="p-2 text-brand-muted hover:text-red-500 transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
-                        </div>
-                    `;
+                        </div>`;
                 }
             }
         }
-        if(!hasFavs) {
-            favContainer.innerHTML = `<p class="text-[11px] text-brand-muted italic bg-brand-card p-3 rounded-lg border border-brand-border/30">Aún no has guardado favoritos. Busca un tono y presiona el corazón.</p>`;
-        }
+        if(!hasFavs) favContainer.innerHTML = `<p class="text-[11px] text-brand-muted italic bg-brand-card p-3 rounded-lg border border-brand-border/30">Aún no has guardado favoritos.</p>`;
     }
 
     function deleteFavorite(key) {
         if(confirm("¿Quitar de favoritos?")) {
-            let p = JSON.parse(localStorage.getItem(key));
-            p.isFav = false;
-            localStorage.setItem(key, JSON.stringify(p));
-            renderLibrary();
+            let p = JSON.parse(localStorage.getItem(key)); p.isFav = false;
+            localStorage.setItem(key, JSON.stringify(p)); renderLibrary();
         }
     }
 
-    // --- FUNCIONES DEL MOTOR IA (RESTAURADAS AL 100%) ---
     function fuzzyMatch(list, query) {
         if (!query || query === "None") return null;
         let q = query.toLowerCase().replace(/[^a-z0-9]/g, ''); 
-        let match = list.find(x => {
-            let n = x.name.toLowerCase().replace(/[^a-z0-9]/g, '');
-            return n.includes(q) || q.includes(n);
-        });
-        if (match) return match;
-        if (q.includes("jcm800")) return list.find(x => x.name.includes("J800"));
-        if (q.includes("whammy") || q.includes("pitch")) return list.find(x => x.name.includes("Pitch"));
-        if (q.includes("ts808") || q.includes("screamer")) return list.find(x => x.name.includes("808"));
-        return null; 
+        return list.find(x => x.name.toLowerCase().replace(/[^a-z0-9]/g, '').includes(q) || q.includes(x.name.toLowerCase().replace(/[^a-z0-9]/g, '')));
     }
 
-    function buildBlock(aiDataNode, list, type) {
-        if (!aiDataNode || !aiDataNode.name || aiDataNode.name === "None") return null;
-        let b = fuzzyMatch(list, aiDataNode.name);
-        if (!b) return null;
-        let finalKnobs = { ...b.knobs() };
-        if (aiDataNode.p) {
-            for (let k in aiDataNode.p) {
-                let realKey = Object.keys(finalKnobs).find(x => x.toLowerCase() === k.toLowerCase());
-                if (realKey) finalKnobs[realKey] = aiDataNode.p[k];
-            }
-        }
-        return { type: type, model: b.name, knobs: finalKnobs };
-    }
-
-    async function fetchAITone(query, apiKey, retries = 2) {
+    // --- NUEVA BÚSQUEDA MINIMALISTA (ARRAY DINÁMICO) ---
+    async function fetchAITone(query, apiKey, retries = 3) {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
-        const prompt = `Eres un técnico experto configurando la pedalera MOOER GE300.
-        Crea el tono exacto para la canción o artista: "${query}".
+        const prompt = `Eres experto en MOOER GE300. Crea el tono para: "${query}".
+        REGLAS ESTRICTAS:
+        1. Usa MÁXIMO 5 bloques.
+        2. NUNCA incluyas el bloque VOL.
+        3. Para cada bloque, devuelve SOLO las 2 o 3 perillas clave que definen el sonido (ej. Gain, Bass, Time).
         
-        Usa ESTOS nombres oficiales de catálogo:
-        AMPS: ${AMP.map(a=>a.name).join(', ')}
-        CABS: ${CAB.map(c=>c.name).join(', ')}
-        DS_OD: ${DS_OD.map(d=>d.name).join(', ')}
+        Catálogos permitidos:
+        AMP: ${AMP.map(a=>a.name).join(', ')}
+        CAB: ${CAB.map(c=>c.name).join(', ')}
+        DS/OD: ${DS_OD.map(d=>d.name).join(', ')}
         WAH: ${WAH.map(w=>w.name).join(', ')}
-        MOD: ${FXA.map(f=>f.name).join(', ')}
+        FXA: ${FXA.map(f=>f.name).join(', ')}
         DELAY: ${DELAY.map(d=>d.name).join(', ')}
         REVERB: ${REVERB.map(r=>r.name).join(', ')}
         COMP: ${COMP.map(c=>c.name).join(', ')}
         
-        Devuelve ÚNICAMENTE un JSON estricto:
+        Devuelve SOLO JSON:
         {
-          "comp": {"name": "nombre o None", "p": {}},
-          "wah": {"name": "nombre o None", "p": {}},
-          "fxa": {"name": "nombre o None", "p": {}},
-          "ds_od": {"name": "nombre o None", "p": {}},
-          "amp": {"name": "nombre exacto", "p": {}},
-          "cab": {"name": "nombre exacto", "p": {}},
-          "delay": {"name": "nombre o None", "p": {}},
-          "reverb": {"name": "nombre o None", "p": {}},
+          "blocks": [
+            {"type": "AMP", "name": "10: J800", "p": {"Gain": 75, "Treble": 60}},
+            {"type": "CAB", "name": "6: 1960 412", "p": {"Mic 1": "SM57"}}
+          ],
           "pickup": "Mástil o Puente",
-          "desc": "Breve explicación."
+          "ctrls": ["CTRL 1: Drive"],
+          "desc": "Explicación breve"
         }`;
 
         for (let i = 0; i <= retries; i++) {
             try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
-
+                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
                 if (response.ok) {
                     const data = await response.json();
                     let rawText = data.candidates[0].content.parts[0].text;
@@ -474,38 +392,18 @@
                     if (jsonMatch) rawText = jsonMatch[0];
                     return JSON.parse(rawText);
                 } else if ((response.status === 503 || response.status === 429) && i < retries) {
-                    await new Promise(r => setTimeout(r, 2000));
+                    await new Promise(r => setTimeout(r, 2000 * Math.pow(2, i)));
                     continue;
                 } else {
-                    const errData = await response.json();
-                    throw new Error(`Código ${response.status}: ${errData.error?.message || 'Error del servidor'}`);
+                    const errData = await response.json(); throw new Error(`Error: ${errData.error?.message}`);
                 }
             } catch (err) {
                 if (i === retries) throw err;
-                await new Promise(r => setTimeout(r, 2000));
+                await new Promise(r => setTimeout(r, 2000 * Math.pow(2, i)));
             }
         }
     }
 
-    function generateOfflineTone(query, absHash) {
-        let blocks = [];
-        blocks.push({ type: "COMP", model: COMP[absHash % COMP.length].name, knobs: COMP[absHash % COMP.length].knobs() });
-        blocks.push({ type: "AMP", model: AMP[absHash % AMP.length].name, knobs: AMP[absHash % AMP.length].knobs() });
-        blocks.push({ type: "CAB", model: CAB[absHash % CAB.length].name, knobs: CAB[absHash % CAB.length].knobs() });
-        blocks.push({ type: "REVERB", model: REVERB[1].name, knobs: REVERB[1].knobs() });
-        blocks.push({ type: "VOL", model: VOL[0].name, knobs: VOL[0].knobs() });
-        return {
-          title: `Preset GE300: ${query.toUpperCase()}`,
-          bank: `01A`,
-          desc: "(Modo Local) Cadena de emergencia local.",
-          pickup: "Puente / Humbucker",
-          vol: "10 (Abierto Total)",
-          ctrls: ["CTRL 1: Drive", "CTRL 2: Mod/Delay", "EXP 1: Vol", "EXP 2: FX"],
-          blocks: blocks
-        };
-    }
-
-    // --- LÓGICA DE BÚSQUEDA ---
     document.getElementById('aiToneForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const queryInput = document.getElementById('toneSearchInput');
@@ -513,106 +411,82 @@
       const query = queryInput.value.trim();
       if (!query) return;
 
-      const btnText = document.getElementById('btnText');
-      const btnIcon = document.getElementById('btnIcon');
-      
-      queryInput.disabled = true;
-      searchBtn.disabled = true;
-      queryInput.classList.add('opacity-50');
-      searchBtn.classList.add('opacity-50');
-      
-      btnText.innerText = "Pensando...";
-      btnIcon.className = "fa-solid fa-spinner animate-spin";
+      queryInput.disabled = true; searchBtn.disabled = true;
+      queryInput.classList.add('opacity-50'); searchBtn.classList.add('opacity-50');
+      document.getElementById('btnText').innerText = "Pensando...";
+      document.getElementById('btnIcon').className = "fa-solid fa-spinner animate-spin";
 
       const apiKey = localStorage.getItem('GE300_GEMINI_KEY');
       currentCacheKey = 'GE300_CACHE_' + query.toLowerCase().replace(/[^a-z0-9]/g, '_');
       
-      let finalPreset = null;
-      let isUniversal = false;
+      let finalPreset = null; let isUniversal = false;
+      let qClean = query.toLowerCase();
+
+      if(qClean.includes('musica ligera') || qClean.includes('soda stereo')) { currentCacheKey = 'ge300_univ_soda_ligera'; finalPreset = UNIVERSAL_PRESETS[currentCacheKey]; isUniversal = true; } 
+      else if (qClean.includes('like a stone') || qClean.includes('audioslave')) { currentCacheKey = 'ge300_univ_audioslave_stone'; finalPreset = UNIVERSAL_PRESETS[currentCacheKey]; isUniversal = true; }
+      
+      if (!finalPreset && localStorage.getItem(currentCacheKey)) finalPreset = JSON.parse(localStorage.getItem(currentCacheKey));
 
       try {
-          let qClean = query.toLowerCase();
-          if(qClean.includes('musica ligera') || qClean.includes('soda stereo')) {
-              currentCacheKey = 'ge300_univ_soda_ligera';
-              finalPreset = UNIVERSAL_PRESETS[currentCacheKey];
-              isUniversal = true;
-          } else if (qClean.includes('like a stone') || qClean.includes('audioslave')) {
-              currentCacheKey = 'ge300_univ_audioslave_stone';
-              finalPreset = UNIVERSAL_PRESETS[currentCacheKey];
-              isUniversal = true;
-          }
-          
-          if (!finalPreset && localStorage.getItem(currentCacheKey)) {
-              finalPreset = JSON.parse(localStorage.getItem(currentCacheKey));
-          } 
-          
           if (!finalPreset) {
               if (apiKey && apiKey.trim() !== '') {
                   const aiData = await fetchAITone(query, apiKey);
-                  let blocks = [];
+                  let parsedBlocks = [];
                   
-                  let bComp = buildBlock(aiData.comp, COMP, "COMP"); if(bComp) blocks.push(bComp);
-                  let bWah  = buildBlock(aiData.wah, WAH, "WAH"); if(bWah) blocks.push(bWah);
-                  let bMod  = buildBlock(aiData.fxa, FXA, "FXA"); if(bMod) blocks.push(bMod);
-                  let bOd   = buildBlock(aiData.ds_od, DS_OD, "DS/OD"); if(bOd) blocks.push(bOd);
-                  let bAmp  = buildBlock(aiData.amp, AMP, "AMP"); if(bAmp) blocks.push(bAmp);
-                  let bCab  = buildBlock(aiData.cab, CAB, "CAB"); if(bCab) blocks.push(bCab);
-                  let bNs   = buildBlock(aiData.ns, NS, "NS"); if(bNs) blocks.push(bNs);
-                  let bEq   = buildBlock(aiData.eq, EQ, "EQ"); if(bEq) blocks.push(bEq);
-                  let bDly  = buildBlock(aiData.delay, DELAY, "DELAY"); if(bDly) blocks.push(bDly);
-                  let bRev  = buildBlock(aiData.reverb, REVERB, "REVERB"); if(bRev) blocks.push(bRev);
-                  
-                  blocks.push({ type: "VOL", model: VOL[0].name, knobs: VOL[0].knobs() });
+                  if (aiData.blocks) {
+                      aiData.blocks.forEach(bData => {
+                          if(bData.type === "VOL") return; // Ignorar si la IA lo envía por error
+                          let targetList = [];
+                          if(bData.type === "COMP") targetList = COMP; else if(bData.type === "WAH") targetList = WAH; else if(bData.type === "FXA") targetList = FXA; else if(bData.type === "DS/OD") targetList = DS_OD; else if(bData.type === "AMP") targetList = AMP; else if(bData.type === "CAB") targetList = CAB; else if(bData.type === "NS") targetList = NS; else if(bData.type === "EQ") targetList = EQ; else if(bData.type === "DELAY") targetList = DELAY; else if(bData.type === "REVERB") targetList = REVERB;
+                          
+                          let match = fuzzyMatch(targetList, bData.name);
+                          if (match) {
+                              let finalKnobs = { ...match.knobs() };
+                              let displayKnobs = {};
+                              if (bData.p) {
+                                  for (let k in bData.p) {
+                                      let realKey = Object.keys(finalKnobs).find(x => x.toLowerCase() === k.toLowerCase());
+                                      if (realKey) {
+                                          finalKnobs[realKey] = bData.p[k];
+                                          displayKnobs[realKey] = bData.p[k];
+                                      }
+                                  }
+                              }
+                              if(Object.keys(displayKnobs).length === 0) displayKnobs = finalKnobs;
+                              parsedBlocks.push({ type: bData.type, model: match.name, knobs: finalKnobs, displayKnobs: displayKnobs });
+                          }
+                      });
+                  }
 
                   finalPreset = {
-                      title: `Preset IA: ${query.toUpperCase()}`,
-                      bank: "01A",
-                      desc: `[API CLOUD] ${aiData.desc}`,
-                      pickup: aiData.pickup || "Puente / Humbucker",
-                      vol: "10 (Abierto Total)",
-                      ctrls: ["CTRL 1: Drive", "CTRL 2: Mod/Delay", "EXP 1: Master Vol", "EXP 2: FX Param"],
-                      blocks: blocks,
-                      rating: 0,
-                      isFav: false
+                      title: `Preset IA: ${query.toUpperCase()}`, bank: "01A", desc: `[API CLOUD] ${aiData.desc || ""}`,
+                      pickup: aiData.pickup || "Puente", ctrls: aiData.ctrls || [], rating: 0, isFav: false, blocks: parsedBlocks
                   };
                   localStorage.setItem(currentCacheKey, JSON.stringify(finalPreset));
-              } else {
-                  throw new Error("Por favor, ingresa tu API Key en el icono de la llave para usar la IA en la nube.");
-              }
+              } else { throw new Error("Falta API Key"); }
           }
       } catch (error) {
-          alert(`Fallo en la conexión.\n\nMotivo:\n${error.message}\n\nActivando motor local.`);
-          let hash = 0;
-          for (let i = 0; i < query.length; i++) hash = query.charCodeAt(i) + ((hash << 5) - hash);
-          finalPreset = generateOfflineTone(query, Math.abs(hash));
+          alert(`Error de conexión o API Key.\n\n${error.message}`);
+          finalPreset = UNIVERSAL_PRESETS["ge300_univ_soda_ligera"];
       } finally {
-          queryInput.disabled = false;
-          searchBtn.disabled = false;
-          queryInput.classList.remove('opacity-50');
-          searchBtn.classList.remove('opacity-50');
-          btnText.innerText = "Buscar";
-          btnIcon.className = "fa-solid fa-arrow-right";
+          queryInput.disabled = false; searchBtn.disabled = false;
+          queryInput.classList.remove('opacity-50'); searchBtn.classList.remove('opacity-50');
+          document.getElementById('btnText').innerText = "Buscar";
+          document.getElementById('btnIcon').className = "fa-solid fa-arrow-right";
       }
-
       renderPreset(finalPreset, isUniversal);
     });
 
-    // --- RENDERIZADO DEL PRESET ---
     function parseKnobValue(valStr) {
-        valStr = String(valStr);
-        let numMatch = valStr.match(/-?\d+(\.\d+)?/);
+        valStr = String(valStr); let numMatch = valStr.match(/-?\d+(\.\d+)?/);
         if (!numMatch) return { num: 50, prefix: '', suffix: '' };
-        let num = parseFloat(numMatch[0]);
-        let idx = valStr.indexOf(numMatch[0]);
-        let prefix = valStr.substring(0, idx);
-        let suffix = valStr.substring(idx + numMatch[0].length);
-        return { num, prefix, suffix };
+        let num = parseFloat(numMatch[0]); let idx = valStr.indexOf(numMatch[0]);
+        return { num, prefix: valStr.substring(0, idx), suffix: valStr.substring(idx + numMatch[0].length) };
     }
 
     function renderKnobSVG(label, value, blockType) {
       let valStr = String(value !== undefined && value !== null ? value : 50);
-      let parsed = parseKnobValue(valStr);
-      let numVal = 50;
+      let parsed = parseKnobValue(valStr); let numVal = 50;
       
       if (parsed.suffix.includes('dB')) numVal = ((parsed.num + 60) / 120) * 100;
       else if (parsed.suffix.includes('ms')) numVal = (parsed.num / 2000) * 100;
@@ -620,7 +494,6 @@
       else numVal = Math.min(Math.max(parsed.num, 0), 100);
 
       let strokeDash = (numVal / 100) * 126;
-      
       return `<div class="flex flex-col items-center gap-0.5"><div class="knob-container cursor-ns-resize" data-block-type="${blockType}" data-knob-name="${label}" data-raw-val="${valStr}" onmousedown="handleDragStart(event, this)" ontouchstart="handleDragStart(event, this)"><svg class="w-14 h-14 knob-svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#26334d" stroke-width="4"/><circle class="dynamic-stroke" cx="25" cy="25" r="20" fill="none" stroke="#00ff66" stroke-width="4" stroke-dasharray="${strokeDash} 126" stroke-linecap="round"/></svg><span class="knob-value-badge">${valStr}</span></div><span class="text-[9px] font-mono font-bold text-brand-muted uppercase text-center max-w-[70px] truncate">${label}</span></div>`;
     }
 
@@ -631,32 +504,21 @@
         document.getElementById('btnEdit').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> <span>Editar</span>`;
         document.getElementById('editStatusBadge').innerHTML = `🔒 Modo Seguro`;
         document.getElementById('editStatusBadge').className = "text-[9px] text-brand-accent bg-brand-accent/10 px-2 py-0.5 rounded font-mono border border-brand-accent/20";
-        
-        if(isUniversal) {
-            document.getElementById('btnEdit').classList.add('hidden');
-        } else {
-            document.getElementById('btnEdit').classList.remove('hidden');
-        }
+        if(isUniversal) document.getElementById('btnEdit').classList.add('hidden'); else document.getElementById('btnEdit').classList.remove('hidden');
 
         document.getElementById('presetBank').innerText = preset.bank || "01A";
         document.getElementById('songTitle').innerText = preset.title;
         document.getElementById('soundDescription').innerText = preset.desc;
-        document.getElementById('pickupRec').innerText = preset.pickup;
-        document.getElementById('guitarVol').innerText = preset.vol;
+        document.getElementById('pickupRec').innerText = preset.pickup || "Puente";
         
-        if(preset.ctrls && preset.ctrls.length > 0) {
-            document.getElementById('ctrlAssignments').innerHTML = preset.ctrls.map(c => `<div>${c}</div>`).join('');
-        } else {
-            document.getElementById('ctrlAssignments').innerHTML = `<div class="text-brand-muted/50 italic">Sin asignaciones</div>`;
-        }
+        if(preset.ctrls && preset.ctrls.length > 0) document.getElementById('ctrlAssignments').innerHTML = preset.ctrls.map(c => `<div>${c}</div>`).join('');
+        else document.getElementById('ctrlAssignments').innerHTML = `<div class="text-brand-muted/50 italic">Sin asignaciones</div>`;
         
-        updateStarsUI(preset.rating || 0);
-        updateFavUI(preset.isFav || false);
+        updateStarsUI(preset.rating || 0); updateFavUI(preset.isFav || false);
 
         if (preset.blocks) {
           preset.blocks.sort((a, b) => {
-            let idxA = BLOCK_ORDER.indexOf(a.type);
-            let idxB = BLOCK_ORDER.indexOf(b.type);
+            let idxA = BLOCK_ORDER.indexOf(a.type); let idxB = BLOCK_ORDER.indexOf(b.type);
             return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
           });
         }
@@ -666,150 +528,99 @@
         preset.blocks.forEach(block => {
           const blockEl = document.createElement('div');
           blockEl.className = "bg-brand-bg/90 rounded-xl p-2.5 border border-brand-border/60 space-y-2";
-          let knobsHTML = Object.entries(block.knobs || {}).map(([k, v]) => renderKnobSVG(k, v, block.type)).join('');
+          
+          // AQUÍ OCURRE LA MAGIA DEL MINIMALISMO VISUAL
+          let knobsToRender = block.displayKnobs ? block.displayKnobs : block.knobs;
+          let knobsHTML = Object.entries(knobsToRender).map(([k, v]) => renderKnobSVG(k, v, block.type)).join('');
+          
           blockEl.innerHTML = `<div class="flex items-center justify-between border-b border-brand-border/40 pb-1.5"><span class="text-[10px] font-bold font-mono text-brand-accent uppercase bg-brand-accent/10 px-1.5 py-0.5 rounded border border-brand-accent/20">${block.type}</span><span class="text-xs font-semibold text-brand-text">${block.model}</span></div><div class="flex items-center justify-around flex-wrap gap-1.5 pt-0.5">${knobsHTML}</div>`;
           blocksContainer.appendChild(blockEl);
         });
     }
 
-    // --- LÓGICA DE PERILLAS TÁCTILES ---
-    let draggingKnob = null;
-    let startY = 0;
-    let initialNum = 0;
-
+    let draggingKnob = null; let startY = 0; let initialNum = 0;
     function updateKnobVisual(knobEl, valStr) {
-        let parsed = parseKnobValue(valStr);
-        let numVal = 50;
-        
+        let parsed = parseKnobValue(valStr); let numVal = 50;
         if (parsed.suffix.includes('dB')) numVal = ((parsed.num + 60) / 120) * 100;
         else if (parsed.suffix.includes('ms')) numVal = (parsed.num / 2000) * 100;
         else if (parsed.suffix.includes('Hz')) numVal = (parsed.num / 20000) * 100;
         else numVal = parsed.num;
-        
         numVal = Math.max(0, Math.min(100, numVal));
-        let strokeDash = (numVal / 100) * 126;
-        
         knobEl.querySelector('.knob-value-badge').innerText = valStr;
-        knobEl.querySelector('.dynamic-stroke').setAttribute('stroke-dasharray', `${strokeDash} 126`);
+        knobEl.querySelector('.dynamic-stroke').setAttribute('stroke-dasharray', `${(numVal / 100) * 126} 126`);
         knobEl.dataset.rawVal = valStr;
     }
 
     function handleDragStart(e, knobEl) {
-        if(!isEditMode) return; 
-        draggingKnob = knobEl;
+        if(!isEditMode) return; draggingKnob = knobEl;
         startY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
-        let parsed = parseKnobValue(knobEl.dataset.rawVal);
-        initialNum = parsed.num;
+        initialNum = parseKnobValue(knobEl.dataset.rawVal).num;
         document.body.style.userSelect = 'none';
     }
 
     function handleDragMove(e) {
         if (!draggingKnob || !isEditMode) return;
-        let clientY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
-        let deltaY = startY - clientY;
-
+        let deltaY = startY - (e.type.includes('mouse') ? e.clientY : e.touches[0].clientY);
         let parsed = parseKnobValue(draggingKnob.dataset.rawVal);
         let newVal = initialNum + (deltaY * 0.5); 
-
         if (parsed.suffix.includes('ms')) newVal = Math.max(0, Math.min(2000, newVal));
         else if (parsed.suffix.includes('dB')) newVal = Math.max(-60, Math.min(60, newVal));
         else if (parsed.suffix.includes('Hz')) newVal = Math.max(20, Math.min(20000, newVal));
         else newVal = Math.max(0, Math.min(100, newVal));
-
-        if(Number.isInteger(initialNum) && !parsed.suffix.includes('dB')) newVal = Math.round(newVal);
-        else newVal = newVal.toFixed(1);
-
-        let finalStr = parsed.prefix + newVal + parsed.suffix;
-        updateKnobVisual(draggingKnob, finalStr);
+        if(Number.isInteger(initialNum) && !parsed.suffix.includes('dB')) newVal = Math.round(newVal); else newVal = newVal.toFixed(1);
+        updateKnobVisual(draggingKnob, parsed.prefix + newVal + parsed.suffix);
     }
 
     function handleDragEnd() {
         if(draggingKnob && isEditMode && !UNIVERSAL_PRESETS[currentCacheKey]) {
-            let blockType = draggingKnob.dataset.blockType;
-            let knobName = draggingKnob.dataset.knobName;
-            let rawVal = draggingKnob.dataset.rawVal;
-
+            let bType = draggingKnob.dataset.blockType; let kName = draggingKnob.dataset.knobName; let rVal = draggingKnob.dataset.rawVal;
             if (currentCacheKey) {
                 let cached = JSON.parse(localStorage.getItem(currentCacheKey));
                 if (cached && cached.blocks) {
-                    let blockIndex = cached.blocks.findIndex(b => b.type === blockType);
-                    if (blockIndex !== -1) {
-                        let parsed = parseKnobValue(rawVal);
-                        if (!parsed.prefix && !parsed.suffix) {
-                            cached.blocks[blockIndex].knobs[knobName] = parsed.num;
-                        } else {
-                            cached.blocks[blockIndex].knobs[knobName] = rawVal;
+                    let bIdx = cached.blocks.findIndex(b => b.type === bType);
+                    if (bIdx !== -1) {
+                        let parsed = parseKnobValue(rVal);
+                        cached.blocks[bIdx].knobs[kName] = (!parsed.prefix && !parsed.suffix) ? parsed.num : rVal;
+                        // También actualizar displayKnobs si existe para que se mantenga al recargar
+                        if(cached.blocks[bIdx].displayKnobs && cached.blocks[bIdx].displayKnobs[kName] !== undefined) {
+                            cached.blocks[bIdx].displayKnobs[kName] = cached.blocks[bIdx].knobs[kName];
                         }
                         localStorage.setItem(currentCacheKey, JSON.stringify(cached));
                     }
                 }
             }
-            draggingKnob = null;
-            document.body.style.userSelect = '';
         }
-        draggingKnob = null;
+        draggingKnob = null; document.body.style.userSelect = '';
     }
 
-    document.addEventListener('mousemove', handleDragMove);
-    document.addEventListener('mouseup', handleDragEnd);
-    document.addEventListener('touchmove', handleDragMove, {passive: false});
-    document.addEventListener('touchend', handleDragEnd);
-    document.addEventListener('pointerup', handleDragEnd);
+    document.addEventListener('mousemove', handleDragMove); document.addEventListener('mouseup', handleDragEnd); document.addEventListener('touchmove', handleDragMove, {passive: false}); document.addEventListener('touchend', handleDragEnd);
 
-    // --- VALORACIÓN Y FAVORITOS ---
     function ratePreset(stars) {
-        if(UNIVERSAL_PRESETS[currentCacheKey]) {
-            alert("Los Presets Destacados son de solo lectura y ya tienen 5 estrellas.");
-            return;
-        }
+        if(UNIVERSAL_PRESETS[currentCacheKey]) { alert("Los Presets Destacados son de solo lectura."); return; }
         updateStarsUI(stars);
         let cached = JSON.parse(localStorage.getItem(currentCacheKey));
-        if(cached) {
-            cached.rating = stars;
-            localStorage.setItem(currentCacheKey, JSON.stringify(cached));
-        }
+        if(cached) { cached.rating = stars; localStorage.setItem(currentCacheKey, JSON.stringify(cached)); }
     }
-
     function updateStarsUI(stars) {
-        let starIcons = document.getElementById('ratingStars').children;
-        for(let i=0; i<5; i++) {
-            if(i < stars) starIcons[i].className = "fa-solid fa-star cursor-pointer text-yellow-400 transition-colors";
-            else starIcons[i].className = "fa-solid fa-star cursor-pointer hover:text-yellow-400 transition-colors";
-        }
+        let icons = document.getElementById('ratingStars').children;
+        for(let i=0; i<5; i++) icons[i].className = `fa-solid fa-star cursor-pointer transition-colors ${i < stars ? 'text-yellow-400' : 'hover:text-yellow-400'}`;
     }
-
     function toggleFavorite() {
-        if(UNIVERSAL_PRESETS[currentCacheKey]) {
-            alert("Los Presets Destacados ya están en tu biblioteca universal.");
-            return;
-        }
+        if(UNIVERSAL_PRESETS[currentCacheKey]) { alert("Ya está en tu biblioteca."); return; }
         if(!currentCacheKey) return;
         let cached = JSON.parse(localStorage.getItem(currentCacheKey));
         if(!cached) return;
-        
-        cached.isFav = !cached.isFav;
-        localStorage.setItem(currentCacheKey, JSON.stringify(cached));
-        updateFavUI(cached.isFav);
+        cached.isFav = !cached.isFav; localStorage.setItem(currentCacheKey, JSON.stringify(cached)); updateFavUI(cached.isFav);
     }
-
     function updateFavUI(isFav) {
-        let icon = document.getElementById('favIcon');
-        let btn = document.getElementById('btnFav');
-        if(isFav) {
-            icon.className = "fa-solid fa-heart";
-            btn.classList.add('text-red-500');
-            btn.classList.remove('text-brand-muted');
-        } else {
-            icon.className = "fa-regular fa-heart";
-            btn.classList.remove('text-red-500');
-            btn.classList.add('text-brand-muted');
-        }
+        let icon = document.getElementById('favIcon'); let btn = document.getElementById('btnFav');
+        if(isFav) { icon.className = "fa-solid fa-heart"; btn.classList.add('text-red-500'); btn.classList.remove('text-brand-muted'); } 
+        else { icon.className = "fa-regular fa-heart"; btn.classList.remove('text-red-500'); btn.classList.add('text-brand-muted'); }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
       updateApiStatus();
-      let initTone = { title: "Preset Base GE300", bank: "01A", desc: "Listo para buscar.", pickup: "Puente", vol: "10", ctrls: [], rating: 0, isFav: false, blocks: [{ type: "VOL", model: "Vol", knobs: VOL[0].knobs() }] };
-      renderPreset(initTone);
+      renderPreset(UNIVERSAL_PRESETS["ge300_univ_soda_ligera"], true);
     });
   </script>
 </body>

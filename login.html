@@ -122,8 +122,9 @@
         const usuario = resultado.user;
         
         // ¡Éxito!
-        alert(`¡Acceso concedido, ${usuario.displayName}! Tu correo es: ${usuario.email}`);
-        
+        // Redirigir a la pedalera principal
+window.location.href = "index.html";
+
         // (En el futuro, aquí agregaremos la redirección hacia la pantalla de la pedalera)
       } catch (error) {
         console.error("Error al iniciar sesión:", error);

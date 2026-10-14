@@ -22,30 +22,45 @@
   </style>
   <!-- GUARDIA DE SEGURIDAD DE FIREBASE -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+    <!-- GUARDIA DE SEGURIDAD Y CONTROL DE SESIÓN -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDMZxIgDvBRJNyIZuo3CDwnyvx1INm7LsM",
-    authDomain: "mooer-ai-tone-studio.firebaseapp.com",
-    projectId: "mooer-ai-tone-studio",
-    storageBucket: "mooer-ai-tone-studio.firebasestorage.app",
-    messagingSenderId: "666841738973",
-    appId: "1:666841738973:web:2c0937a5b2a51b143c3534"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyDMZxIgDvBRJNyIZuo3CDwnyvx1INm7LsM",
+      authDomain: "mooer-ai-tone-studio.firebaseapp.com",
+      projectId: "mooer-ai-tone-studio",
+      storageBucket: "mooer-ai-tone-studio.firebasestorage.app",
+      messagingSenderId: "666841738973",
+      appId: "1:666841738973:web:2c0937a5b2a51b143c3534"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-  // Verificar si hay alguien logueado
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      // Si no hay usuario, patada de vuelta al login
-      window.location.href = "login.html";
-    }
-  });
-</script>
+    // 1. Guardia de seguridad: Verifica si hay usuario activo
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
+
+    // 2. Función global para cerrar sesión
+    window.cerrarSesion = async () => {
+      try {
+        await signOut(auth);
+        window.location.href = "login.html";
+      } catch (error) {
+        console.error("Error al cerrar sesión:", error);
+      }
+    };
+  </script>
 </head>
+  <button onclick="cerrarSesion()" class="bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/40 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all">
+  <i class="fa-solid fa-right-from-bracket"></i> Salir
+  </button>
+  
 <body class="flex flex-col h-[100dvh] overflow-hidden font-sans">
 
   <header class="bg-brand-panel border-b border-brand-border px-4 py-3 flex items-center justify-between shrink-0 z-10">

@@ -20,6 +20,32 @@
     .view-mode .dynamic-stroke { stroke: #00cc52; }
     .view-mode .knob-container { cursor: default !important; }
   </style>
+  <!-- GUARDIA DE SEGURIDAD DE FIREBASE -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDMZxIgDvBRJNyIZuo3CDwnyvx1INm7LsM",
+    authDomain: "mooer-ai-tone-studio.firebaseapp.com",
+    projectId: "mooer-ai-tone-studio",
+    storageBucket: "mooer-ai-tone-studio.firebasestorage.app",
+    messagingSenderId: "666841738973",
+    appId: "1:666841738973:web:2c0937a5b2a51b143c3534"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // Verificar si hay alguien logueado
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      // Si no hay usuario, patada de vuelta al login
+      window.location.href = "login.html";
+    }
+  });
+</script>
+
 </head>
 <body class="flex flex-col h-[100dvh] overflow-hidden font-sans">
 

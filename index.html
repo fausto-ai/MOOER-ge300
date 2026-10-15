@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 Pro AI Tone Studio v8.6.0</title>
+  <title>MOOER GE300 Pro AI Tone Studio v8.6.1</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
@@ -20,32 +20,31 @@
     .view-mode .dynamic-stroke { stroke: #00cc52; }
     .view-mode .knob-container { cursor: default !important; }
   </style>
+
   <!-- GUARDIA DE SEGURIDAD DE FIREBASE -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDMZxIgDvBRJNyIZuo3CDwnyvx1INm7LsM",
-    authDomain: "mooer-ai-tone-studio.firebaseapp.com",
-    projectId: "mooer-ai-tone-studio",
-    storageBucket: "mooer-ai-tone-studio.firebasestorage.app",
-    messagingSenderId: "666841738973",
-    appId: "1:666841738973:web:2c0937a5b2a51b143c3534"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyDMZxIgDvBRJNyIZuo3CDwnyvx1INm7LsM",
+      authDomain: "mooer-ai-tone-studio.firebaseapp.com",
+      projectId: "mooer-ai-tone-studio",
+      storageBucket: "mooer-ai-tone-studio.firebasestorage.app",
+      messagingSenderId: "666841738973",
+      appId: "1:666841738973:web:2c0937a5b2a51b143c3534"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-  // Verificar si hay alguien logueado
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      // Si no hay usuario, patada de vuelta al login
-      window.location.href = "login.html";
-    }
-  });
-</script>
-
+    // Verificar si hay alguien logueado
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
+  </script>
 </head>
 <body class="flex flex-col h-[100dvh] overflow-hidden font-sans">
 
@@ -56,9 +55,9 @@
       </div>
       <div>
         <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
-          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v8.6.0</span>
+          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v8.6.1</span>
         </h1>
-        <p class="text-[11px] text-brand-muted" id="apiStatusText">Búsqueda Difusa & Freno IA</p>
+        <p class="text-[11px] text-brand-muted" id="apiStatusText">Motor IA Turbo & Freno Activo</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -73,7 +72,7 @@
     <section class="p-3.5 bg-brand-panel/50 border-b border-brand-border shrink-0">
       <form id="aiToneForm" class="relative flex items-center">
         <i class="fa-solid fa-wand-magic-sparkles absolute left-3.5 text-brand-accent text-xs"></i>
-        <input type="text" id="toneSearchInput" placeholder="Busca un tono (Ej. hot stuff)..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-24 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent transition-opacity" required />
+        <input type="text" id="toneSearchInput" placeholder="Busca un tono (Ej. easy lover)..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-24 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent transition-opacity" required />
         <button type="submit" id="searchBtn" class="absolute right-1 bg-brand-accent hover:bg-brand-accentHover text-brand-bg font-bold text-xs px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer min-w-[75px] justify-center">
           <span id="btnText">Buscar</span>
           <i id="btnIcon" class="fa-solid fa-arrow-right text-[10px]"></i>
@@ -160,7 +159,7 @@
         <div class="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0"><i class="fa-solid fa-cloud-arrow-down text-lg"></i></div>
         <div><h3 class="font-bold text-sm text-white">Tono no encontrado</h3><p class="text-[10px] text-brand-muted">Biblioteca Local</p></div>
       </div>
-      <p class="text-xs text-brand-muted leading-relaxed">No se encontró este preset en tu equipo. ¿Deseas usar el Motor IA en la nube para crearlo desde cero? <br><br><span class="text-yellow-400/80"><i class="fa-solid fa-triangle-exclamation"></i> Puede demorar unos segundos dependiendo del tráfico.</span></p>
+      <p class="text-xs text-brand-muted leading-relaxed">No se encontró este preset en tu equipo. ¿Deseas usar el Motor IA en la nube para crearlo desde cero? <br><br><span class="text-brand-accent/90"><i class="fa-solid fa-bolt"></i> Motor Flash Turbo (2 a 4 seg).</span></p>
       <div class="flex gap-3 pt-2">
         <button type="button" onclick="cancelIaGeneration()" class="flex-1 bg-brand-panel border border-brand-border text-white font-bold text-xs py-2.5 rounded-xl hover:bg-brand-border transition-colors">Cancelar</button>
         <button type="button" onclick="confirmIaGeneration()" class="flex-1 bg-brand-accent text-brand-bg font-bold text-xs py-2.5 rounded-xl hover:bg-brand-accentHover transition-colors flex items-center justify-center gap-2"><i class="fa-solid fa-wand-magic-sparkles"></i> Generar</button>
@@ -253,19 +252,42 @@
         return list.find(x => x.name.toLowerCase().replace(/[^a-z0-9]/g, '').includes(q) || q.includes(x.name.toLowerCase().replace(/[^a-z0-9]/g, '')));
     }
 
-    async function fetchAITone(query, apiKey, retries = 3) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
+    // --- MOTOR IA TURBO CON DOBLE TURBINA DE RESPALDO ---
+    async function fetchAITone(query, apiKey) {
         const prompt = `Eres experto en MOOER GE300. Crea el tono para: "${query}". Usa MÁXIMO 5 bloques. NUNCA incluyas VOL. Devuelve SOLO las 2 o 3 perillas clave.
         Catálogos: AMP: ${AMP.map(a=>a.name).join(', ')} | CAB: ${CAB.map(c=>c.name).join(', ')} | DS/OD: ${DS_OD.map(d=>d.name).join(', ')} | WAH: ${WAH.map(w=>w.name).join(', ')} | FXA: ${FXA.map(f=>f.name).join(', ')} | DELAY: ${DELAY.map(d=>d.name).join(', ')} | REVERB: ${REVERB.map(r=>r.name).join(', ')} | COMP: ${COMP.map(c=>c.name).join(', ')}
         Devuelve SOLO JSON: {"blocks": [{"type": "AMP", "name": "10: J800", "p": {"Gain": 75}}], "pickup": "Mástil", "ctrls": ["CTRL 1: Drive"], "desc": "Breve info"}`;
 
-        for (let i = 0; i <= retries; i++) {
+        const models = ["gemini-2.5-flash", "gemini-1.5-flash"];
+
+        for (let model of models) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
             try {
-                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
-                if (response.ok) { const data = await response.json(); let rawText = data.candidates[0].content.parts[0].text; const jsonMatch = rawText.match(/\{[\s\S]*\}/); if (jsonMatch) rawText = jsonMatch[0]; return JSON.parse(rawText); } 
-                else if ((response.status === 503 || response.status === 429) && i < retries) { await new Promise(r => setTimeout(r, 2000 * Math.pow(2, i))); continue; } 
-                else { const errData = await response.json(); throw new Error(`Error: ${errData.error?.message}`); }
-            } catch (err) { if (i === retries) throw err; await new Promise(r => setTimeout(r, 2000 * Math.pow(2, i))); }
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { responseMimeType: "application/json", temperature: 0.4 }
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    let rawText = data.candidates[0].content.parts[0].text;
+                    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) rawText = jsonMatch[0];
+                    return JSON.parse(rawText);
+                } else if (response.status === 503 || response.status === 429) {
+                    console.warn(`Modelo ${model} con alta demanda, saltando al motor secundario...`);
+                    continue;
+                } else {
+                    const errData = await response.json();
+                    throw new Error(`Error: ${errData.error?.message || "Fallo en la petición"}`);
+                }
+            } catch (err) {
+                if (model === models[models.length - 1]) throw err;
+            }
         }
     }
 
@@ -278,7 +300,6 @@
 
       let finalPreset = null; let isUniversal = false; 
       
-      // Limpiamos y separamos la búsqueda en palabras (Búsqueda Difusa)
       let qClean = query.toLowerCase().replace(/[^a-z0-9\s]/g, '');
       let queryWords = qClean.split(/\s+/).filter(w => w.length > 0);
 
@@ -303,7 +324,6 @@
                   try {
                       let parsed = JSON.parse(cachedData);
                       let titleClean = parsed.title.toLowerCase().replace(/[^a-z0-9\s]/g, '');
-                      // Comprueba si todas las palabras buscadas están en el título guardado
                       let isMatch = queryWords.every(word => titleClean.includes(word));
                       if (isMatch) {
                           currentCacheKey = key;
@@ -318,7 +338,6 @@
       if (finalPreset) {
           renderPreset(finalPreset, isUniversal);
       } else {
-          // Si no se halló coincidencia de palabras, usar la key exacta para la nueva creación
           currentCacheKey = 'GE300_CACHE_' + query.toLowerCase().replace(/[^a-z0-9]/g, '_');
           pendingSearchQuery = query;
           document.getElementById('confirmIaModal').classList.remove('hidden');

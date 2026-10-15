@@ -192,6 +192,49 @@
             id: "ge300_univ_soda_ligera", title: "SODA STEREO - MÚSICA LIGERA", bank: "01A", desc: "Sonido brillante estilo Roland Jazz Chorus.", pickup: "Puente", ctrls: ["CTRL 1: Chorus"], rating: 5, isFav: false,
             blocks: [{ type: "COMP", model: "3: Yellow Comp", knobs: COMP[1].knobs(), displayKnobs: { "Threshold": "-30.0dB", "Ratio": "4.0:1" } }, { type: "AMP", model: "102: Jazz 120", knobs: AMP[1].knobs(), displayKnobs: { "Gain": 30, "Treble": 70, "Mid": 55 } }, { type: "CAB", model: "16: Jazz 212", knobs: CAB[1].knobs(), displayKnobs: { "Mic 1": "SM57" } }, { type: "FXA", model: "26: 70s Chorus", knobs: FXA[0].knobs(), displayKnobs: { "Depth": 55, "Level": 75 } }]
         },
+              "ge300_univ_nirvana_teen_spirit": {
+            id: "ge300_univ_nirvana_teen_spirit", 
+            title: "NIRVANA - SMELLS LIKE TEEN SPIRIT", 
+            bank: "03A", 
+            desc: "Sonido grunge clásico de los 90s con alta ganancia y presencia marcada para riffs potentes.", 
+            pickup: "Puente", 
+            ctrls: ["CTRL 1: Solo Boost"], 
+            rating: 5, 
+            isFav: false,
+            blocks: [
+                { 
+                    type: "COMP", 
+                    model: "3: Yellow Comp", 
+                    knobs: COMP[1].knobs(), 
+                    displayKnobs: { "Threshold": "-28.0dB", "Ratio": "3.5:1" } 
+                }, 
+                { 
+                    type: "DS/OD", 
+                    model: "2: 808", 
+                    knobs: DS_OD[0].knobs(), 
+                    displayKnobs: { "Gain": 75, "Tone": 65, "Output": 70 } 
+                }, 
+                { 
+                    type: "AMP", 
+                    model: "10: J800", 
+                    knobs: AMP[0].knobs(), 
+                    displayKnobs: { "Gain": 80, "Bass": 60, "Mid": 45, "Treble": 70, "Presence": 65 } 
+                }, 
+                { 
+                    type: "CAB", 
+                    model: "6: 1960 412", 
+                    knobs: CAB[0].knobs(), 
+                    displayKnobs: { "Mic 1": "SM57", "Distance 1": 10 } 
+                }, 
+                { 
+                    type: "CHORUS", 
+                    model: "26: 70s Chorus", 
+                    knobs: FXA[0].knobs(), 
+                    displayKnobs: { "Rate": 25, "Depth": 30, "Level": 40 } 
+                }
+            ]
+        }
+
         "ge300_univ_audioslave_stone": {
             id: "ge300_univ_audioslave_stone", title: "AUDIOSLAVE - LIKE A STONE", bank: "02A", desc: "Pedal de Expresión mapeado al bloque FXA.", pickup: "Mástil", ctrls: ["EXP 1: Whammy (FXA)", "CTRL 1: Delay"], rating: 5, isFav: false,
             blocks: [{ type: "FXA", model: "35: Mono Pitch", knobs: FXA[1].knobs(), displayKnobs: { "Pitch": "+24.0", "Mix": 100 } }, { type: "DS/OD", model: "6: DDrive", knobs: DS_OD[1].knobs(), displayKnobs: { "Gain": 55, "Treble": 60 } }, { type: "AMP", model: "10: J800", knobs: AMP[0].knobs(), displayKnobs: { "Gain": 60, "Mid": 65, "Treble": 55 } }, { type: "CAB", model: "6: 1960 412", knobs: CAB[0].knobs(), displayKnobs: { "Mic 1": "SM57" } }, { type: "DELAY", model: "1: Digital", knobs: DELAY[0].knobs(), displayKnobs: { "Time": "380ms", "Mix": 20 } }]

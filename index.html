@@ -252,44 +252,38 @@
         return list.find(x => x.name.toLowerCase().replace(/[^a-z0-9]/g, '').includes(q) || q.includes(x.name.toLowerCase().replace(/[^a-z0-9]/g, '')));
     }
 
-    // --- MOTOR IA TURBO CON DOBLE TURBINA DE RESPALDO ---
+        // --- MOTOR IA TURBO CON GEMINI 3.8 FLASH ---
     async function fetchAITone(query, apiKey) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
         const prompt = `Eres experto en MOOER GE300. Crea el tono para: "${query}". Usa MÁXIMO 5 bloques. NUNCA incluyas VOL. Devuelve SOLO las 2 o 3 perillas clave.
         Catálogos: AMP: ${AMP.map(a=>a.name).join(', ')} | CAB: ${CAB.map(c=>c.name).join(', ')} | DS/OD: ${DS_OD.map(d=>d.name).join(', ')} | WAH: ${WAH.map(w=>w.name).join(', ')} | FXA: ${FXA.map(f=>f.name).join(', ')} | DELAY: ${DELAY.map(d=>d.name).join(', ')} | REVERB: ${REVERB.map(r=>r.name).join(', ')} | COMP: ${COMP.map(c=>c.name).join(', ')}
         Devuelve SOLO JSON: {"blocks": [{"type": "AMP", "name": "10: J800", "p": {"Gain": 75}}], "pickup": "Mástil", "ctrls": ["CTRL 1: Drive"], "desc": "Breve info"}`;
 
-        const models = ["gemini-2.5-flash", "gemini-1.5-flash"];
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: { responseMimeType: "application/json", temperature: 0.4 }
+                })
+            });
 
-        for (let model of models) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }],
-                        generationConfig: { responseMimeType: "application/json", temperature: 0.4 }
-                    })
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    let rawText = data.candidates[0].content.parts[0].text;
-                    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-                    if (jsonMatch) rawText = jsonMatch[0];
-                    return JSON.parse(rawText);
-                } else if (response.status === 503 || response.status === 429) {
-                    console.warn(`Modelo ${model} con alta demanda, saltando al motor secundario...`);
-                    continue;
-                } else {
-                    const errData = await response.json();
-                    throw new Error(`Error: ${errData.error?.message || "Fallo en la petición"}`);
-                }
-            } catch (err) {
-                if (model === models[models.length - 1]) throw err;
+            if (response.ok) {
+                const data = await response.json();
+                let rawText = data.candidates[0].content.parts[0].text;
+                const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+                if (jsonMatch) rawText = jsonMatch[0];
+                return JSON.parse(rawText);
+            } else {
+                const errData = await response.json();
+                throw new Error(errData.error?.message || "Error en la API de Google");
             }
+        } catch (err) {
+            throw err;
         }
     }
+
 
     // --- FLUJO DE BÚSQUEDA CON BÚSQUEDA DIFUSA LOCAL ---
     document.getElementById('aiToneForm').addEventListener('submit', function(e) {

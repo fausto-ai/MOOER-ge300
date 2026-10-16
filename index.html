@@ -21,10 +21,11 @@
     .view-mode .knob-container { cursor: default !important; }
   </style>
 
-  <!-- FIREBASE SECURITY GUARD -->
+    <!-- FIREBASE SECURITY GUARD & FIRESTORE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDMZxIgDvBRJNyIZuo3CDwnyvx1INm7LsM",
@@ -37,27 +38,58 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    // Check if user is logged in
-    onAuthStateChanged(auth, (user) => {
+    // Variable global para tener los datos del usuario actual a la mano
+    window.currentUserData = { freeGenerationsUsed: 0, isPro: false };
+
+    // Verificar si hay alguien logueado y sincronizar con Firestore
+    onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "login.html";
+      } else {
+        // El usuario está logueado, vamos a buscar o crear su ficha en Firestore
+        const userRef = doc(db, "users", user.uid);
+        try {
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists()) {
+            // Ya existe en la nube, cargamos sus datos
+            window.currentUserData = userSnap.data();
+            console.log("Datos de usuario cargados:", window.currentUserData);
+          } else {
+            // Es un usuario nuevo, le creamos su ficha inicial blindada
+            window.currentUserData = {
+              uid: user.uid,
+              email: user.email,
+              freeGenerationsUsed: 0,
+              isPro: false,
+              createdAt: new Date().toISOString()
+            };
+            await setDoc(userRef, window.currentUserData);
+            console.log("Nuevo usuario registrado en Firestore");
+          }
+        } catch (error) {
+          console.error("Error al sincronizar con Firestore:", error);
+        }
       }
     });
 
     // Sign out button logic
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', async () => {
-        try {
-          await signOut(auth);
-          window.location.href = "login.html";
-        } catch (error) {
-          console.error("Error signing out:", error);
-        }
-      });
-    }
+    window.addEventListener('DOMContentLoaded', () => {
+      const logoutBtn = document.getElementById('logout-btn');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+          try {
+            await signOut(auth);
+            window.location.href = "login.html";
+          } catch (error) {
+            console.error("Error signing out:", error);
+          }
+        });
+      }
+    });
   </script>
+
 </head>
 <body class="flex flex-col h-[100dvh] overflow-hidden font-sans">
 

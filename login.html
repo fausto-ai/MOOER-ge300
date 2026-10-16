@@ -40,6 +40,11 @@
     .neon-border-btn:hover { border-color: rgba(0, 255, 102, 0.8); box-shadow: 0 0 15px rgba(0, 255, 102, 0.2); }
     .neon-border-btn.cyan-variant { border-color: rgba(0, 229, 255, 0.4); }
     .neon-border-btn.cyan-variant:hover { border-color: rgba(0, 229, 255, 0.8); box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); }
+    .input-neon {
+      background: transparent; border: none; border-bottom: 2px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease;
+    }
+    .input-neon:focus { outline: none; border-bottom: 2px solid #00ff66; }
+    .input-neon.pwd:focus { border-bottom: 2px solid #00e5ff; }
   </style>
 </head>
 <body class="flex items-center justify-center min-h-screen p-4 relative overflow-hidden">
@@ -70,14 +75,17 @@
         </svg>
         Continuar con Google
       </button>
-    </div> <!-- Cierre de space-y-4 -->
+    
 
-  </div> <!-- Cierre de glass-panel -->
+  <!-- SCRIPT DE FIREBASE Y LÓGICA DE LOGIN -->
   <script type="module">
+    // 1. Importar los módulos de Firebase directo desde internet (sin instalar nada)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getAuth, signInWithRedirect, GoogleAuthProvider, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
+    // 2. Las credenciales de tu proyecto (Caja fuerte)
     const firebaseConfig = {
-      apiKey: "AIzaSyDMZxIgDvBRJNyIZuo3CDwnvyx1INm7LsM",
+      apiKey: "AIzaSyDMZxIgDvBRJNyIZuo3CDwnyvx1INm7LsM",
       authDomain: "mooer-ai-tone-studio.firebaseapp.com",
       projectId: "mooer-ai-tone-studio",
       storageBucket: "mooer-ai-tone-studio.firebasestorage.app",
@@ -85,29 +93,30 @@
       appId: "1:666841738973:web:2c0937a5b2a51b143c3534"
     };
 
+    // 3. Encender Firebase y la Autenticación
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          window.location.href = "index.html";
-        }
-      }).catch((error) => {
-        console.error("Error en redirección:", error);
-      });
-
+    // 4. Activar el Botón de Google
     const btnGoogle = document.getElementById('btn-google');
     
     btnGoogle.addEventListener('click', async () => {
       try {
-        await signInWithRedirect(auth, provider);
+        // Abre la ventanita de Google
+        const resultado = await signInWithPopup(auth, provider);
+        const usuario = resultado.user;
+        
+        // ¡Éxito!
+        // Redirigir a la pedalera principal
+window.location.href = "index.html";
+
+        // (En el futuro, aquí agregaremos la redirección hacia la pantalla de la pedalera)
       } catch (error) {
         console.error("Error al iniciar sesión:", error);
-        alert("Autenticación fallida: " + error.message);
+        alert("Autenticación cancelada o fallida.");
       }
     });
   </script>
 </body>
-</html>
+    </html>

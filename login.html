@@ -73,9 +73,7 @@
     </div> <!-- Cierre de space-y-4 -->
 
   </div> <!-- Cierre de glass-panel -->
-
-  <!-- SCRIPT DE FIREBASE Y LÓGICA DE LOGIN -->
-    <script type="module">
+  <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
     import { getAuth, signInWithRedirect, GoogleAuthProvider, getRedirectResult } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
@@ -92,7 +90,6 @@
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    // Comprobar si regresamos de la redirección de Google
     getRedirectResult(auth)
       .then((result) => {
         if (result) {
@@ -106,7 +103,6 @@
     
     btnGoogle.addEventListener('click', async () => {
       try {
-        // Usamos redirect en lugar de popup para evitar bloqueos en el celular
         await signInWithRedirect(auth, provider);
       } catch (error) {
         console.error("Error al iniciar sesión:", error);
@@ -114,6 +110,5 @@
       }
     });
   </script>
-
 </body>
 </html>

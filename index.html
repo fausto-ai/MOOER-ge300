@@ -44,6 +44,18 @@
         window.location.href = "login.html";
       }
     });
+    // Lógica para el botón de cerrar sesión
+const logoutBtn = document.getElementById('logout-btn');
+if (logoutBtn) {
+  logoutBtn.addEventListener('click', async () => {
+    try {
+      await signOut(auth);
+      window.location.href = "login.html";
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
+  });
+}
   </script>
 </head>
 <body class="flex flex-col h-[100dvh] overflow-hidden font-sans">

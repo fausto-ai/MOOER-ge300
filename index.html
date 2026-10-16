@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -78,7 +78,7 @@ if (logoutBtn) {
       </button>
       <span class="text-[10px] font-mono text-brand-accent font-bold bg-brand-accent/10 px-2 py-0.5 rounded border border-brand-accent/30">CLOUD IA</span>
     <button id="logout-btn" class="text-xs text-brand-muted hover:text-brand-accent flex items-center gap-2 px-3 py-2 rounded-lg transition-colors">
-  <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+  <i class="fa-solid fa-right-from-bracket"></i> Sign Out
     </button>
     </div>
   </header>
@@ -89,7 +89,7 @@ if (logoutBtn) {
         <i class="fa-solid fa-wand-magic-sparkles absolute left-3.5 text-brand-accent text-xs"></i>
         <input type="text" id="toneSearchInput" placeholder="Busca un tono (Ej. easy lover)..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-24 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent transition-opacity" required />
         <button type="submit" id="searchBtn" class="absolute right-1 bg-brand-accent hover:bg-brand-accentHover text-brand-bg font-bold text-xs px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer min-w-[75px] justify-center">
-          <span id="btnText">Buscar</span>
+          <span id="btnText">Search</span>
           <i id="btnIcon" class="fa-solid fa-arrow-right text-[10px]"></i>
         </button>
       </form>
@@ -105,7 +105,7 @@ if (logoutBtn) {
             </div>
             <div class="flex items-center gap-1.5 shrink-0 bg-brand-bg/50 p-1 rounded-lg border border-brand-border/40">
               <button id="btnEdit" onclick="toggleEditMode()" class="px-2.5 py-1.5 rounded-md text-[10px] font-bold text-brand-muted hover:bg-brand-border/50 transition-colors flex items-center gap-1.5">
-                <i class="fa-solid fa-pen-to-square"></i> <span>Editar</span>
+                <i class="fa-solid fa-pen-to-square"></i> <span>Edit</span>
               </button>
               <div class="w-px h-4 bg-brand-border"></div>
               <button id="btnFav" onclick="toggleFavorite()" class="p-1.5 rounded-md text-brand-muted hover:text-red-500 transition-colors text-sm">
@@ -121,22 +121,22 @@ if (logoutBtn) {
                 <i class="fa-solid fa-star cursor-pointer hover:text-yellow-400 transition-colors" onclick="ratePreset(4)"></i>
                 <i class="fa-solid fa-star cursor-pointer hover:text-yellow-400 transition-colors" onclick="ratePreset(5)"></i>
             </div>
-            <span class="text-[9px] text-brand-accent bg-brand-accent/10 px-2 py-0.5 rounded font-mono" id="editStatusBadge">🔒 Modo Seguro</span>
+            <span class="text-[9px] text-brand-accent bg-brand-accent/10 px-2 py-0.5 rounded font-mono" id="editStatusBadge">🔒 Safe Mode</span>
           </div>
-          <p class="text-[11px] text-brand-muted leading-relaxed" id="soundDescription">Esperando conexión. Añade tu API Key para precisión real.</p>
+          <p class="text-[11px] text-brand-muted leading-relaxed" id="soundDescription">Waiting for connection. Add your API Key for true precision.</p>
         </div>
         <div class="grid grid-cols-2 gap-2 bg-brand-bg/60 p-2.5 rounded-xl border border-brand-border/40 text-[11px]">
           <div class="flex items-center gap-2">
             <i class="fa-solid fa-sliders text-brand-accent"></i>
-            <div><span class="block text-brand-muted text-[9px] uppercase font-bold">Pastilla</span><span class="font-semibold" id="pickupRec">Puente / Humbucker</span></div>
+            <div><span class="block text-brand-muted text-[9px] uppercase font-bold">Pickups</span><span class="font-semibold" id="pickupRec">Bridge / Humbucker</span></div>
           </div>
         </div>
         <div class="space-y-3">
-          <h3 class="text-[11px] font-mono uppercase text-brand-muted font-bold flex items-center gap-1.5"><i class="fa-solid fa-diagram-project text-brand-accent"></i> Cadena Hardware GE300</h3>
+          <h3 class="text-[11px] font-mono uppercase text-brand-muted font-bold flex items-center gap-1.5"><i class="fa-solid fa-diagram-project text-brand-accent"></i> GE300 Hardware Chain</h3>
           <div id="effectBlocksContainer" class="space-y-2.5"></div>
         </div>
         <div class="bg-brand-bg/80 rounded-xl p-3 border border-brand-border/60 text-[11px] space-y-1.5 mt-2">
-          <span class="block font-mono text-[9px] uppercase font-bold text-brand-accent">Asignaciones CTRL & EXP</span>
+          <span class="block font-mono text-[9px] uppercase font-bold text-brand-accent">CTRL & EXP Assignments</span>
           <div class="grid grid-cols-2 gap-1.5 text-brand-muted" id="ctrlAssignments"></div>
         </div>
       </div>
@@ -145,12 +145,12 @@ if (logoutBtn) {
 
   <div id="viewLibrary" class="hidden flex-col flex-1 overflow-y-auto bg-brand-bg p-4 space-y-6 pb-10 hide-scrollbar">
     <div class="space-y-3">
-      <h2 class="text-xs font-bold font-mono text-brand-accent uppercase flex items-center gap-1.5 border-b border-brand-border pb-1"><i class="fa-solid fa-star"></i> Presets Destacados</h2>
+      <h2 class="text-xs font-bold font-mono text-brand-accent uppercase flex items-center gap-1.5 border-b border-brand-border pb-1"><i class="fa-solid fa-star"></i> Featured Presets</h2>
       <div class="grid grid-cols-1 gap-3" id="featuredList"></div>
     </div>
     <div class="space-y-3">
-      <h2 class="text-xs font-bold font-mono text-white uppercase flex items-center gap-1.5 border-b border-brand-border pb-1"><i class="fa-solid fa-heart text-red-500"></i> Mis Favoritos Locales</h2>
-      <div class="grid grid-cols-1 gap-3" id="favoritesList"><p class="text-[11px] text-brand-muted italic">Aún no has guardado favoritos.</p></div>
+      <h2 class="text-xs font-bold font-mono text-white uppercase flex items-center gap-1.5 border-b border-brand-border pb-1"><i class="fa-solid fa-heart text-red-500"></i> My Local Favorites</h2>
+      <div class="grid grid-cols-1 gap-3" id="favoritesList"><p class="text-[11px] text-brand-muted italic">No favorites saved yet.</p></div>
     </div>
   </div>
 
@@ -158,10 +158,10 @@ if (logoutBtn) {
   <div id="apiKeyModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-brand-card border border-brand-border rounded-2xl p-4 w-full max-w-sm space-y-3">
       <div class="flex items-center justify-between border-b border-brand-border pb-2">
-        <h3 class="font-bold text-xs text-brand-text flex items-center gap-1.5"><i class="fa-solid fa-key text-brand-accent"></i> Clave Gemini API</h3>
+        <h3 class="font-bold text-xs text-brand-text flex items-center gap-1.5"><i class="fa-solid fa-key text-brand-accent"></i> Gemini API Key</h3>
         <button type="button" onclick="toggleApiKeyModal()" class="text-brand-muted hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <p class="text-[11px] text-brand-muted leading-relaxed">Pega tu clave Gemini API para habilitar la búsqueda en la nube.</p>
+      <p class="text-[11px] text-brand-muted leading-relaxed">Paste your Gemini API Key to enable cloud search.</p>
       <input type="password" id="apiKeyInput" placeholder="Pegar clave aquí..." class="w-full bg-brand-bg text-xs font-mono text-brand-text p-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" />
       <button type="button" onclick="saveApiKey()" class="w-full bg-brand-accent text-brand-bg font-bold text-xs py-2 rounded-xl hover:bg-brand-accentHover cursor-pointer">Guardar Clave</button>
     </div>
@@ -172,20 +172,20 @@ if (logoutBtn) {
     <div class="bg-brand-card border border-brand-border rounded-2xl p-5 w-full max-w-sm space-y-4 shadow-2xl">
       <div class="flex items-center gap-3 border-b border-brand-border pb-3">
         <div class="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0"><i class="fa-solid fa-cloud-arrow-down text-lg"></i></div>
-        <div><h3 class="font-bold text-sm text-white">Tono no encontrado</h3><p class="text-[10px] text-brand-muted">Biblioteca Local</p></div>
+        <div><h3 class="font-bold text-sm text-white">Tone not found</h3><p class="text-[10px] text-brand-muted">Local Library</p></div>
       </div>
-      <p class="text-xs text-brand-muted leading-relaxed">No se encontró este preset en tu equipo. ¿Deseas usar el Motor IA en la nube para crearlo desde cero? <br><br><span class="text-brand-accent/90"><i class="fa-solid fa-bolt"></i> Motor Flash Turbo (2 a 4 seg).</span></p>
+      <p class="text-xs text-brand-muted leading-relaxed">This preset was not found on your device. Would you like to use the Cloud AI Engine to build it from scratch? <br><br><span class="text-brand-accent/90"><i class="fa-solid fa-bolt"></i> Motor Flash Turbo (2 a 4 seg).</span></p>
       <div class="flex gap-3 pt-2">
-        <button type="button" onclick="cancelIaGeneration()" class="flex-1 bg-brand-panel border border-brand-border text-white font-bold text-xs py-2.5 rounded-xl hover:bg-brand-border transition-colors">Cancelar</button>
-        <button type="button" onclick="confirmIaGeneration()" class="flex-1 bg-brand-accent text-brand-bg font-bold text-xs py-2.5 rounded-xl hover:bg-brand-accentHover transition-colors flex items-center justify-center gap-2"><i class="fa-solid fa-wand-magic-sparkles"></i> Generar</button>
+        <button type="button" onclick="cancelIaGeneration()" class="flex-1 bg-brand-panel border border-brand-border text-white font-bold text-xs py-2.5 rounded-xl hover:bg-brand-border transition-colors">Cancel</button>
+        <button type="button" onclick="confirmIaGeneration()" class="flex-1 bg-brand-accent text-brand-bg font-bold text-xs py-2.5 rounded-xl hover:bg-brand-accentHover transition-colors flex items-center justify-center gap-2"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate</button>
       </div>
     </div>
   </div>
 
   <nav class="bg-brand-panel border-t border-brand-border px-6 py-2 flex justify-around shrink-0 text-center z-20 w-full relative">
     <button class="flex flex-col items-center gap-0.5 text-brand-accent w-16" id="navSearch" onclick="switchTab('search')"><i class="fa-solid fa-sliders text-base"></i><span class="text-[9px] font-bold">Tone AI</span></button>
-    <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16" id="navLib" onclick="switchTab('library')"><i class="fa-solid fa-book-bookmark text-base"></i><span class="text-[9px] font-bold">Biblioteca</span></button>
-    <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16" onclick="alert('Calculadora BPM: 120 BPM = 500 ms')"><i class="fa-solid fa-calculator text-base"></i><span class="text-[9px] font-bold">Herramientas</span></button>
+    <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16" id="navLib" onclick="switchTab('library')"><i class="fa-solid fa-book-bookmark text-base"></i><span class="text-[9px] font-bold">Library</span></button>
+    <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16" onclick="alert('Calculadora BPM: 120 BPM = 500 ms')"><i class="fa-solid fa-calculator text-base"></i><span class="text-[9px] font-bold">Tools</span></button>
   </nav>
 
   <script>
@@ -281,7 +281,7 @@ if (logoutBtn) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { responseMimeType: "application/json", temperature: 0.4 }
+                    generationConfig: { responseMimeType: "application/json", temperature: 0.4 } 
                 })
             });
 

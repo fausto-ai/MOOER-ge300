@@ -434,31 +434,102 @@
     });
 
     // Función auxiliar para sumar +1 al contador en Firestore
+    // --- FLUJO DE BÚSQUEDA INTELIGENTE CON CONTROL FREEMIUM Y ADMIN ---
+    document.getElementById('aiToneForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      // Verificamos si es Pro o si eres tú el Administrador maestro
+      const isUserPro = window.currentUserData && window.currentUserData.isPro === true;
+      const userEmail = auth.currentUser ? auth.currentUser.email : "";
+      const isAdmin = userEmail === "faustolute@gmail.com";
+      
+      const generationsUsed = window.currentUserData && window.currentUserData.freeGenerationsUsed !== undefined ? window.currentUserData.freeGenerationsUsed : 0;
+      
+      // Si NO es Pro, NO es Admin, y ya superó los 3 intentos -> Muro de pago (Paywall)
+      if (!isUserPro && !isAdmin && generationsUsed >= 3) {
+        document.getElementById('paywallModal').classList.remove('hidden');
+        return; // Freno en seco
+      }
+
+      const queryInput = document.getElementById('toneSearchInput');
+      const query = queryInput.value.trim();
+      if (!query) return;
+
+      let finalPreset = null; let isUniversal = false; 
+      
+      let qClean = query.toLowerCase().replace(/[^a-z0-9\s]/g, '');
+      let queryWords = qClean.split(/\s+/).filter(w => w.length > 0);
+
+      // 1. Buscar en Universales / Banco Secreto Global
+      for (let key in UNIVERSAL_PRESETS) {
+          let titleClean = UNIVERSAL_PRESETS[key].title.toLowerCase().replace(/[^a-z0-9\s]/g, '');
+          let isMatch = queryWords.every(word => titleClean.includes(word));
+          if (isMatch) {
+              currentCacheKey = key;
+              finalPreset = UNIVERSAL_PRESETS[key];
+              isUniversal = true;
+              break;
+          }
+      }
+
+      // 2. Buscar en LocalStorage si no se halló en Universales
+      if (!finalPreset) {
+          for (let i = 0; i < localStorage.length; i++) {
+              let key = localStorage.key(i);
+              if (key.startsWith('GE300_CACHE_')) {
+                  let cachedData = localStorage.getItem(key);
+                  try {
+                      let parsed = JSON.parse(cachedData);
+                      let titleClean = parsed.title.toLowerCase().replace(/[^a-z0-9\s]/g, '');
+                      let isMatch = queryWords.every(word => titleClean.includes(word));
+                      if (isMatch) {
+                          currentCacheKey = key;
+                          finalPreset = parsed;
+                          break;
+                      }
+                  } catch(e) {}
+              }
+          }
+      }
+
+      if (finalPreset) {
+          await registerSearchUsage();
+          renderPreset(finalPreset, isUniversal);
+      } else {
+          currentCacheKey = 'GE300_CACHE_' + query.toLowerCase().replace(/[^a-z0-9]/g, '_');
+          pendingSearchQuery = query;
+          document.getElementById('confirmIaModal').classList.remove('hidden');
+      }
+    });
+
+    // Función auxiliar para sumar +1 al contador (Los Admins y Pro no gastan contador)
     async function registerSearchUsage() {
       const isUserPro = window.currentUserData && window.currentUserData.isPro === true;
-      if (isUserPro) return; // Los usuarios Pro no gastan contador
+      const userEmail = auth.currentUser ? auth.currentUser.email : "";
+      const isAdmin = userEmail === "faustolute@gmail.com";
+      
+      if (isUserPro || isAdmin) return; 
 
       window.currentUserData.freeGenerationsUsed = (window.currentUserData.freeGenerationsUsed || 0) + 1;
       
-      // Actualizamos Firestore en segundo plano
       try {
         const user = auth.currentUser;
         if (user) {
           const userRef = doc(db, "users", user.uid);
           await setDoc(userRef, { freeGenerationsUsed: window.currentUserData.freeGenerationsUsed }, { merge: true });
-          console.log("Contador actualizado en Firestore:", window.currentUserData.freeGenerationsUsed);
         }
       } catch (error) {
         console.error("Error al actualizar contador en Firestore:", error);
       }
     }
 
-        // Función para actualizar la visibilidad de la biblioteca
+    // Función para actualizar la visibilidad de la biblioteca
     function updateLibraryVisibility() {
       const libraryBtn = document.getElementById('libraryNavBtn');
       if (libraryBtn) {
         const isUserPro = window.currentUserData && window.currentUserData.isPro === true;
-        const isAdmin = auth.currentUser && auth.currentUser.email === "faustolute@gmail.com";
+        const userEmail = auth.currentUser ? auth.currentUser.email : "";
+        const isAdmin = userEmail === "faustolute@gmail.com";
 
         if (!isUserPro && !isAdmin) {
           libraryBtn.style.display = 'none'; 
@@ -467,7 +538,6 @@
         }
       }
     }
-
     
     function cancelIaGeneration() { document.getElementById('confirmIaModal').classList.add('hidden'); pendingSearchQuery = ''; }
 

@@ -220,30 +220,6 @@
     <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16" id="navLib" onclick="switchTab('library')"><i class="fa-solid fa-book-bookmark text-base"></i><span class="text-[9px] font-bold">Library</span></button>
     <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16" onclick="alert('BPM Calculator: 120 BPM = 500 ms')"><i class="fa-solid fa-calculator text-base"></i><span class="text-[9px] font-bold">Tools</span></button>
   </nav>
-    <!-- MODAL PAYWALL (MURO DE PAGO PRO) -->
-  <div id="paywallModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
-    <div class="bg-brand-card border border-brand-accent/40 rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-2xl text-center">
-      <div class="w-12 h-12 rounded-full bg-brand-accent/20 border border-brand-accent/40 flex items-center justify-center text-brand-accent mx-auto">
-        <i class="fa-solid fa-crown text-xl"></i>
-      </div>
-      <div>
-        <h3 class="font-bold text-base text-white">Free Trial Completed</h3>
-        <p class="text-xs text-brand-muted mt-1">You've used your 3 free AI tone generations.</p>
-      </div>
-      <p class="text-xs text-brand-text leading-relaxed bg-brand-bg/60 p-3 rounded-xl border border-brand-border/60">
-        Upgrade to <span class="text-brand-accent font-bold">MOOER AI Pro</span> for unlimited cloud tones, custom editing, and full community library access.
-      </p>
-      <div class="space-y-2 pt-2">
-        <button type="button" onclick="alert('Aquí conectaremos el link de pago de Stripe próximamente 🚀')" class="w-full bg-brand-accent text-brand-bg font-bold text-xs py-3 rounded-xl hover:bg-brand-accentHover transition-colors cursor-pointer flex items-center justify-center gap-2">
-          <i class="fa-solid fa-bolt"></i> Upgrade to Pro (€4.99 / mo)
-        </button>
-        <button type="button" onclick="document.getElementById('paywallModal').classList.add('hidden')" class="w-full bg-transparent text-brand-muted hover:text-white text-xs py-2 transition-colors">
-          Close
-        </button>
-      </div>
-    </div>
-  </div>
-  
 
   <script>
     const BLOCK_ORDER = ["SYNTH", "COMP", "WAH", "FXA", "DS/OD", "AMP", "CAB", "NS", "TONE CAP", "EQ", "FXB", "FX LOOP", "DELAY", "REVERB"];
@@ -356,20 +332,10 @@
             throw err;
         }
     }
-        // --- FLUJO DE BÚSQUEDA INTELIGENTE CON CONTROL FREEMIUM FIRESTORE ---
-    document.getElementById('aiToneForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      
-      // 1. Validar el límite de intentos para usuarios Free antes de buscar
-      const isUserPro = window.currentUserData && window.currentUserData.isPro === true;
-      const generationsUsed = window.currentUserData && window.currentUserData.freeGenerationsUsed !== undefined ? window.currentUserData.freeGenerationsUsed : 0;
-      
-      // Si no es Pro y ya gastó o superó los 3 intentos, mostramos el Paywall (Muro de pago)
-      if (!isUserPro && generationsUsed >= 3) {
-        document.getElementById('paywallModal').classList.remove('hidden');
-        return; // Freno en seco
-      }
 
+    // --- SEARCH FLOW WITH LOCAL FUZZY SEARCH ---
+    document.getElementById('aiToneForm').addEventListener('submit', function(e) {
+      e.preventDefault();
       const queryInput = document.getElementById('toneSearchInput');
       const query = queryInput.value.trim();
       if (!query) return;
@@ -379,7 +345,7 @@
       let qClean = query.toLowerCase().replace(/[^a-z0-9\s]/g, '');
       let queryWords = qClean.split(/\s+/).filter(w => w.length > 0);
 
-      // 2. Buscar en Universales / Banco Secreto Global
+      // 1. Search in Universal Presets
       for (let key in UNIVERSAL_PRESETS) {
           let titleClean = UNIVERSAL_PRESETS[key].title.toLowerCase().replace(/[^a-z0-9\s]/g, '');
           let isMatch = queryWords.every(word => titleClean.includes(word));
@@ -391,56 +357,6 @@
           }
       }
 
-      // 3. Buscar en LocalStorage / Banco Secreto Local si no se halló en Universales
-      if (!finalPreset) {
-          for (let i = 0; i < localStorage.length; i++) {
-              let key = localStorage.key(i);
-              if (key.startsWith('GE300_CACHE_')) {
-                  let cachedData = localStorage.getItem(key);
-                  try {
-                      let parsed = JSON.parse(cachedData);
-                      let titleClean = parsed.title.toLowerCase().replace(/[^a-z0-9\s]/g, '');
-                      let isMatch = queryWords.every(word => titleClean.includes(word));
-                      if (isMatch) {
-                          currentCacheKey = key;
-                          finalPreset = parsed;
-                          break;
-                      }
-                  } catch(e) {}
-              }
-          }
-      }
-
-      if (finalPreset) {
-          // Si el tono ya existía en el banco, igual cuenta como uso para el usuario free
-          await registerSearchUsage();
-          renderPreset(finalPreset, isUniversal);
-      } else {
-          currentCacheKey = 'GE300_CACHE_' + query.toLowerCase().replace(/[^a-z0-9]/g, '_');
-          pendingSearchQuery = query;
-          document.getElementById('confirmIaModal').classList.remove('hidden');
-      }
-    });
-
-    // Función auxiliar para sumar +1 al contador en Firestore
-    async function registerSearchUsage() {
-      const isUserPro = window.currentUserData && window.currentUserData.isPro === true;
-      if (isUserPro) return; // Los usuarios Pro no gastan contador
-
-      window.currentUserData.freeGenerationsUsed = (window.currentUserData.freeGenerationsUsed || 0) + 1;
-      
-      // Actualizamos Firestore en segundo plano
-      try {
-        const user = auth.currentUser;
-        if (user) {
-          const userRef = doc(db, "users", user.uid);
-          await setDoc(userRef, { freeGenerationsUsed: window.currentUserData.freeGenerationsUsed }, { merge: true });
-          console.log("Contador actualizado en Firestore:", window.currentUserData.freeGenerationsUsed);
-        }
-      } catch (error) {
-        console.error("Error al actualizar contador en Firestore:", error);
-      }
-    }
       // 2. Search in LocalStorage if not found in Universal
       if (!finalPreset) {
           for (let i = 0; i < localStorage.length; i++) {

@@ -215,14 +215,21 @@
     </div>
   </div>
 
-  <nav class="bg-brand-panel border-t border-brand-border px-6 py-2 flex justify-around shrink-0 text-center z-20 w-full relative">
-    <button class="flex flex-col items-center gap-0.5 text-brand-accent w-16" id="navSearch" onclick="switchTab('search')"><i class="fa-solid fa-sliders text-base"></i><span class="text-[9px] font-bold">Tone AI</span></button>
-    <button id="libraryNavBtn" class="flex flex-col items-center ...">
-  <i class="fa-solid fa-book-bookmark"></i>
-  <span>Library</span>
+    <nav class="bg-brand-panel border-t border-brand-border px-6 py-2 flex justify-around shrink-0 text-center z-20 w-full relative">
+    <button class="flex flex-col items-center gap-0.5 text-brand-accent w-16" id="navSearch" onclick="switchTab('search')">
+      <i class="fa-solid fa-sliders text-base"></i>
+      <span class="text-[9px] font-bold">Tone AI</span>
     </button>
-    <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16" id="navLib" onclick="switchTab('library')"><i class="fa-solid fa-book-bookmark text-base"></i><span class="text-[9px] font-bold">Library</span></button>
-    <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16" onclick="alert('BPM Calculator: 120 BPM = 500 ms')"><i class="fa-solid fa-calculator text-base"></i><span class="text-[9px] font-bold">Tools</span></button>
+    
+    <button id="libraryNavBtn" class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16" onclick="switchTab('library')">
+      <i class="fa-solid fa-book-bookmark text-base"></i>
+      <span class="text-[9px] font-bold">Library</span>
+    </button>
+
+    <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16" onclick="alert('BPM Calculator: 120 BPM = 500 ms')">
+      <i class="fa-solid fa-calculator text-base"></i>
+      <span class="text-[9px] font-bold">Tools</span>
+    </button>
   </nav>
   <!-- MODAL PAYWALL (MURO DE PAGO PRO) -->
   <div id="paywallModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">

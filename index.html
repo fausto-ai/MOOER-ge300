@@ -445,7 +445,19 @@
       }
     }
 
+    // Ocultar o mostrar la pestaña Library según si es Pro o Free
+    const libraryBtn = document.getElementById('libraryNavBtn');
+    if (libraryBtn) {
+      const isUserPro = window.currentUserData && window.currentUserData.isPro === true;
+      const isAdmin = auth.currentUser && auth.currentUser.email === "tu_correo@gmail.com"; // Pon tu correo real aquí
 
+      if (!isUserPro && !isAdmin) {
+        libraryBtn.style.display = 'none'; // Se oculta para usuarios gratuitos
+      } else {
+        libraryBtn.style.display = 'flex'; // Visible para ti y usuarios Pro
+      }
+    }
+    
     function cancelIaGeneration() { document.getElementById('confirmIaModal').classList.add('hidden'); pendingSearchQuery = ''; }
 
     async function confirmIaGeneration() {

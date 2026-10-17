@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 Pro AI Tone Studio v8.6.1</title>
+  <title>MOOER GE300 Pro AI Tone Studio v8.7</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
@@ -21,11 +21,11 @@
     .view-mode .knob-container { cursor: default !important; }
   </style>
 
-  <!-- FIREBASE SECURITY GUARD & FIRESTORE -->
+  <!-- FIREBASE SECURITY GUARD, GLOBAL VAULT & SMART SYNC -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDMZxIgDvBRJNyIZuo3CDwnyvx1INm7LsM",
@@ -40,26 +40,36 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // Exponemos las herramientas de Firebase a window para que el script inferior pueda usarlas sin bloquearse
     window.firebaseAuth = auth;
     window.firebaseDb = db;
     window.firestoreDoc = doc;
+    window.firestoreGetDoc = getDoc;
     window.firestoreSetDoc = setDoc;
+    window.firestoreCollection = collection;
+    window.firestoreGetDocs = getDocs;
 
-    // Variable global para tener los datos del usuario actual a la mano
     window.currentUserData = { freeGenerationsUsed: 0, isPro: false };
+    window.globalCloudPresets = {}; // Caché en memoria de los tonos de la nube
+    window.cloudGeminiKey = "";     // API Key global para que todos los dispositivos funcionen
 
-    // Verificar si hay alguien logueado y sincronizar con Firestore
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         window.location.href = "login.html";
       } else {
+        const isAdmin = user.email && user.email.toLowerCase() === "faustolute@gmail.com";
+
+        // Mostrar botón de API Key SOLO al Administrador
+        const keyBtn = document.getElementById('keyBtn');
+        if (keyBtn) {
+          keyBtn.style.display = isAdmin ? 'inline-flex' : 'none';
+        }
+
+        // 1. Cargar o crear perfil del usuario
         const userRef = doc(db, "users", user.uid);
         try {
           const userSnap = await getDoc(userRef);
           if (userSnap.exists()) {
             window.currentUserData = userSnap.data();
-            console.log("Datos de usuario cargados:", window.currentUserData);
           } else {
             window.currentUserData = {
               uid: user.uid,
@@ -69,19 +79,69 @@
               createdAt: new Date().toISOString()
             };
             await setDoc(userRef, window.currentUserData);
-            console.log("Nuevo usuario registrado en Firestore");
           }
-          // Actualizamos la visibilidad de la librería tanto para usuarios existentes como nuevos
           if (typeof window.updateLibraryVisibility === 'function') {
             window.updateLibraryVisibility();
           }
         } catch (error) {
-          console.error("Error al sincronizar con Firestore:", error);
+          console.error("Error al sincronizar perfil:", error);
+        }
+
+        // 2. Descargar la API Key maestra desde Firestore para que funcione en cualquier celular
+        try {
+          const configRef = doc(db, "app_config", "ai_engine");
+          const configSnap = await getDoc(configRef);
+          if (configSnap.exists() && configSnap.data().geminiKey) {
+            window.cloudGeminiKey = configSnap.data().geminiKey;
+            localStorage.setItem('GE300_GEMINI_KEY', window.cloudGeminiKey);
+            if (typeof window.updateApiStatus === 'function') window.updateApiStatus();
+          } else if (isAdmin) {
+            // Si el Admin ya tenía la llave en su celular, la sube automáticamente a la nube
+            const localKey = localStorage.getItem('GE300_GEMINI_KEY');
+            if (localKey && localKey.trim() !== '') {
+              await setDoc(configRef, { geminiKey: localKey.trim() }, { merge: true });
+              window.cloudGeminiKey = localKey.trim();
+            }
+          }
+        } catch (e) {
+          console.warn("No se pudo leer config global:", e);
+        }
+
+        // 3. Sincronizar el Banco Secreto Global de Tonos (Firestore <-> Dispositivo)
+        try {
+          const presetsCol = collection(db, "global_presets");
+          const snapshot = await getDocs(presetsCol);
+          snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            window.globalCloudPresets[docSnap.id] = data;
+            // Guardamos copia en el teléfono sin sobrescribir los favoritos locales
+            const existingLocal = localStorage.getItem(docSnap.id);
+            if (!existingLocal) {
+              localStorage.setItem(docSnap.id, JSON.stringify({ ...data, isFav: false, favUsers: [] }));
+            }
+          });
+
+          // Si es el Admin, subimos a la nube cualquier tono antiguo que tenga solo en su celular
+          if (isAdmin) {
+            for (let i = 0; i < localStorage.length; i++) {
+              let k = localStorage.key(i);
+              if (k && k.startsWith('GE300_CACHE_') && !window.globalCloudPresets[k]) {
+                try {
+                  let localPreset = JSON.parse(localStorage.getItem(k));
+                  if (localPreset && localPreset.title) {
+                    await setDoc(doc(db, "global_presets", k), localPreset, { merge: true });
+                    window.globalCloudPresets[k] = localPreset;
+                  }
+                } catch (err) {}
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("Error sincronizando banco global de tonos:", e);
         }
       }
     });
 
-    // Sign out button logic
     window.addEventListener('DOMContentLoaded', () => {
       const logoutBtn = document.getElementById('logout-btn');
       if (logoutBtn) {
@@ -106,13 +166,13 @@
       </div>
       <div>
         <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
-          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v8.6.1</span>
+          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v8.7</span>
         </h1>
-        <p class="text-[11px] text-brand-muted" id="apiStatusText">AI Engine Turbo & Active Brake</p>
+        <p class="text-[11px] text-brand-muted" id="apiStatusText">Smart Cloud Cache & AI Engine</p>
       </div>
     </div>
     <div class="flex items-center gap-2">
-      <button type="button" onclick="toggleApiKeyModal()" title="Configure API Key" class="p-2 rounded-lg bg-brand-border/40 hover:bg-brand-border text-brand-text transition-colors cursor-pointer" id="keyBtn">
+      <button type="button" onclick="toggleApiKeyModal()" title="Configure Master API Key" style="display:none;" class="p-2 rounded-lg bg-brand-border/40 hover:bg-brand-border text-brand-text transition-colors cursor-pointer" id="keyBtn">
         <i class="fa-solid fa-key text-xs" id="keyIcon"></i>
       </button>
       <span class="text-[10px] font-mono text-brand-accent font-bold bg-brand-accent/10 px-2 py-0.5 rounded border border-brand-accent/30">CLOUD AI</span>
@@ -126,7 +186,7 @@
     <section class="p-3.5 bg-brand-panel/50 border-b border-brand-border shrink-0">
       <form id="aiToneForm" class="relative flex items-center">
         <i class="fa-solid fa-wand-magic-sparkles absolute left-3.5 text-brand-accent text-xs"></i>
-        <input type="text" id="toneSearchInput" placeholder="Search for a tone (e.g. easy lover)..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-24 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent transition-opacity" required />
+        <input type="text" id="toneSearchInput" placeholder="Search song or artist (e.g. easy lover)..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-24 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent transition-opacity" required />
         <button type="submit" id="searchBtn" class="absolute right-1 bg-brand-accent hover:bg-brand-accentHover text-brand-bg font-bold text-xs px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer min-w-[75px] justify-center">
           <span id="btnText">Search</span>
           <i id="btnIcon" class="fa-solid fa-arrow-right text-[10px]"></i>
@@ -162,7 +222,7 @@
             </div>
             <span class="text-[9px] text-brand-accent bg-brand-accent/10 px-2 py-0.5 rounded font-mono" id="editStatusBadge">🔒 Safe Mode</span>
           </div>
-          <p class="text-[11px] text-brand-muted leading-relaxed" id="soundDescription">Waiting for connection. Add your API Key for true precision.</p>
+          <p class="text-[11px] text-brand-muted leading-relaxed" id="soundDescription">Ready. Search any guitar tone above.</p>
         </div>
         <div class="grid grid-cols-2 gap-2 bg-brand-bg/60 p-2.5 rounded-xl border border-brand-border/40 text-[11px]">
           <div class="flex items-center gap-2">
@@ -193,16 +253,16 @@
     </div>
   </div>
 
-  <!-- MODAL API -->
+  <!-- MODAL API (SOLO ADMIN) -->
   <div id="apiKeyModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-brand-card border border-brand-border rounded-2xl p-4 w-full max-w-sm space-y-3">
       <div class="flex items-center justify-between border-b border-brand-border pb-2">
-        <h3 class="font-bold text-xs text-brand-text flex items-center gap-1.5"><i class="fa-solid fa-key text-brand-accent"></i> Gemini API Key</h3>
+        <h3 class="font-bold text-xs text-brand-text flex items-center gap-1.5"><i class="fa-solid fa-key text-brand-accent"></i> Master Gemini API Key (Cloud Sync)</h3>
         <button type="button" onclick="toggleApiKeyModal()" class="text-brand-muted hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <p class="text-[11px] text-brand-muted leading-relaxed">Paste your Gemini API Key to enable cloud search.</p>
+      <p class="text-[11px] text-brand-muted leading-relaxed">Saving this key syncs it to Firestore so all user devices can generate tones automatically.</p>
       <input type="password" id="apiKeyInput" placeholder="Paste key here..." class="w-full bg-brand-bg text-xs font-mono text-brand-text p-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" />
-      <button type="button" onclick="saveApiKey()" class="w-full bg-brand-accent text-brand-bg font-bold text-xs py-2 rounded-xl hover:bg-brand-accentHover cursor-pointer">Save Key</button>
+      <button type="button" onclick="saveApiKey()" class="w-full bg-brand-accent text-brand-bg font-bold text-xs py-2 rounded-xl hover:bg-brand-accentHover cursor-pointer">Save & Sync to Cloud</button>
     </div>
   </div>
 
@@ -211,9 +271,9 @@
     <div class="bg-brand-card border border-brand-border rounded-2xl p-5 w-full max-w-sm space-y-4 shadow-2xl">
       <div class="flex items-center gap-3 border-b border-brand-border pb-3">
         <div class="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0"><i class="fa-solid fa-cloud-arrow-down text-lg"></i></div>
-        <div><h3 class="font-bold text-sm text-white">Tone not found</h3><p class="text-[10px] text-brand-muted">Local Library</p></div>
+        <div><h3 class="font-bold text-sm text-white">New Tone Request</h3><p class="text-[10px] text-brand-muted">Cloud AI Studio</p></div>
       </div>
-      <p class="text-xs text-brand-muted leading-relaxed">This preset was not found on your device. Would you like to use the Cloud AI Engine to build it from scratch? <br><br><span class="text-brand-accent/90"><i class="fa-solid fa-bolt"></i> Flash Turbo Engine (2 to 4 sec).</span></p>
+      <p class="text-xs text-brand-muted leading-relaxed">This tone is not in the global vault yet. Would you like the Cloud AI Engine to build it from scratch? <br><br><span class="text-brand-accent/90"><i class="fa-solid fa-bolt"></i> Flash Turbo Engine (2 to 4 sec).</span></p>
       <div class="flex gap-3 pt-2">
         <button type="button" onclick="cancelIaGeneration()" class="flex-1 bg-brand-panel border border-brand-border text-white font-bold text-xs py-2.5 rounded-xl hover:bg-brand-border transition-colors">Cancel</button>
         <button type="button" onclick="confirmIaGeneration()" class="flex-1 bg-brand-accent text-brand-bg font-bold text-xs py-2.5 rounded-xl hover:bg-brand-accentHover transition-colors flex items-center justify-center gap-2"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate</button>
@@ -253,8 +313,8 @@
       </p>
       <div class="space-y-2 pt-2">
         <button type="button" onclick="window.location.href='premium.html'" class="w-full bg-brand-accent text-brand-bg font-bold text-xs py-3 rounded-xl hover:bg-brand-accentHover transition-colors cursor-pointer flex items-center justify-center gap-2">
-  <i class="fa-solid fa-bolt"></i> Upgrade to Pro (€4.99 / mo)
-</button>
+          <i class="fa-solid fa-bolt"></i> Upgrade to Pro (€4.99 / mo)
+        </button>
         <button type="button" onclick="document.getElementById('paywallModal').classList.add('hidden')" class="w-full bg-transparent text-brand-muted hover:text-white text-xs py-2 transition-colors">
           Close
         </button>
@@ -289,12 +349,109 @@
 
     let currentCacheKey = ''; let isEditMode = false; let pendingSearchQuery = '';
 
-    function updateApiStatus() {
-        const key = localStorage.getItem('GE300_GEMINI_KEY'); const icon = document.getElementById('keyIcon');
-        if (key && key.trim() !== '') { icon.classList.add('text-brand-accent'); icon.classList.remove('text-brand-muted'); } else { icon.classList.remove('text-brand-accent'); icon.classList.add('text-brand-muted'); }
+    // --- MOTOR INTELIGENTE ANTI-DUPLICADOS Y TOLERANTE A ERRORES (SMART FUZZY MATCH) ---
+    const STOP_WORDS = new Set(['ai', 'preset', 'tone', 'the', 'a', 'an', 'of', 'in', 'on', 'for', 'to', 'and', 'by', 'de', 'la', 'el', 'los', 'las', 'un', 'una', 'con', 'del', 'al', 'y', 'en']);
+
+    function normalizeText(str) {
+      if (!str) return "";
+      return str
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "") // Quita tildes y diéresis (Música -> Musica)
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, " ")    // Quita guiones, apóstrofes y signos
+        .split(/\s+/)
+        .filter(w => w.length > 1 && !STOP_WORDS.has(w))
+        .join(" ");
     }
-    function toggleApiKeyModal() { const modal = document.getElementById('apiKeyModal'); if (modal) { modal.classList.toggle('hidden'); const savedKey = localStorage.getItem('GE300_GEMINI_KEY'); if (savedKey) document.getElementById('apiKeyInput').value = savedKey; } }
-    function saveApiKey() { const keyInput = document.getElementById('apiKeyInput'); if (keyInput) { const key = keyInput.value.trim(); if (key) { localStorage.setItem('GE300_GEMINI_KEY', key); } else { localStorage.removeItem('GE300_GEMINI_KEY'); } updateApiStatus(); toggleApiKeyModal(); } }
+
+    // Calcula cuántos errores de escritura hay entre dos palabras (Levenshtein)
+    function editDistance(a, b) {
+      if (a === b) return 0;
+      const matrix = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+      for (let j = 1; j <= b.length; j++) matrix[0][j] = j;
+      for (let i = 1; i <= a.length; i++) {
+        for (let j = 1; j <= b.length; j++) {
+          const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j - 1] + cost
+          );
+        }
+      }
+      return matrix[a.length][b.length];
+    }
+
+    // Evalúa si dos palabras son iguales o tienen solo 1 pequeño error de dedo
+    function wordsAreSimilar(w1, w2) {
+      if (w1 === w2) return true;
+      if (w1.length >= 4 && w2.length >= 4 && (w1.includes(w2) || w2.includes(w1))) return true;
+      const maxLen = Math.max(w1.length, w2.length);
+      if (maxLen <= 3) return w1 === w2;
+      const dist = editDistance(w1, w2);
+      const allowedErrors = maxLen >= 7 ? 2 : 1;
+      return dist <= allowedErrors;
+    }
+
+    // Devuelve una puntuación de coincidencia entre la búsqueda del usuario y un título guardado
+    function isSmartPresetMatch(userQuery, presetTitle) {
+      const qNorm = normalizeText(userQuery);
+      const tNorm = normalizeText(presetTitle);
+      if (!qNorm || !tNorm) return false;
+      if (tNorm.includes(qNorm) || qNorm.includes(tNorm)) return true;
+
+      const qWords = qNorm.split(" ");
+      const tWords = tNorm.split(" ");
+
+      // Todas las palabras clave buscadas por el usuario deben coincidir (exacta o con leve error tipográfico)
+      let matchedWords = 0;
+      for (let qw of qWords) {
+        if (tWords.some(tw => wordsAreSimilar(qw, tw))) {
+          matchedWords++;
+        }
+      }
+      // Si coincide el 100% de las palabras buscadas (o al menos 2 de 3 en búsquedas largas)
+      if (qWords.length <= 2) return matchedWords === qWords.length;
+      return matchedWords >= qWords.length - 1;
+    }
+
+    window.updateApiStatus = function() {
+        const key = window.cloudGeminiKey || localStorage.getItem('GE300_GEMINI_KEY');
+        const icon = document.getElementById('keyIcon');
+        if (!icon) return;
+        if (key && key.trim() !== '') { icon.classList.add('text-brand-accent'); icon.classList.remove('text-brand-muted'); }
+        else { icon.classList.remove('text-brand-accent'); icon.classList.add('text-brand-muted'); }
+    };
+
+    function toggleApiKeyModal() {
+        const modal = document.getElementById('apiKeyModal');
+        if (modal) {
+            modal.classList.toggle('hidden');
+            const savedKey = window.cloudGeminiKey || localStorage.getItem('GE300_GEMINI_KEY');
+            if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
+        }
+    }
+
+    async function saveApiKey() {
+        const keyInput = document.getElementById('apiKeyInput');
+        if (keyInput) {
+            const key = keyInput.value.trim();
+            if (key) {
+                localStorage.setItem('GE300_GEMINI_KEY', key);
+                window.cloudGeminiKey = key;
+                // Guardar en Firestore para que todos los celulares tengan acceso automático
+                try {
+                    if (window.firebaseDb && window.firestoreDoc && window.firestoreSetDoc) {
+                        await window.firestoreSetDoc(window.firestoreDoc(window.firebaseDb, "app_config", "ai_engine"), { geminiKey: key }, { merge: true });
+                    }
+                } catch (e) { console.error("Error guardando API Key en la nube:", e); }
+            } else {
+                localStorage.removeItem('GE300_GEMINI_KEY');
+            }
+            window.updateApiStatus();
+            toggleApiKeyModal();
+        }
+    }
 
     function switchTab(tab) {
         document.getElementById('viewSearch').classList.add('hidden');
@@ -323,13 +480,14 @@
     }
 
     function loadPresetFromLibrary(cacheKey, isUniversal = false) {
-        let presetData = isUniversal ? UNIVERSAL_PRESETS[cacheKey] : JSON.parse(localStorage.getItem(cacheKey));
+        let presetData = isUniversal ? UNIVERSAL_PRESETS[cacheKey] : (JSON.parse(localStorage.getItem(cacheKey)) || window.globalCloudPresets[cacheKey]);
         if(presetData) { currentCacheKey = cacheKey; renderPreset(presetData, isUniversal); switchTab('search'); }
     }
 
-        function renderLibrary() {
+    function renderLibrary() {
         const currentUser = window.firebaseAuth ? window.firebaseAuth.currentUser : null;
         const userEmail = currentUser && currentUser.email ? currentUser.email.toLowerCase() : "";
+        const userUid = currentUser ? currentUser.uid : "guest";
         const isAdmin = userEmail === "faustolute@gmail.com";
 
         // 1. DESTACADOS (Visibles para Suscriptores PRO y Admin)
@@ -350,7 +508,7 @@
               </div>`;
         });
 
-        // 2. FAVORITOS DEL USUARIO (Solo los que el suscriptor marcó con ❤️)
+        // 2. FAVORITOS PRIVADOS DEL USUARIO
         const favContainer = document.getElementById('favoritesList');
         favContainer.innerHTML = '';
         let hasFavs = false;
@@ -364,8 +522,11 @@
                     let p = JSON.parse(localStorage.getItem(key));
                     let starsHtml = Array(5).fill(0).map((_, idx) => `<i class="fa-solid fa-star ${idx < (p.rating || 0) ? 'text-yellow-400' : 'text-brand-muted/30'}"></i>`).join('');
 
-                    // Si el usuario le dio corazón ❤️, va a su lista de Favoritos
-                    if (p.isFav) {
+                    let isFavForThisUser = Array.isArray(p.favUsers)
+                        ? p.favUsers.includes(userUid)
+                        : (isAdmin && p.isFav === true);
+
+                    if (isFavForThisUser) {
                         hasFavs = true;
                         favContainer.innerHTML += `
                           <div class="bg-brand-panel border border-brand-border/60 p-3 rounded-xl flex items-center justify-between cursor-pointer hover:bg-brand-card transition-colors">
@@ -377,7 +538,6 @@
                           </div>`;
                     }
 
-                    // Si eres ADMIN, recolectamos TODOS los tonos (con o sin corazón) para tu bóveda maestra
                     if (isAdmin) {
                         totalCachedCount++;
                         allCachedItemsHtml += `
@@ -397,7 +557,7 @@
             favContainer.innerHTML = `<p class="text-[11px] text-brand-muted italic bg-brand-card p-3 rounded-lg border border-brand-border/30">No favorites saved yet. Tap the ❤️ icon on any tone to save it here.</p>`;
         }
 
-        // 3. SECCIÓN EXCLUSIVA SOLO PARA FAUSTO (ADMIN MASTER VAULT)
+        // 3. ADMIN MASTER VAULT (SOLO VISIBLE PARA FAUSTO)
         let adminVaultEl = document.getElementById('adminMasterVault');
         if (isAdmin) {
             if (!adminVaultEl) {
@@ -415,51 +575,58 @@
                 ${allCachedItemsHtml || '<p class="text-[11px] text-brand-muted italic">No AI tones in vault yet.</p>'}
               </div>`;
         } else if (adminVaultEl) {
-            adminVaultEl.remove(); // Garantiza que ningún suscriptor normal vea jamás la bóveda
+            adminVaultEl.remove();
         }
     }
 
-
-    function deleteFavorite(key) { if(confirm("Remove from favorites?")) { let p = JSON.parse(localStorage.getItem(key)); p.isFav = false; localStorage.setItem(key, JSON.stringify(p)); renderLibrary(); } }
+    function deleteFavorite(key) {
+        if(confirm("Remove from favorites?")) {
+            const currentUser = window.firebaseAuth ? window.firebaseAuth.currentUser : null;
+            const userUid = currentUser ? currentUser.uid : "guest";
+            let p = JSON.parse(localStorage.getItem(key));
+            if (Array.isArray(p.favUsers)) {
+                p.favUsers = p.favUsers.filter(id => id !== userUid);
+            }
+            p.isFav = false;
+            localStorage.setItem(key, JSON.stringify(p));
+            renderLibrary();
+        }
+    }
 
     function fuzzyMatchModel(list, query) {
         if (!query || query === "None") return null; let q = query.toLowerCase().replace(/[^a-z0-9]/g, ''); 
         return list.find(x => x.name.toLowerCase().replace(/[^a-z0-9]/g, '').includes(q) || q.includes(x.name.toLowerCase().replace(/[^a-z0-9]/g, '')));
     }
 
-    // --- TURBO AI ENGINE WITH GEMINI 3.8 FLASH ---
+    // --- TURBO AI ENGINE WITH GEMINI FLASH ---
     async function fetchAITone(query, apiKey) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
-        const prompt = `You are a MOOER GE300 expert. Create the guitar tone for: "${query}". Use a MAXIMUM of 5 blocks. NEVER include VOL. Return ONLY the 2 or 3 key knobs per block.
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+        const prompt = `You are a MOOER GE300 expert. Create the guitar tone for: "${query}". Also provide the standardized "ARTIST - SONG TITLE" in a field called "cleanTitle". Use a MAXIMUM of 5 blocks. NEVER include VOL. Return ONLY the 2 or 3 key knobs per block.
         Catalogs: AMP: ${AMP.map(a=>a.name).join(', ')} | CAB: ${CAB.map(c=>c.name).join(', ')} | DS/OD: ${DS_OD.map(d=>d.name).join(', ')} | WAH: ${WAH.map(w=>w.name).join(', ')} | FXA: ${FXA.map(f=>f.name).join(', ')} | DELAY: ${DELAY.map(d=>d.name).join(', ')} | REVERB: ${REVERB.map(r=>r.name).join(', ')} | COMP: ${COMP.map(c=>c.name).join(', ')}
-        Return ONLY JSON in English: {"blocks": [{"type": "AMP", "name": "10: J800", "p": {"Gain": 75}}], "pickup": "Neck", "ctrls": ["CTRL 1: Drive"], "desc": "Brief tone info"}`;
+        Return ONLY JSON in English: {"cleanTitle": "ARTIST - SONG", "blocks": [{"type": "AMP", "name": "10: J800", "p": {"Gain": 75}}], "pickup": "Neck", "ctrls": ["CTRL 1: Drive"], "desc": "Brief tone info"}`;
 
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }],
-                    generationConfig: { responseMimeType: "application/json", temperature: 0.4 } 
-                })
-            });
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: { responseMimeType: "application/json", temperature: 0.4 } 
+            })
+        });
 
-            if (response.ok) {
-                const data = await response.json();
-                let rawText = data.candidates[0].content.parts[0].text;
-                const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-                if (jsonMatch) rawText = jsonMatch[0];
-                return JSON.parse(rawText);
-            } else {
-                const errData = await response.json();
-                throw new Error(errData.error?.message || "Google API Error");
-            }
-        } catch (err) {
-            throw err;
+        if (response.ok) {
+            const data = await response.json();
+            let rawText = data.candidates[0].content.parts[0].text;
+            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) rawText = jsonMatch[0];
+            return JSON.parse(rawText);
+        } else {
+            const errData = await response.json();
+            throw new Error(errData.error?.message || "Google API Error");
         }
     }
 
-    // --- FLUJO DE BÚSQUEDA INTELIGENTE CON CONTROL FREEMIUM Y ADMIN ---
+    // --- FLUJO DE BÚSQUEDA INTELIGENTE (EVITA GASTAR IA SI YA EXISTE CON OTRO NOMBRE O ERROR DE DEDO) ---
     document.getElementById('aiToneForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       
@@ -470,7 +637,6 @@
       
       const generationsUsed = window.currentUserData && window.currentUserData.freeGenerationsUsed !== undefined ? window.currentUserData.freeGenerationsUsed : 0;
       
-      // Si NO es Pro, NO es Admin, y ya superó los 3 intentos -> Muro de pago (Paywall)
       if (!isUserPro && !isAdmin && generationsUsed >= 3) {
         document.getElementById('paywallModal').classList.remove('hidden');
         return;
@@ -480,16 +646,12 @@
       const query = queryInput.value.trim();
       if (!query) return;
 
-      let finalPreset = null; let isUniversal = false; 
-      
-      let qClean = query.toLowerCase().replace(/[^a-z0-9\s]/g, '');
-      let queryWords = qClean.split(/\s+/).filter(w => w.length > 0);
+      let finalPreset = null;
+      let isUniversal = false; 
 
-      // 1. Buscar en Universales / Banco Secreto Global
+      // 1. Buscar en Featured / Universales con tolerancia a errores y acentos
       for (let key in UNIVERSAL_PRESETS) {
-          let titleClean = UNIVERSAL_PRESETS[key].title.toLowerCase().replace(/[^a-z0-9\s]/g, '');
-          let isMatch = queryWords.every(word => titleClean.includes(word));
-          if (isMatch) {
+          if (isSmartPresetMatch(query, UNIVERSAL_PRESETS[key].title)) {
               currentCacheKey = key;
               finalPreset = UNIVERSAL_PRESETS[key];
               isUniversal = true;
@@ -497,17 +659,14 @@
           }
       }
 
-      // 2. Buscar en LocalStorage si no se halló en Universales
+      // 2. Buscar en LocalStorage con tolerancia a errores y orden de palabras
       if (!finalPreset) {
           for (let i = 0; i < localStorage.length; i++) {
               let key = localStorage.key(i);
-              if (key.startsWith('GE300_CACHE_')) {
-                  let cachedData = localStorage.getItem(key);
+              if (key && key.startsWith('GE300_CACHE_')) {
                   try {
-                      let parsed = JSON.parse(cachedData);
-                      let titleClean = parsed.title.toLowerCase().replace(/[^a-z0-9\s]/g, '');
-                      let isMatch = queryWords.every(word => titleClean.includes(word));
-                      if (isMatch) {
+                      let parsed = JSON.parse(localStorage.getItem(key));
+                      if (parsed && isSmartPresetMatch(query, parsed.title)) {
                           currentCacheKey = key;
                           finalPreset = parsed;
                           break;
@@ -517,17 +676,29 @@
           }
       }
 
+      // 3. Buscar en la Bóveda Global de Firestore (creados por otros dispositivos)
+      if (!finalPreset && window.globalCloudPresets) {
+          for (let key in window.globalCloudPresets) {
+              let cloudPreset = window.globalCloudPresets[key];
+              if (cloudPreset && isSmartPresetMatch(query, cloudPreset.title)) {
+                  currentCacheKey = key;
+                  finalPreset = cloudPreset;
+                  localStorage.setItem(key, JSON.stringify({ ...cloudPreset, isFav: false }));
+                  break;
+              }
+          }
+      }
+
       if (finalPreset) {
           await registerSearchUsage();
           renderPreset(finalPreset, isUniversal);
       } else {
-          currentCacheKey = 'GE300_CACHE_' + query.toLowerCase().replace(/[^a-z0-9]/g, '_');
+          currentCacheKey = 'GE300_CACHE_' + normalizeText(query).replace(/\s+/g, '_');
           pendingSearchQuery = query;
           document.getElementById('confirmIaModal').classList.remove('hidden');
       }
     });
 
-    // Función auxiliar para sumar +1 al contador (Los Admins y Pro no gastan contador)
     async function registerSearchUsage() {
       const currentUser = window.firebaseAuth ? window.firebaseAuth.currentUser : null;
       const userEmail = currentUser && currentUser.email ? currentUser.email.toLowerCase() : "";
@@ -548,7 +719,6 @@
       }
     }
 
-    // Función global para actualizar la visibilidad de la biblioteca
     window.updateLibraryVisibility = function() {
       const libraryBtn = document.getElementById('libraryNavBtn');
       if (libraryBtn) {
@@ -568,15 +738,21 @@
     function cancelIaGeneration() { document.getElementById('confirmIaModal').classList.add('hidden'); pendingSearchQuery = ''; }
 
     async function confirmIaGeneration() {
-        document.getElementById('confirmIaModal').classList.add('hidden'); const query = pendingSearchQuery; if(!query) return;
-        const queryInput = document.getElementById('toneSearchInput'); const searchBtn = document.getElementById('searchBtn');
+        document.getElementById('confirmIaModal').classList.add('hidden');
+        const query = pendingSearchQuery;
+        if(!query) return;
+        const queryInput = document.getElementById('toneSearchInput');
+        const searchBtn = document.getElementById('searchBtn');
         queryInput.disabled = true; searchBtn.disabled = true; queryInput.classList.add('opacity-50'); searchBtn.classList.add('opacity-50');
         document.getElementById('btnText').innerText = "Generating..."; document.getElementById('btnIcon').className = "fa-solid fa-spinner animate-spin";
-        const apiKey = localStorage.getItem('GE300_GEMINI_KEY'); let finalPreset = null;
+        
+        const apiKey = window.cloudGeminiKey || localStorage.getItem('GE300_GEMINI_KEY');
+        let finalPreset = null;
 
         try {
             if (apiKey && apiKey.trim() !== '') {
-                const aiData = await fetchAITone(query, apiKey); let parsedBlocks = [];
+                const aiData = await fetchAITone(query, apiKey);
+                let parsedBlocks = [];
                 if (aiData.blocks) {
                     aiData.blocks.forEach(bData => {
                         if(bData.type === "VOL") return; let targetList = [];
@@ -590,12 +766,36 @@
                         }
                     });
                 }
-                finalPreset = { title: `AI Preset: ${query.toUpperCase()}`, bank: "01A", desc: `[CLOUD API] ${aiData.desc || ""}`, pickup: aiData.pickup || "Bridge", ctrls: aiData.ctrls || [], rating: 0, isFav: false, blocks: parsedBlocks };
+                const displayTitle = aiData.cleanTitle ? `AI Preset: ${aiData.cleanTitle.toUpperCase()}` : `AI Preset: ${query.toUpperCase()}`;
+                finalPreset = {
+                    title: displayTitle,
+                    bank: "01A",
+                    desc: `[CLOUD API] ${aiData.desc || ""}`,
+                    pickup: aiData.pickup || "Bridge",
+                    ctrls: aiData.ctrls || [],
+                    rating: 0,
+                    isFav: false,
+                    favUsers: [],
+                    blocks: parsedBlocks
+                };
+
+                // Guardar localmente y también en la Bóveda Global de Firestore para ahorrar IA en futuras búsquedas
                 localStorage.setItem(currentCacheKey, JSON.stringify(finalPreset));
-                await registerSearchUsage(); // Sumamos al contador cuando genera con éxito
-            } else { throw new Error("Missing API Key"); }
-        } catch (error) { alert(`Connection or API Key error.\n\n${error.message}`); } 
-        finally { queryInput.disabled = false; searchBtn.disabled = false; queryInput.classList.remove('opacity-50'); searchBtn.classList.remove('opacity-50'); document.getElementById('btnText').innerText = "Search"; document.getElementById('btnIcon').className = "fa-solid fa-arrow-right"; }
+                window.globalCloudPresets[currentCacheKey] = finalPreset;
+                if (window.firebaseDb && window.firestoreDoc && window.firestoreSetDoc) {
+                    await window.firestoreSetDoc(window.firestoreDoc(window.firebaseDb, "global_presets", currentCacheKey), finalPreset, { merge: true });
+                }
+
+                await registerSearchUsage();
+            } else {
+                throw new Error("Master API Key not configured yet. Log in as Admin (faustolute@gmail.com) and save your Gemini Key once.");
+            }
+        } catch (error) {
+            alert(`Connection or API Key notice:\n\n${error.message}`);
+        } finally {
+            queryInput.disabled = false; searchBtn.disabled = false; queryInput.classList.remove('opacity-50'); searchBtn.classList.remove('opacity-50');
+            document.getElementById('btnText').innerText = "Search"; document.getElementById('btnIcon').className = "fa-solid fa-arrow-right";
+        }
         if(finalPreset) renderPreset(finalPreset, false);
     }
 
@@ -606,12 +806,21 @@
       let strokeDash = (numVal / 100) * 126;
       return `<div class="flex flex-col items-center gap-0.5"><div class="knob-container cursor-ns-resize" data-block-type="${blockType}" data-knob-name="${label}" data-raw-val="${valStr}" onmousedown="handleDragStart(event, this)" ontouchstart="handleDragStart(event, this)"><svg class="w-14 h-14 knob-svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#26334d" stroke-width="4"/><circle class="dynamic-stroke" cx="25" cy="25" r="20" fill="none" stroke="#00ff66" stroke-width="4" stroke-dasharray="${strokeDash} 126" stroke-linecap="round"/></svg><span class="knob-value-badge">${valStr}</span></div><span class="text-[9px] font-mono font-bold text-brand-muted uppercase text-center max-w-[70px] truncate">${label}</span></div>`;
     }
+
     function renderPreset(preset, isUniversal = false) {
         isEditMode = false; document.getElementById('mainPresetContainer').classList.add('view-mode'); document.getElementById('mainPresetContainer').classList.remove('edit-mode'); document.getElementById('btnEdit').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> <span>Edit</span>`; document.getElementById('editStatusBadge').innerHTML = `🔒 Safe Mode`; document.getElementById('editStatusBadge').className = "text-[9px] text-brand-accent bg-brand-accent/10 px-2 py-0.5 rounded font-mono border border-brand-accent/20";
         if(isUniversal) document.getElementById('btnEdit').classList.add('hidden'); else document.getElementById('btnEdit').classList.remove('hidden');
         document.getElementById('presetBank').innerText = preset.bank || "01A"; document.getElementById('songTitle').innerText = preset.title; document.getElementById('soundDescription').innerText = preset.desc; document.getElementById('pickupRec').innerText = preset.pickup || "Bridge";
         if(preset.ctrls && preset.ctrls.length > 0) document.getElementById('ctrlAssignments').innerHTML = preset.ctrls.map(c => `<div>${c}</div>`).join(''); else document.getElementById('ctrlAssignments').innerHTML = `<div class="text-brand-muted/50 italic">No assignments</div>`;
-        updateStarsUI(preset.rating || 0); updateFavUI(preset.isFav || false);
+        
+        const currentUser = window.firebaseAuth ? window.firebaseAuth.currentUser : null;
+        const userUid = currentUser ? currentUser.uid : "guest";
+        const isAdmin = currentUser && currentUser.email && currentUser.email.toLowerCase() === "faustolute@gmail.com";
+        const isFavNow = Array.isArray(preset.favUsers) ? preset.favUsers.includes(userUid) : (isAdmin && preset.isFav === true);
+
+        updateStarsUI(preset.rating || 0);
+        updateFavUI(isFavNow);
+
         if (preset.blocks) preset.blocks.sort((a, b) => { let idxA = BLOCK_ORDER.indexOf(a.type); let idxB = BLOCK_ORDER.indexOf(b.type); return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB); });
         const blocksContainer = document.getElementById('effectBlocksContainer'); blocksContainer.innerHTML = '';
         preset.blocks.forEach(block => {
@@ -631,10 +840,30 @@
 
     function ratePreset(stars) { if(UNIVERSAL_PRESETS[currentCacheKey]) { alert("Featured Presets are read-only."); return; } updateStarsUI(stars); let cached = JSON.parse(localStorage.getItem(currentCacheKey)); if(cached) { cached.rating = stars; localStorage.setItem(currentCacheKey, JSON.stringify(cached)); } }
     function updateStarsUI(stars) { let icons = document.getElementById('ratingStars').children; for(let i=0; i<5; i++) icons[i].className = `fa-solid fa-star cursor-pointer transition-colors ${i < stars ? 'text-yellow-400' : 'hover:text-yellow-400'}`; }
-    function toggleFavorite() { if(UNIVERSAL_PRESETS[currentCacheKey]) { alert("Already in your library."); return; } if(!currentCacheKey) return; let cached = JSON.parse(localStorage.getItem(currentCacheKey)); if(!cached) return; cached.isFav = !cached.isFav; localStorage.setItem(currentCacheKey, JSON.stringify(cached)); updateFavUI(cached.isFav); }
+    
+    function toggleFavorite() {
+        if(UNIVERSAL_PRESETS[currentCacheKey]) { alert("Already in your Featured Library."); return; }
+        if(!currentCacheKey) return;
+        let cached = JSON.parse(localStorage.getItem(currentCacheKey));
+        if(!cached) return;
+        const currentUser = window.firebaseAuth ? window.firebaseAuth.currentUser : null;
+        const userUid = currentUser ? currentUser.uid : "guest";
+        if (!Array.isArray(cached.favUsers)) cached.favUsers = [];
+        const isCurrentlyFav = cached.favUsers.includes(userUid);
+        if (isCurrentlyFav) {
+            cached.favUsers = cached.favUsers.filter(id => id !== userUid);
+            cached.isFav = false;
+        } else {
+            cached.favUsers.push(userUid);
+            cached.isFav = true;
+        }
+        localStorage.setItem(currentCacheKey, JSON.stringify(cached));
+        updateFavUI(!isCurrentlyFav);
+    }
+
     function updateFavUI(isFav) { let icon = document.getElementById('favIcon'); let btn = document.getElementById('btnFav'); if(isFav) { icon.className = "fa-solid fa-heart"; btn.classList.add('text-red-500'); btn.classList.remove('text-brand-muted'); } else { icon.className = "fa-regular fa-heart"; btn.classList.remove('text-red-500'); btn.classList.add('text-brand-muted'); } }
 
-    window.addEventListener('DOMContentLoaded', () => { updateApiStatus(); renderPreset(UNIVERSAL_PRESETS["ge300_univ_soda_ligera"], true); });
+    window.addEventListener('DOMContentLoaded', () => { window.updateApiStatus(); renderPreset(UNIVERSAL_PRESETS["ge300_univ_soda_ligera"], true); });
   </script>
 </body>
 </html>

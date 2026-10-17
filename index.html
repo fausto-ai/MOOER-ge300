@@ -55,6 +55,7 @@
           if (userSnap.exists()) {
             // Ya existe en la nube, cargamos sus datos
             window.currentUserData = userSnap.data();
+           updateLibraryVisibility();
             console.log("Datos de usuario cargados:", window.currentUserData);
           } else {
             // Es un usuario nuevo, le creamos su ficha inicial blindada

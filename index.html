@@ -220,6 +220,30 @@
     <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16" id="navLib" onclick="switchTab('library')"><i class="fa-solid fa-book-bookmark text-base"></i><span class="text-[9px] font-bold">Library</span></button>
     <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16" onclick="alert('BPM Calculator: 120 BPM = 500 ms')"><i class="fa-solid fa-calculator text-base"></i><span class="text-[9px] font-bold">Tools</span></button>
   </nav>
+    <!-- MODAL PAYWALL (MURO DE PAGO PRO) -->
+  <div id="paywallModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-brand-card border border-brand-accent/40 rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-2xl text-center">
+      <div class="w-12 h-12 rounded-full bg-brand-accent/20 border border-brand-accent/40 flex items-center justify-center text-brand-accent mx-auto">
+        <i class="fa-solid fa-crown text-xl"></i>
+      </div>
+      <div>
+        <h3 class="font-bold text-base text-white">Free Trial Completed</h3>
+        <p class="text-xs text-brand-muted mt-1">You've used your 3 free AI tone generations.</p>
+      </div>
+      <p class="text-xs text-brand-text leading-relaxed bg-brand-bg/60 p-3 rounded-xl border border-brand-border/60">
+        Upgrade to <span class="text-brand-accent font-bold">MOOER AI Pro</span> for unlimited cloud tones, custom editing, and full community library access.
+      </p>
+      <div class="space-y-2 pt-2">
+        <button type="button" onclick="alert('Aquí conectaremos el link de pago de Stripe próximamente 🚀')" class="w-full bg-brand-accent text-brand-bg font-bold text-xs py-3 rounded-xl hover:bg-brand-accentHover transition-colors cursor-pointer flex items-center justify-center gap-2">
+          <i class="fa-solid fa-bolt"></i> Upgrade to Pro (€4.99 / mo)
+        </button>
+        <button type="button" onclick="document.getElementById('paywallModal').classList.add('hidden')" class="w-full bg-transparent text-brand-muted hover:text-white text-xs py-2 transition-colors">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+  
 
   <script>
     const BLOCK_ORDER = ["SYNTH", "COMP", "WAH", "FXA", "DS/OD", "AMP", "CAB", "NS", "TONE CAP", "EQ", "FXB", "FX LOOP", "DELAY", "REVERB"];

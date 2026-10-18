@@ -165,8 +165,8 @@
         <i class="fa-solid fa-guitar text-sm"></i>
       </div>
       <div>
-        <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
-          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1 py-0.5 rounded uppercase font-mono font-bold">v8.7</span>
+                <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
+          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1.5 py-0.5 rounded uppercase font-mono font-bold">AI STUDIO</span>
         </h1>
         <p class="text-[11px] text-brand-muted" id="apiStatusText">Smart Cloud Cache & AI Engine</p>
       </div>
@@ -600,7 +600,7 @@
 
     // --- TURBO AI ENGINE WITH GEMINI FLASH ---
     async function fetchAITone(query, apiKey) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
         const prompt = `You are a MOOER GE300 expert. Create the guitar tone for: "${query}". Also provide the standardized "ARTIST - SONG TITLE" in a field called "cleanTitle". Use a MAXIMUM of 5 blocks. NEVER include VOL. Return ONLY the 2 or 3 key knobs per block.
         Catalogs: AMP: ${AMP.map(a=>a.name).join(', ')} | CAB: ${CAB.map(c=>c.name).join(', ')} | DS/OD: ${DS_OD.map(d=>d.name).join(', ')} | WAH: ${WAH.map(w=>w.name).join(', ')} | FXA: ${FXA.map(f=>f.name).join(', ')} | DELAY: ${DELAY.map(d=>d.name).join(', ')} | REVERB: ${REVERB.map(r=>r.name).join(', ')} | COMP: ${COMP.map(c=>c.name).join(', ')}
         Return ONLY JSON in English: {"cleanTitle": "ARTIST - SONG", "blocks": [{"type": "AMP", "name": "10: J800", "p": {"Gain": 75}}], "pickup": "Neck", "ctrls": ["CTRL 1: Drive"], "desc": "Brief tone info"}`;

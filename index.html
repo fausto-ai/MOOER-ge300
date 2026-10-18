@@ -159,29 +159,29 @@
 </head>
 <body class="flex flex-col h-[100dvh] overflow-hidden font-sans">
 
-  <header class="bg-brand-panel border-b border-brand-border px-4 py-3 flex items-center justify-between shrink-0 z-10">
+    <header class="bg-brand-panel border-b border-brand-border px-4 py-3 flex items-center justify-between shrink-0 z-10">
     <div class="flex items-center gap-2.5">
-      <div class="w-8 h-8 rounded-lg bg-brand-accent/10 border border-brand-accent/30 flex items-center justify-center text-brand-accent">
+      <div class="w-8 h-8 rounded-lg bg-brand-accent/10 border border-brand-accent/30 flex items-center justify-center text-brand-accent shrink-0">
         <i class="fa-solid fa-guitar text-sm"></i>
       </div>
       <div>
-                <h1 class="font-bold text-sm leading-tight flex items-center gap-1.5">
-          MOOER GE300 <span class="text-[9px] bg-brand-accent/20 text-brand-accent px-1.5 py-0.5 rounded uppercase font-mono font-bold">AI STUDIO</span>
+        <h1 class="font-bold text-sm leading-tight text-white">
+          MOOER GE300
         </h1>
-        <p class="text-[11px] text-brand-muted" id="apiStatusText">Smart Cloud Cache & AI Engine</p>
+        <p class="text-[10px] text-brand-muted leading-tight" id="apiStatusText">Smart Cloud & AI Engine</p>
       </div>
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-2 shrink-0">
       <button type="button" onclick="toggleApiKeyModal()" title="Configure Master API Key" style="display:none;" class="p-2 rounded-lg bg-brand-border/40 hover:bg-brand-border text-brand-text transition-colors cursor-pointer" id="keyBtn">
         <i class="fa-solid fa-key text-xs" id="keyIcon"></i>
       </button>
-      <span class="text-[10px] font-mono text-brand-accent font-bold bg-brand-accent/10 px-2 py-0.5 rounded border border-brand-accent/30">CLOUD AI</span>
-      <button id="logout-btn" class="text-xs text-brand-muted hover:text-brand-accent flex items-center gap-2 px-3 py-2 rounded-lg transition-colors">
+      <span class="text-[10px] font-mono text-brand-accent font-bold bg-brand-accent/10 px-2.5 py-1 rounded-md border border-brand-accent/30 whitespace-nowrap">AI STUDIO</span>
+      <button id="logout-btn" class="text-xs text-brand-muted hover:text-brand-accent flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap">
         <i class="fa-solid fa-right-from-bracket"></i> Sign Out
       </button>
     </div>
   </header>
-
+  
   <div id="viewSearch" class="flex flex-col flex-1 overflow-hidden">
     <section class="p-3.5 bg-brand-panel/50 border-b border-brand-border shrink-0">
       <form id="aiToneForm" class="relative flex items-center">

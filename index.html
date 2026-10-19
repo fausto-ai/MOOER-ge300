@@ -864,6 +864,173 @@
     function updateFavUI(isFav) { let icon = document.getElementById('favIcon'); let btn = document.getElementById('btnFav'); if(isFav) { icon.className = "fa-solid fa-heart"; btn.classList.add('text-red-500'); btn.classList.remove('text-brand-muted'); } else { icon.className = "fa-regular fa-heart"; btn.classList.remove('text-red-500'); btn.classList.add('text-brand-muted'); } }
 
     window.addEventListener('DOMContentLoaded', () => { window.updateApiStatus(); renderPreset(UNIVERSAL_PRESETS["ge300_univ_soda_ligera"], true); });
+      // ============================================================================
+    // SISTEMA DE VOTACIÓN POR ESTRELLAS (1-5 ★) Y RANKING "FEATURED" AUTOMÁTICO
+    // ============================================================================
+
+    // 1. Encuentra o crea automáticamente la barra de 5 estrellas debajo del título
+    window.renderInteractiveStars = function(preset) {
+      if (!preset) return;
+
+      let starsContainer = document.getElementById('presetStars');
+
+      // Si no tiene el ID presetStars, lo buscamos automáticamente junto a los iconos de estrella o debajo de presetTitle
+      if (!starsContainer) {
+        const starIcon = document.querySelector('#viewSearch .fa-star');
+        if (starIcon && starIcon.parentElement) {
+          starsContainer = starIcon.parentElement;
+          starsContainer.id = 'presetStars';
+          starsContainer.className = 'flex items-center text-yellow-400 text-sm gap-1 cursor-pointer select-none';
+        } else {
+          const titleEl = document.getElementById('presetTitle');
+          if (titleEl && titleEl.parentElement) {
+            starsContainer = document.createElement('div');
+            starsContainer.id = 'presetStars';
+            starsContainer.className = 'flex items-center text-yellow-400 text-sm gap-1 cursor-pointer select-none mt-1';
+            titleEl.insertAdjacentElement('afterend', starsContainer);
+          }
+        }
+      }
+
+      if (!starsContainer) return;
+
+      const currentRating = Number(preset.rating) || 4.8;
+      const votesCount = Number(preset.votesCount) || 1;
+      const roundedStars = Math.round(currentRating);
+
+      let starsHtml = '';
+      for (let i = 1; i <= 5; i++) {
+        const isFilled = i <= roundedStars;
+        starsHtml += `<span onclick="window.rateCurrentPreset(${i})" class="hover:scale-125 active:scale-95 transition-transform px-0.5 text-base ${isFilled ? 'text-yellow-400' : 'text-gray-600'}">★</span>`;
+      }
+
+      starsHtml += `<span class="text-[11px] text-gray-400 font-mono ml-1.5">${currentRating.toFixed(1)} (${votesCount})</span>`;
+      starsContainer.innerHTML = starsHtml;
+    };
+
+    // 2. Guarda el voto del usuario y lo sincroniza con Firebase (tones_vault)
+    window.rateCurrentPreset = async function(starsGiven) {
+      const key = typeof currentPresetKey !== 'undefined' ? currentPresetKey : null;
+      if (!key || !presetsData[key]) return;
+
+      const preset = presetsData[key];
+      const storageVoteKey = `voted_${key}`;
+
+      const prevRating = Number(preset.rating) || 4.8;
+      const prevVotes = Number(preset.votesCount) || 1;
+      const alreadyVoted = localStorage.getItem(storageVoteKey);
+
+      let newVotes = alreadyVoted ? prevVotes : prevVotes + 1;
+      let newRating = alreadyVoted
+        ? ((prevRating * prevVotes) - Number(alreadyVoted) + starsGiven) / prevVotes
+        : ((prevRating * prevVotes) + starsGiven) / newVotes;
+
+      newRating = Math.min(5, Math.max(1, Number(newRating.toFixed(2))));
+
+      preset.rating = newRating;
+      preset.votesCount = newVotes;
+      preset.isFeatured = newRating >= 4.0;
+      localStorage.setItem(storageVoteKey, String(starsGiven));
+
+      window.renderInteractiveStars(preset);
+
+      try {
+        const localCache = JSON.parse(localStorage.getItem('mooer_ai_cache_v3') || '{}');
+        localCache[key] = preset;
+        localStorage.setItem('mooer_ai_cache_v3', JSON.stringify(localCache));
+
+        if (window.firebaseDb && window.firestoreDoc && window.firestoreSetDoc) {
+          const docId = key.toLowerCase().replace(/[^a-z0-9_-]/g, '_').substring(0, 80);
+          const toneRef = window.firestoreDoc(window.firebaseDb, "tones_vault", docId);
+          await window.firestoreSetDoc(toneRef, {
+            ...preset,
+            presetKey: key,
+            rating: newRating,
+            votesCount: newVotes,
+            isFeatured: newRating >= 4.0,
+            updatedAt: new Date().toISOString()
+          }, { merge: true });
+        }
+      } catch (e) {
+        console.warn("Error sincronizando voto:", e);
+      }
+    };
+
+    // 3. Conectamos renderPreset para que pinte las estrellas interactivas siempre
+    const _origRenderPresetStars = window.renderPreset || (typeof renderPreset === 'function' ? renderPreset : null);
+    if (typeof _origRenderPresetStars === 'function') {
+      window.renderPreset = renderPreset = function(key) {
+        _origRenderPresetStars(key);
+        if (presetsData[key]) {
+          window.renderInteractiveStars(presetsData[key]);
+        }
+      };
+    }
+
+    // 4. Pestaña "Featured" dinámica con todos los tonos de la nube y fábrica ordenados por estrellas
+    const _origRenderLibStars = window.renderLibraryList || (typeof renderLibraryList === 'function' ? renderLibraryList : null);
+    window.renderLibraryList = renderLibraryList = function() {
+      const container = document.getElementById('libraryListContainer');
+      if (!container) return;
+
+      if (typeof currentLibraryTab !== 'undefined' && currentLibraryTab === 'featured') {
+        const allKeys = Object.keys(presetsData);
+        const featuredKeys = allKeys.filter(k => {
+          const p = presetsData[k];
+          const r = Number(p.rating) || 4.8;
+          return r >= 4.0 || p.isFeatured !== false;
+        });
+
+        featuredKeys.sort((a, b) => {
+          const rA = Number(presetsData[a].rating) || 4.8;
+          const rB = Number(presetsData[b].rating) || 4.8;
+          if (rB !== rA) return rB - rA;
+          return (Number(presetsData[b].votesCount) || 1) - (Number(presetsData[a].votesCount) || 1);
+        });
+
+        const topKeys = featuredKeys.slice(0, 30);
+
+        if (topKeys.length === 0) {
+          container.innerHTML = `<p class="text-xs text-gray-500 text-center py-8">No featured tones yet.</p>`;
+          return;
+        }
+
+        container.innerHTML = topKeys.map((key, idx) => {
+          const p = presetsData[key];
+          const rating = (Number(p.rating) || 4.8).toFixed(1);
+          const votes = Number(p.votesCount) || 1;
+          const cleanTitle = (p.title || key).replace(/^Preset IA:\s*/i, '');
+          return `
+            <div onclick="selectPresetFromLibrary('${key}')" class="p-3.5 rounded-xl bg-brand-card border border-brand-border hover:border-brand-accent/50 cursor-pointer transition-all flex items-center justify-between group mb-2.5">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-8 h-8 rounded-lg bg-brand-accent/10 border border-brand-accent/30 flex items-center justify-center text-brand-accent font-mono text-xs font-bold shrink-0">
+                  #${idx + 1}
+                </div>
+                <div class="min-w-0">
+                  <h4 class="font-bold text-sm text-white truncate group-hover:text-brand-accent transition-colors">${cleanTitle}</h4>
+                  <p class="text-[11px] text-gray-400 truncate">${p.amp?.name || 'Custom Rig'} • ${p.pickup || 'Standard'}</p>
+                </div>
+              </div>
+              <div class="flex flex-col items-end shrink-0 ml-3">
+                <span class="text-xs font-bold text-yellow-400 flex items-center gap-1">★ ${rating}</span>
+                <span class="text-[10px] text-gray-500 font-mono">${votes} ${votes === 1 ? 'vote' : 'votes'}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+        return;
+      }
+
+      if (typeof _origRenderLibStars === 'function') {
+        _origRenderLibStars();
+      }
+    };
+
+    setTimeout(() => {
+      if (typeof currentPresetKey !== 'undefined' && presetsData[currentPresetKey]) {
+        window.renderInteractiveStars(presetsData[currentPresetKey]);
+      }
+    }, 600);
   </script>
 </body>
 </html>

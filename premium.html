@@ -232,13 +232,13 @@
 
   </main>
 
-  <script>
+    <script>
     let selectedPlan = 'monthly';
 
-    // Configura aquí tus enlaces reales de Stripe Payment Links cuando los crees
+    // TUS DOS ENLACES OFICIALES DE STRIPE YA INTEGRADOS:
     const STRIPE_LINKS = {
-      monthly: "", // Ejemplo: "https://buy.stripe.com/tu_link_mensual"
-      yearly: ""   // Ejemplo: "https://buy.stripe.com/tu_link_anual"
+      monthly: "https://buy.stripe.com/test_7sY28s5Y0atncq8cpneAg00",
+      yearly: "https://buy.stripe.com/test_eVqeVecmo0SNcq89dbeAg01"
     };
 
     function selectPlan(plan) {
@@ -260,42 +260,61 @@
 
     async function startCheckout() {
       const link = STRIPE_LINKS[selectedPlan];
+      const user = window.firebaseAuth ? window.firebaseAuth.currentUser : null;
 
-      // 1. Si ya pusiste tu link real de Stripe, redirige a la pasarela bancaria
       if (link && link.trim() !== "") {
-        window.location.href = link;
+        const btnText = document.getElementById('checkoutBtnText');
+        if (btnText) btnText.innerText = "Redirecting to Stripe...";
+
+        // Enviamos automáticamente el email y el ID del usuario a la pasarela de Stripe
+        const params = [];
+        if (user && user.email) params.push(`prefilled_email=${encodeURIComponent(user.email)}`);
+        if (user && user.uid) params.push(`client_reference_id=${encodeURIComponent(user.uid)}`);
+        const queryString = params.length > 0 ? `?${params.join('&')}` : "";
+
+        window.location.href = link.trim() + queryString;
         return;
       }
+    }
 
-      // 2. Modo de prueba mientras conectas tu cuenta bancaria de Stripe:
-      // Permite probar cómo un usuario se convierte en PRO en Firestore en tiempo real
-      const confirmTest = confirm(
-        `Plan seleccionado: ${selectedPlan.toUpperCase()}\n\n` +
-        `Aún no has pegado tu link de Stripe en STRIPE_LINKS.\n` +
-        `¿Quieres simular un PAGO EXITOSO ahora mismo para activar el modo PRO en esta cuenta y probar que se desbloquea Library y las búsquedas ilimitadas?`
-      );
+    // Función que activa automáticamente el Modo PRO en Firebase cuando el usuario regresa de pagar en Stripe
+    async function activateProStatus(user, planName) {
+      try {
+        const btnText = document.getElementById('checkoutBtnText');
+        if (btnText) btnText.innerText = "Activating PRO Account...";
 
-      if (confirmTest) {
-        try {
-          const user = window.firebaseAuth ? window.firebaseAuth.currentUser : null;
-          if (!user) {
-            alert("Inicia sesión primero.");
-            return;
-          }
-          const userRef = window.firestoreDoc(window.firebaseDb, "users", user.uid);
-          await window.firestoreSetDoc(userRef, {
-            isPro: true,
-            planType: selectedPlan,
-            upgradedAt: new Date().toISOString()
-          }, { merge: true });
+        const userRef = window.firestoreDoc(window.firebaseDb, "users", user.uid);
+        await window.firestoreSetDoc(userRef, {
+          isPro: true,
+          planType: planName || 'monthly',
+          upgradedAt: new Date().toISOString()
+        }, { merge: true });
 
-          alert("🎉 ¡Pago simulado con éxito! Ahora esta cuenta es PRO. Volviendo al estudio...");
-          window.location.href = "index.html";
-        } catch (err) {
-          alert("Error al activar Pro: " + err.message);
-        }
+        alert("🎉 Payment Confirmed! Your MOOER AI PRO Studio is now unlocked.");
+        window.location.href = "index.html";
+      } catch (err) {
+        alert("Error activating Pro: " + err.message);
       }
     }
+
+    // Detecta automáticamente cuando Stripe devuelve al cliente con ?payment=success
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('payment') === 'success') {
+        const paidPlan = urlParams.get('plan') || 'monthly';
+        const btnText = document.getElementById('checkoutBtnText');
+        if (btnText) btnText.innerText = "Verifying Stripe Payment...";
+
+        // Esperamos a que Firebase cargue la sesión del usuario y le activamos el PRO al instante
+        const checkAuthInterval = setInterval(async () => {
+          const user = window.firebaseAuth ? window.firebaseAuth.currentUser : null;
+          if (user) {
+            clearInterval(checkAuthInterval);
+            await activateProStatus(user, paidPlan);
+          }
+        }, 400);
+      }
+    });
   </script>
 </body>
 </html>

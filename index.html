@@ -3,19 +3,41 @@
 <head>
   <meta name="google-site-verification" content="qj5xwtUOyglEfxxDf1hg-auK39f_Fo1MZeZgFcxk2_U" />
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 Pro AI Tone Studio v8.7</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MOOER GE300 Pro AI Tone Studio v9.0</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
   <script>
-    tailwind.config = { darkMode: 'class', theme: { extend: { colors: { brand: { bg: '#0a0d12', panel: '#121824', card: '#1a2333', accent: '#00ff66', accentHover: '#00cc52', text: '#f1f5f9', muted: '#94a3b8', border: '#2a364f' } }, fontFamily: { sans: ['Inter'], mono: ['JetBrains Mono'] } } } };
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              bg: '#0a0d12',
+              panel: '#121824',
+              card: '#1a2333',
+              accent: '#00ff66',
+              accentHover: '#00cc52',
+              text: '#f1f5f9',
+              muted: '#94a3b8',
+              border: '#2a364f'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    };
   </script>
   <style>
     body { background-color: #0a0d12; color: #f1f5f9; -webkit-tap-highlight-color: transparent; }
-    .knob-container { position: relative; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; user-select: none; }
+    .knob-container { position: relative; width: 64px; height: 64px; display: flex; align-items: center; justify-content: center; user-select: none; touch-action: none; }
     .knob-svg { transform: rotate(-135deg); transition: stroke 0.3s ease; }
-    .knob-value-badge { position: absolute; font-size: 0.65rem; font-weight: 700; color: #00ff66; text-align: center; pointer-events: none;}
+    .knob-value-badge { position: absolute; font-size: 0.65rem; font-weight: 700; color: #00ff66; text-align: center; pointer-events: none; }
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .edit-mode .dynamic-stroke { stroke: #00ff66; filter: drop-shadow(0 0 4px rgba(0, 255, 102, 0.4)); }
     .view-mode .dynamic-stroke { stroke: #00cc52; }
@@ -50,8 +72,8 @@
     window.firestoreGetDocs = getDocs;
 
     window.currentUserData = { freeGenerationsUsed: 0, isPro: false };
-    window.globalCloudPresets = {}; // Caché en memoria de los tonos de la nube
-    window.cloudGeminiKey = "";     // API Key global para que todos los dispositivos funcionen
+    window.globalCloudPresets = {};
+    window.cloudGeminiKey = "";
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
@@ -59,7 +81,6 @@
       } else {
         const isAdmin = user.email && user.email.toLowerCase() === "faustolute@gmail.com";
 
-        // Mostrar botón de API Key SOLO al Administrador
         const keyBtn = document.getElementById('keyBtn');
         if (keyBtn) {
           keyBtn.style.display = isAdmin ? 'inline-flex' : 'none';
@@ -88,7 +109,7 @@
           console.error("Error al sincronizar perfil:", error);
         }
 
-        // 2. Descargar la API Key maestra desde Firestore para que funcione en cualquier celular
+        // 2. Descargar la API Key maestra desde Firestore
         try {
           const configRef = doc(db, "app_config", "ai_engine");
           const configSnap = await getDoc(configRef);
@@ -97,7 +118,6 @@
             localStorage.setItem('GE300_GEMINI_KEY', window.cloudGeminiKey);
             if (typeof window.updateApiStatus === 'function') window.updateApiStatus();
           } else if (isAdmin) {
-            // Si el Admin ya tenía la llave en su celular, la sube automáticamente a la nube
             const localKey = localStorage.getItem('GE300_GEMINI_KEY');
             if (localKey && localKey.trim() !== '') {
               await setDoc(configRef, { geminiKey: localKey.trim() }, { merge: true });
@@ -108,21 +128,27 @@
           console.warn("No se pudo leer config global:", e);
         }
 
-        // 3. Sincronizar el Banco Secreto Global de Tonos (Firestore <-> Dispositivo)
+        // 3. Sincronizar el Banco Secreto Global de Tonos (global_presets)
         try {
           const presetsCol = collection(db, "global_presets");
           const snapshot = await getDocs(presetsCol);
           snapshot.forEach(docSnap => {
             const data = docSnap.data();
             window.globalCloudPresets[docSnap.id] = data;
-            // Guardamos copia en el teléfono sin sobrescribir los favoritos locales
             const existingLocal = localStorage.getItem(docSnap.id);
             if (!existingLocal) {
               localStorage.setItem(docSnap.id, JSON.stringify({ ...data, isFav: false, favUsers: [] }));
+            } else {
+              // Actualizar rating y votos desde la nube manteniendo favoritos locales
+              try {
+                const parsedLocal = JSON.parse(existingLocal);
+                parsedLocal.rating = data.rating || parsedLocal.rating || 4.9;
+                parsedLocal.votesCount = data.votesCount || parsedLocal.votesCount || 1;
+                localStorage.setItem(docSnap.id, JSON.stringify(parsedLocal));
+              } catch (err) {}
             }
           });
 
-          // Si es el Admin, subimos a la nube cualquier tono antiguo que tenga solo en su celular
           if (isAdmin) {
             for (let i = 0; i < localStorage.length; i++) {
               let k = localStorage.key(i);
@@ -160,14 +186,15 @@
 </head>
 <body class="flex flex-col h-[100dvh] overflow-hidden font-sans">
 
-    <header class="bg-brand-panel border-b border-brand-border px-4 py-3 flex items-center justify-between shrink-0 z-10">
+  <!-- TOP HEADER -->
+  <header class="bg-brand-panel border-b border-brand-border px-4 py-3 flex items-center justify-between shrink-0 z-10">
     <div class="flex items-center gap-2.5">
       <div class="w-8 h-8 rounded-lg bg-brand-accent/10 border border-brand-accent/30 flex items-center justify-center text-brand-accent shrink-0">
         <i class="fa-solid fa-guitar text-sm"></i>
       </div>
       <div>
-        <h1 class="font-bold text-sm leading-tight text-white">
-          MOOER GE300
+        <h1 class="font-black text-sm leading-tight text-white tracking-wide">
+          MOOER <span class="text-brand-accent">GE300</span>
         </h1>
         <p class="text-[10px] text-brand-muted leading-tight" id="apiStatusText">Smart Cloud & AI Engine</p>
       </div>
@@ -178,16 +205,17 @@
       </button>
       <span class="text-[10px] font-mono text-brand-accent font-bold bg-brand-accent/10 px-2.5 py-1 rounded-md border border-brand-accent/30 whitespace-nowrap">AI STUDIO</span>
       <button id="logout-btn" class="text-xs text-brand-muted hover:text-brand-accent flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap">
-        <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+        <i class="fa-solid fa-right-from-bracket"></i> <span class="hidden sm:inline">Sign Out</span>
       </button>
     </div>
   </header>
   
+  <!-- VIEW: TONE AI SEARCH -->
   <div id="viewSearch" class="flex flex-col flex-1 overflow-hidden">
     <section class="p-3.5 bg-brand-panel/50 border-b border-brand-border shrink-0">
       <form id="aiToneForm" class="relative flex items-center">
         <i class="fa-solid fa-wand-magic-sparkles absolute left-3.5 text-brand-accent text-xs"></i>
-        <input type="text" id="toneSearchInput" placeholder="Search song or artist (e.g. easy lover)..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-24 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent transition-opacity" required />
+        <input type="text" id="toneSearchInput" placeholder="Search song + section (e.g. livin it up intro)..." class="w-full bg-brand-bg text-xs text-brand-text placeholder-brand-muted pl-9 pr-24 py-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent transition-opacity" required />
         <button type="submit" id="searchBtn" class="absolute right-1 bg-brand-accent hover:bg-brand-accentHover text-brand-bg font-bold text-xs px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 cursor-pointer min-w-[75px] justify-center">
           <span id="btnText">Search</span>
           <i id="btnIcon" class="fa-solid fa-arrow-right text-[10px]"></i>
@@ -195,13 +223,18 @@
       </form>
     </section>
 
-    <main class="flex-1 overflow-y-auto p-4 pb-10 space-y-5 hide-scrollbar view-mode" id="mainPresetContainer">
+    <main class="flex-1 overflow-y-auto p-4 pb-12 space-y-5 hide-scrollbar view-mode" id="mainPresetContainer">
       <div class="bg-brand-card rounded-2xl border border-brand-border p-4 space-y-4 shadow-lg shadow-black/20">
         <div class="border-b border-brand-border/60 pb-3 space-y-2.5">
           <div class="flex items-start justify-between gap-2">
             <div>
-              <span class="text-[9px] font-mono bg-brand-accent/10 text-brand-accent border border-brand-accent/20 px-1.5 py-0.5 rounded font-bold" id="presetBank">01A</span>
-              <h2 class="text-base font-bold text-white mt-1 leading-tight" id="songTitle">Studio Master Preset</h2>
+              <div class="flex items-center gap-2">
+                <span class="text-[9px] font-mono bg-brand-accent/10 text-brand-accent border border-brand-accent/20 px-1.5 py-0.5 rounded font-bold" id="presetBank">01A</span>
+                <span class="text-[9px] font-mono bg-white/5 text-slate-300 border border-white/10 px-1.5 py-0.5 rounded font-bold flex items-center gap-1">
+                  <i class="fa-solid fa-bolt text-[8px] text-brand-accent"></i> <span id="presetSectionTag">MAIN</span>
+                </span>
+              </div>
+              <h2 class="text-base font-extrabold text-white mt-1.5 leading-tight" id="songTitle">Studio Master Preset</h2>
             </div>
             <div class="flex items-center gap-1.5 shrink-0 bg-brand-bg/50 p-1 rounded-lg border border-brand-border/40">
               <button id="btnEdit" onclick="toggleEditMode()" class="px-2.5 py-1.5 rounded-md text-[10px] font-bold text-brand-muted hover:bg-brand-border/50 transition-colors flex items-center gap-1.5">
@@ -213,28 +246,40 @@
               </button>
             </div>
           </div>
+
+          <!-- ESTRELLAS CON DECIMALES + SAFE MODE -->
           <div class="flex items-center justify-between">
-            <div class="flex gap-1 text-brand-muted text-[10px]" id="ratingStars">
-                <i class="fa-solid fa-star cursor-pointer hover:text-yellow-400 transition-colors" onclick="ratePreset(1)"></i>
-                <i class="fa-solid fa-star cursor-pointer hover:text-yellow-400 transition-colors" onclick="ratePreset(2)"></i>
-                <i class="fa-solid fa-star cursor-pointer hover:text-yellow-400 transition-colors" onclick="ratePreset(3)"></i>
-                <i class="fa-solid fa-star cursor-pointer hover:text-yellow-400 transition-colors" onclick="ratePreset(4)"></i>
-                <i class="fa-solid fa-star cursor-pointer hover:text-yellow-400 transition-colors" onclick="ratePreset(5)"></i>
-            </div>
-            <span class="text-[9px] text-brand-accent bg-brand-accent/10 px-2 py-0.5 rounded font-mono" id="editStatusBadge">🔒 Safe Mode</span>
+            <div class="flex items-center gap-1 text-brand-muted text-xs" id="ratingStars"></div>
+            <span class="text-[9px] text-brand-accent bg-brand-accent/10 px-2 py-0.5 rounded font-mono border border-brand-accent/20" id="editStatusBadge">🔒 Safe Mode</span>
           </div>
+
           <p class="text-[11px] text-brand-muted leading-relaxed" id="soundDescription">Ready. Search any guitar tone above.</p>
         </div>
+
         <div class="grid grid-cols-2 gap-2 bg-brand-bg/60 p-2.5 rounded-xl border border-brand-border/40 text-[11px]">
           <div class="flex items-center gap-2">
             <i class="fa-solid fa-sliders text-brand-accent"></i>
-            <div><span class="block text-brand-muted text-[9px] uppercase font-bold">Pickups</span><span class="font-semibold" id="pickupRec">Bridge / Humbucker</span></div>
+            <div>
+              <span class="block text-brand-muted text-[9px] uppercase font-bold">Pickups</span>
+              <span class="font-semibold text-white" id="pickupRec">Bridge / Humbucker</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 border-l border-brand-border/50 pl-2.5">
+            <i class="fa-solid fa-comments text-brand-accent"></i>
+            <div>
+              <span class="block text-brand-muted text-[9px] uppercase font-bold">Community</span>
+              <a href="community.html" class="font-semibold text-brand-accent hover:underline text-[10px]">Discuss Tone →</a>
+            </div>
           </div>
         </div>
+
         <div class="space-y-3">
-          <h3 class="text-[11px] font-mono uppercase text-brand-muted font-bold flex items-center gap-1.5"><i class="fa-solid fa-diagram-project text-brand-accent"></i> GE300 Hardware Chain</h3>
+          <h3 class="text-[11px] font-mono uppercase text-brand-muted font-bold flex items-center gap-1.5">
+            <i class="fa-solid fa-diagram-project text-brand-accent"></i> GE300 Hardware Chain
+          </h3>
           <div id="effectBlocksContainer" class="space-y-2.5"></div>
         </div>
+
         <div class="bg-brand-bg/80 rounded-xl p-3 border border-brand-border/60 text-[11px] space-y-1.5 mt-2">
           <span class="block font-mono text-[9px] uppercase font-bold text-brand-accent">CTRL & EXP Assignments</span>
           <div class="grid grid-cols-2 gap-1.5 text-brand-muted" id="ctrlAssignments"></div>
@@ -243,14 +288,21 @@
     </main>
   </div>
 
-  <div id="viewLibrary" class="hidden flex-col flex-1 overflow-y-auto bg-brand-bg p-4 space-y-6 pb-10 hide-scrollbar">
+  <!-- VIEW: LIBRARY & ADMIN VAULT -->
+  <div id="viewLibrary" class="hidden flex-col flex-1 overflow-y-auto bg-brand-bg p-4 space-y-6 pb-12 hide-scrollbar">
     <div class="space-y-3">
-      <h2 class="text-xs font-bold font-mono text-brand-accent uppercase flex items-center gap-1.5 border-b border-brand-border pb-1"><i class="fa-solid fa-star"></i> Featured Presets</h2>
+      <h2 class="text-xs font-bold font-mono text-brand-accent uppercase flex items-center gap-1.5 border-b border-brand-border pb-1">
+        <i class="fa-solid fa-star"></i> Featured GE300 Presets
+      </h2>
       <div class="grid grid-cols-1 gap-3" id="featuredList"></div>
     </div>
     <div class="space-y-3">
-      <h2 class="text-xs font-bold font-mono text-white uppercase flex items-center gap-1.5 border-b border-brand-border pb-1"><i class="fa-solid fa-heart text-red-500"></i> My Local Favorites</h2>
-      <div class="grid grid-cols-1 gap-3" id="favoritesList"><p class="text-[11px] text-brand-muted italic">No favorites saved yet.</p></div>
+      <h2 class="text-xs font-bold font-mono text-white uppercase flex items-center gap-1.5 border-b border-brand-border pb-1">
+        <i class="fa-solid fa-heart text-red-500"></i> My Local Favorites
+      </h2>
+      <div class="grid grid-cols-1 gap-3" id="favoritesList">
+        <p class="text-[11px] text-brand-muted italic">No favorites saved yet.</p>
+      </div>
     </div>
   </div>
 
@@ -258,12 +310,20 @@
   <div id="apiKeyModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-brand-card border border-brand-border rounded-2xl p-4 w-full max-w-sm space-y-3">
       <div class="flex items-center justify-between border-b border-brand-border pb-2">
-        <h3 class="font-bold text-xs text-brand-text flex items-center gap-1.5"><i class="fa-solid fa-key text-brand-accent"></i> Master Gemini API Key (Cloud Sync)</h3>
-        <button type="button" onclick="toggleApiKeyModal()" class="text-brand-muted hover:text-white cursor-pointer"><i class="fa-solid fa-xmark"></i></button>
+        <h3 class="font-bold text-xs text-brand-text flex items-center gap-1.5">
+          <i class="fa-solid fa-key text-brand-accent"></i> Master Gemini API Key (Cloud Sync)
+        </h3>
+        <button type="button" onclick="toggleApiKeyModal()" class="text-brand-muted hover:text-white cursor-pointer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
-      <p class="text-[11px] text-brand-muted leading-relaxed">Saving this key syncs it to Firestore so all user devices can generate tones automatically.</p>
+      <p class="text-[11px] text-brand-muted leading-relaxed">
+        Saving this key syncs it to Firestore so all user devices can generate tones automatically.
+      </p>
       <input type="password" id="apiKeyInput" placeholder="Paste key here..." class="w-full bg-brand-bg text-xs font-mono text-brand-text p-2.5 rounded-xl border border-brand-border focus:outline-none focus:border-brand-accent" />
-      <button type="button" onclick="saveApiKey()" class="w-full bg-brand-accent text-brand-bg font-bold text-xs py-2 rounded-xl hover:bg-brand-accentHover cursor-pointer">Save & Sync to Cloud</button>
+      <button type="button" onclick="saveApiKey()" class="w-full bg-brand-accent text-brand-bg font-bold text-xs py-2 rounded-xl hover:bg-brand-accentHover cursor-pointer">
+        Save & Sync to Cloud
+      </button>
     </div>
   </div>
 
@@ -271,33 +331,29 @@
   <div id="confirmIaModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-brand-card border border-brand-border rounded-2xl p-5 w-full max-w-sm space-y-4 shadow-2xl">
       <div class="flex items-center gap-3 border-b border-brand-border pb-3">
-        <div class="w-10 h-10 rounded-full bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0"><i class="fa-solid fa-cloud-arrow-down text-lg"></i></div>
-        <div><h3 class="font-bold text-sm text-white">New Tone Request</h3><p class="text-[10px] text-brand-muted">Cloud AI Studio</p></div>
+        <div class="w-10 h-10 rounded-full bg-brand-accent/20 border border-brand-accent/30 flex items-center justify-center text-brand-accent shrink-0">
+          <i class="fa-solid fa-cloud-arrow-down text-lg"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-sm text-white">New GE300 Tone Request</h3>
+          <p class="text-[10px] text-brand-muted" id="confirmModalSubtitle">MOOER Cloud AI Studio</p>
+        </div>
       </div>
-      <p class="text-xs text-brand-muted leading-relaxed">This tone is not in the global vault yet. Would you like the Cloud AI Engine to build it from scratch? <br><br><span class="text-brand-accent/90"><i class="fa-solid fa-bolt"></i> Flash Turbo Engine (2 to 4 sec).</span></p>
+      <p class="text-xs text-brand-muted leading-relaxed">
+        This specific song or section is not in the global vault yet. Would you like the Cloud AI Engine to build it from scratch?
+        <br><br>
+        <span class="text-brand-accent font-semibold"><i class="fa-solid fa-bolt"></i> Flash Turbo Engine (2 to 4 sec).</span>
+      </p>
       <div class="flex gap-3 pt-2">
-        <button type="button" onclick="cancelIaGeneration()" class="flex-1 bg-brand-panel border border-brand-border text-white font-bold text-xs py-2.5 rounded-xl hover:bg-brand-border transition-colors">Cancel</button>
-        <button type="button" onclick="confirmIaGeneration()" class="flex-1 bg-brand-accent text-brand-bg font-bold text-xs py-2.5 rounded-xl hover:bg-brand-accentHover transition-colors flex items-center justify-center gap-2"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate</button>
+        <button type="button" onclick="cancelIaGeneration()" class="flex-1 bg-brand-panel border border-brand-border text-white font-bold text-xs py-2.5 rounded-xl hover:bg-brand-border transition-colors">
+          Cancel
+        </button>
+        <button type="button" onclick="confirmIaGeneration()" class="flex-1 bg-brand-accent text-brand-bg font-bold text-xs py-2.5 rounded-xl hover:bg-brand-accentHover transition-colors flex items-center justify-center gap-2">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Generate
+        </button>
       </div>
     </div>
   </div>
-
-  <nav class="bg-brand-panel border-t border-brand-border px-6 py-2 flex justify-around shrink-0 text-center z-20 w-full relative">
-    <button class="flex flex-col items-center gap-0.5 text-brand-accent w-16" id="navSearch" onclick="switchTab('search')">
-      <i class="fa-solid fa-sliders text-base"></i>
-      <span class="text-[9px] font-bold">Tone AI</span>
-    </button>
-    
-    <button id="libraryNavBtn" class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16" onclick="switchTab('library')">
-      <i class="fa-solid fa-book-bookmark text-base"></i>
-      <span class="text-[9px] font-bold">Library</span>
-    </button>
-
-    <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16" onclick="alert('BPM Calculator: 120 BPM = 500 ms')">
-      <i class="fa-solid fa-calculator text-base"></i>
-      <span class="text-[9px] font-bold">Tools</span>
-    </button>
-  </nav>
 
   <!-- MODAL PAYWALL (MURO DE PAGO PRO) -->
   <div id="paywallModal" class="hidden fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4">
@@ -322,50 +378,146 @@
       </div>
     </div>
   </div>
-  
+
+  <!-- BOTTOM NAVIGATION BAR (4 BOTONES IGUAL QUE LINE 6 POD GO) -->
+  <nav class="bg-brand-panel border-t border-brand-border px-4 py-2 flex justify-around shrink-0 text-center z-20 w-full relative">
+    <button class="flex flex-col items-center gap-0.5 text-brand-accent w-16" id="navSearch" onclick="switchTab('search')">
+      <i class="fa-solid fa-sliders text-base"></i>
+      <span class="text-[9px] font-bold">Tone AI</span>
+    </button>
+    
+    <button id="libraryNavBtn" class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16" onclick="switchTab('library')">
+      <i class="fa-solid fa-book-bookmark text-base"></i>
+      <span class="text-[9px] font-bold">Library</span>
+    </button>
+
+    <a href="community.html" class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16">
+      <i class="fa-solid fa-users text-base"></i>
+      <span class="text-[9px] font-bold">Community</span>
+    </a>
+
+    <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16" onclick="openBpmTool()">
+      <i class="fa-solid fa-calculator text-base"></i>
+      <span class="text-[9px] font-bold">Tools</span>
+    </button>
+  </nav>
+
+  <!-- ========================================================================= -->
+  <!-- MOTOR MOOER GE300 + ESTRELLAS CON DECIMALES + SECCIONES SOLO/INTRO       -->
+  <!-- ========================================================================= -->
   <script>
     const BLOCK_ORDER = ["SYNTH", "COMP", "WAH", "FXA", "DS/OD", "AMP", "CAB", "NS", "TONE CAP", "EQ", "FXB", "FX LOOP", "DELAY", "REVERB"];
-    const m=(n,k)=>({name:n,knobs:()=>k});
-    const COMP=[m("1: S-Comp",{"Sensitivity":82,"Output":"+4.0dB"}),m("3: Yellow Comp",{"Threshold":"-30.0dB","Ratio":"4.0:1","Attack":38,"Output":"+6.0dB"})];
-    const WAH=[m("1: Cry Wah",{"Position":50,"Q":"2.2","Peak":50,"Output":"0dB"})];
-    const FXA=[m("26: 70s Chorus",{"Rate":36,"Tone":30,"Depth":40,"Level":75,"Output Mode":"Stereo","Output":"0dB"}),m("35: Mono Pitch",{"Pitch":"+12.0","Tone":20,"Mix":50,"Output":"+1.0dB"})];
-    const DS_OD=[m("2: 808",{"Gain":50,"Bass":35,"Mid":44,"Treble":70,"Output":60}),m("6: DDrive",{"Gain":53,"Bass":40,"Mid":52,"Treble":60,"Output":45})];
-    const AMP=[m("10: J800",{"Gain":60,"Bass":50,"Mid":60,"Treble":50,"Mode":"Original","Tube":"UK EL34","Preamp Out":70,"Presence":45,"Bias":40,"Master":75}),m("102: Jazz 120",{"Gain":40,"Bass":50,"Mid":60,"Treble":50,"Mode":"Original","Tube":"UK EL34","Preamp Out":70,"Presence":45,"Bias":40,"Master":75})];
-    const CAB=[m("6: 1960 412",{"Mic 1":"SM57","Center 1":0,"Distance 1":10,"Mic 2":"U87","Center 2":5,"Distance 2":10,"Low Cut":"80Hz","High Cut":"8500Hz","Early Reflection":10,"Output":"0dB"}),m("16: Jazz 212",{"Mic 1":"SM57","Center 1":0,"Distance 1":10,"Mic 2":"U87","Center 2":5,"Distance 2":10,"Low Cut":"80Hz","High Cut":"8500Hz","Early Reflection":10,"Output":"0dB"})];
-    const NS=[m("1: Noise Killer",{"Threshold":25,"Output":"0dB"})];
-    const EQ=[m("1: 3-Band EQ",{"Low":"0dB","Mid":"0dB","High":"0dB","Output":"0dB"})];
-    const DELAY=[m("1: Digital",{"Feedback":15,"Mix":10,"Time":"500ms","Output":"0dB","Tempo Sync":"Off","Trail":"Off"})];
-    const REVERB=[m("2: Hall",{"Pre Delay":"30ms","Decay":30,"Low Cut":"80Hz","High Cut":"4000Hz","Mix":20,"Output Mode":"Stereo","Output":"0dB","Quality":"High","Trail":"Off"})];
+    const m = (n, k) => ({ name: n, knobs: () => k });
+    const COMP = [m("1: S-Comp", {"Sensitivity": 82, "Output": "+4.0dB"}), m("3: Yellow Comp", {"Threshold": "-30.0dB", "Ratio": "4.0:1", "Attack": 38, "Output": "+6.0dB"})];
+    const WAH = [m("1: Cry Wah", {"Position": 50, "Q": "2.2", "Peak": 50, "Output": "0dB"})];
+    const FXA = [m("26: 70s Chorus", {"Rate": 36, "Tone": 30, "Depth": 40, "Level": 75, "Output Mode": "Stereo", "Output": "0dB"}), m("35: Mono Pitch", {"Pitch": "+12.0", "Tone": 20, "Mix": 50, "Output": "+1.0dB"})];
+    const DS_OD = [m("2: 808", {"Gain": 50, "Bass": 35, "Mid": 44, "Treble": 70, "Output": 60}), m("6: DDrive", {"Gain": 53, "Bass": 40, "Mid": 52, "Treble": 60, "Output": 45})];
+    const AMP = [m("10: J800", {"Gain": 60, "Bass": 50, "Mid": 60, "Treble": 50, "Mode": "Original", "Tube": "UK EL34", "Preamp Out": 70, "Presence": 45, "Bias": 40, "Master": 75}), m("102: Jazz 120", {"Gain": 40, "Bass": 50, "Mid": 60, "Treble": 50, "Mode": "Original", "Tube": "UK EL34", "Preamp Out": 70, "Presence": 45, "Bias": 40, "Master": 75})];
+    const CAB = [m("6: 1960 412", {"Mic 1": "SM57", "Center 1": 0, "Distance 1": 10, "Mic 2": "U87", "Center 2": 5, "Distance 2": 10, "Low Cut": "80Hz", "High Cut": "8500Hz", "Early Reflection": 10, "Output": "0dB"}), m("16: Jazz 212", {"Mic 1": "SM57", "Center 1": 0, "Distance 1": 10, "Mic 2": "U87", "Center 2": 5, "Distance 2": 10, "Low Cut": "80Hz", "High Cut": "8500Hz", "Early Reflection": 10, "Output": "0dB"})];
+    const NS = [m("1: Noise Killer", {"Threshold": 25, "Output": "0dB"})];
+    const EQ = [m("1: 3-Band EQ", {"Low": "0dB", "Mid": "0dB", "High": "0dB", "Output": "0dB"})];
+    const DELAY = [m("1: Digital", {"Feedback": 15, "Mix": 10, "Time": "500ms", "Output": "0dB", "Tempo Sync": "Off", "Trail": "Off"})];
+    const REVERB = [m("2: Hall", {"Pre Delay": "30ms", "Decay": 30, "Low Cut": "80Hz", "High Cut": "4000Hz", "Mix": 20, "Output Mode": "Stereo", "Output": "0dB", "Quality": "High", "Trail": "Off"})];
 
     const UNIVERSAL_PRESETS = {
-        "ge300_univ_soda_ligera": {
-            id: "ge300_univ_soda_ligera", title: "SODA STEREO - MÚSICA LIGERA", bank: "01A", desc: "Bright Roland Jazz Chorus style clean tone.", pickup: "Bridge", ctrls: ["CTRL 1: Chorus"], rating: 5, isFav: false,
-            blocks: [{ type: "COMP", model: "3: Yellow Comp", knobs: COMP[1].knobs(), displayKnobs: { "Threshold": "-30.0dB", "Ratio": "4.0:1" } }, { type: "AMP", model: "102: Jazz 120", knobs: AMP[1].knobs(), displayKnobs: { "Gain": 30, "Treble": 70, "Mid": 55 } }, { type: "CAB", model: "16: Jazz 212", knobs: CAB[1].knobs(), displayKnobs: { "Mic 1": "SM57" } }, { type: "FXA", model: "26: 70s Chorus", knobs: FXA[0].knobs(), displayKnobs: { "Depth": 55, "Level": 75 } }]
-        },
-        "ge300_univ_audioslave_stone": {
-            id: "ge300_univ_audioslave_stone", title: "AUDIOSLAVE - LIKE A STONE", bank: "02A", desc: "Expression Pedal mapped to FXA block.", pickup: "Neck", ctrls: ["EXP 1: Whammy (FXA)", "CTRL 1: Delay"], rating: 5, isFav: false,
-            blocks: [{ type: "FXA", model: "35: Mono Pitch", knobs: FXA[1].knobs(), displayKnobs: { "Pitch": "+24.0", "Mix": 100 } }, { type: "DS/OD", model: "6: DDrive", knobs: DS_OD[1].knobs(), displayKnobs: { "Gain": 55, "Treble": 60 } }, { type: "AMP", model: "10: J800", knobs: AMP[0].knobs(), displayKnobs: { "Gain": 60, "Mid": 65, "Treble": 55 } }, { type: "CAB", model: "6: 1960 412", knobs: CAB[0].knobs(), displayKnobs: { "Mic 1": "SM57" } }, { type: "DELAY", model: "1: Digital", knobs: DELAY[0].knobs(), displayKnobs: { "Time": "380ms", "Mix": 20 } }]
-        }
+      "ge300_univ_soda_ligera": {
+        id: "ge300_univ_soda_ligera",
+        title: "SODA STEREO - DE MÚSICA LIGERA",
+        section: "main",
+        bank: "01A",
+        desc: "Bright Roland Jazz Chorus style clean/crunch tone with 70s Chorus modulation.",
+        pickup: "Bridge",
+        ctrls: ["CTRL 1: Chorus"],
+        rating: 5.0,
+        votesCount: 14,
+        isFav: false,
+        blocks: [
+          { type: "COMP", model: "3: Yellow Comp", knobs: COMP[1].knobs(), displayKnobs: { "Threshold": "-30.0dB", "Ratio": "4.0:1" } },
+          { type: "AMP", model: "102: Jazz 120", knobs: AMP[1].knobs(), displayKnobs: { "Gain": 30, "Treble": 70, "Mid": 55 } },
+          { type: "CAB", model: "16: Jazz 212", knobs: CAB[1].knobs(), displayKnobs: { "Mic 1": "SM57" } },
+          { type: "FXA", model: "26: 70s Chorus", knobs: FXA[0].knobs(), displayKnobs: { "Depth": 55, "Level": 75 } }
+        ]
+      },
+      "ge300_univ_audioslave_stone": {
+        id: "ge300_univ_audioslave_stone",
+        title: "AUDIOSLAVE - LIKE A STONE (SOLO)",
+        section: "solo",
+        bank: "02A",
+        desc: "Tom Morello screaming solo tone with Expression Pedal mapped to Mono Pitch (+24) in FXA block.",
+        pickup: "Neck",
+        ctrls: ["EXP 1: Whammy (FXA)", "CTRL 1: Delay"],
+        rating: 5.0,
+        votesCount: 19,
+        isFav: false,
+        blocks: [
+          { type: "FXA", model: "35: Mono Pitch", knobs: FXA[1].knobs(), displayKnobs: { "Pitch": "+24.0", "Mix": 100 } },
+          { type: "DS/OD", model: "6: DDrive", knobs: DS_OD[1].knobs(), displayKnobs: { "Gain": 55, "Treble": 60 } },
+          { type: "AMP", model: "10: J800", knobs: AMP[0].knobs(), displayKnobs: { "Gain": 60, "Mid": 65, "Treble": 55 } },
+          { type: "CAB", model: "6: 1960 412", knobs: CAB[0].knobs(), displayKnobs: { "Mic 1": "SM57" } },
+          { type: "DELAY", model: "1: Digital", knobs: DELAY[0].knobs(), displayKnobs: { "Time": "380ms", "Mix": 20 } }
+        ]
+      },
+      "ge300_univ_limp_livin_intro": {
+        id: "ge300_univ_limp_livin_intro",
+        title: "LIMP BIZKIT - LIVIN' IT UP (INTRO)",
+        section: "intro",
+        bank: "01B",
+        desc: "Wes Borland atmospheric crystal-clean intro with lush 70s Chorus, Digital Delay and deep Hall Reverb.",
+        pickup: "Neck",
+        ctrls: ["CTRL 1: Chorus", "CTRL 2: Delay"],
+        rating: 4.9,
+        votesCount: 8,
+        isFav: false,
+        blocks: [
+          { type: "AMP", model: "102: Jazz 120", knobs: AMP[1].knobs(), displayKnobs: { "Gain": 25, "Treble": 65, "Mid": 50, "Bass": 50 } },
+          { type: "CAB", model: "16: Jazz 212", knobs: CAB[1].knobs(), displayKnobs: { "Low Cut": "90Hz", "High Cut": "7000Hz" } },
+          { type: "FXA", model: "26: 70s Chorus", knobs: FXA[0].knobs(), displayKnobs: { "Rate": 30, "Depth": 45, "Level": 35 } },
+          { type: "DELAY", model: "1: Digital", knobs: DELAY[0].knobs(), displayKnobs: { "Time": "420ms", "Feedback": 25, "Mix": 35 } },
+          { type: "REVERB", model: "2: Hall", knobs: REVERB[0].knobs(), displayKnobs: { "Decay": 65, "Mix": 40 } }
+        ]
+      }
     };
 
-    let currentCacheKey = ''; let isEditMode = false; let pendingSearchQuery = '';
+    let currentCacheKey = 'ge300_univ_soda_ligera';
+    let isEditMode = false;
+    let pendingSearchQuery = '';
+    let pendingSearchSection = 'main';
 
-    // --- MOTOR INTELIGENTE ANTI-DUPLICADOS Y TOLERANTE A ERRORES (SMART FUZZY MATCH) ---
-    const STOP_WORDS = new Set(['ai', 'preset', 'tone', 'the', 'a', 'an', 'of', 'in', 'on', 'for', 'to', 'and', 'by', 'de', 'la', 'el', 'los', 'las', 'un', 'una', 'con', 'del', 'al', 'y', 'en']);
+    // --- MOTOR INTELIGENTE ANTI-DUPLICADOS Y DETECTOR DE SECCIÓN (SOLO vs INTRO) ---
+    const STOP_WORDS = new Set(['ai', 'preset', 'tone', 'mooer', 'ge300', 'the', 'a', 'an', 'of', 'in', 'on', 'for', 'to', 'and', 'by', 'de', 'la', 'el', 'los', 'las', 'un', 'una', 'con', 'del', 'al', 'y', 'en']);
+
+    const SECTION_MAP = {
+      solo: ["solo", "solos", "lead", "punteo"],
+      intro: ["intro", "introduccion", "opening", "arpegio", "arpeggio"],
+      rhythm: ["rhythm", "ritmo", "ritmica", "verse", "estrofa"],
+      clean: ["clean", "limpio", "acoustic", "acustico"],
+      chorus: ["chorus", "coro", "estribillo"]
+    };
+
+    function detectSection(str) {
+      if (!str) return "main";
+      const words = str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9\s]/g, " ").split(/\s+/);
+      for (const w of words) {
+        for (const [sec, aliases] of Object.entries(SECTION_MAP)) {
+          if (aliases.includes(w)) return sec;
+        }
+      }
+      return "main";
+    }
 
     function normalizeText(str) {
       if (!str) return "";
+      const allSectionWords = new Set(Object.values(SECTION_MAP).flat());
       return str
         .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "") // Quita tildes y diéresis (Música -> Musica)
+        .replace(/[\u0300-\u036f]/g, "")
         .toLowerCase()
-        .replace(/[^a-z0-9\s]/g, " ")    // Quita guiones, apóstrofes y signos
+        .replace(/[^a-z0-9\s]/g, " ")
         .split(/\s+/)
-        .filter(w => w.length > 1 && !STOP_WORDS.has(w))
+        .filter(w => w.length > 1 && !STOP_WORDS.has(w) && !allSectionWords.has(w))
         .join(" ");
     }
 
-    // Calcula cuántos errores de escritura hay entre dos palabras (Levenshtein)
     function editDistance(a, b) {
       if (a === b) return 0;
       const matrix = Array.from({ length: a.length + 1 }, (_, i) => [i]);
@@ -383,7 +535,6 @@
       return matrix[a.length][b.length];
     }
 
-    // Evalúa si dos palabras son iguales o tienen solo 1 pequeño error de dedo
     function wordsAreSimilar(w1, w2) {
       if (w1 === w2) return true;
       if (w1.length >= 4 && w2.length >= 4 && (w1.includes(w2) || w2.includes(w1))) return true;
@@ -394,8 +545,15 @@
       return dist <= allowedErrors;
     }
 
-    // Devuelve una puntuación de coincidencia entre la búsqueda del usuario y un título guardado
-    function isSmartPresetMatch(userQuery, presetTitle) {
+    function isSmartPresetMatch(userQuery, presetObjOrTitle) {
+      const presetTitle = typeof presetObjOrTitle === 'string' ? presetObjOrTitle : (presetObjOrTitle.title || "");
+      const presetSection = (typeof presetObjOrTitle === 'object' && presetObjOrTitle.section)
+        ? presetObjOrTitle.section
+        : detectSection(presetTitle);
+
+      const querySection = detectSection(userQuery);
+      if (querySection !== presetSection) return false;
+
       const qNorm = normalizeText(userQuery);
       const tNorm = normalizeText(presetTitle);
       if (!qNorm || !tNorm) return false;
@@ -404,230 +562,265 @@
       const qWords = qNorm.split(" ");
       const tWords = tNorm.split(" ");
 
-      // Todas las palabras clave buscadas por el usuario deben coincidir (exacta o con leve error tipográfico)
       let matchedWords = 0;
       for (let qw of qWords) {
         if (tWords.some(tw => wordsAreSimilar(qw, tw))) {
           matchedWords++;
         }
       }
-      // Si coincide el 100% de las palabras buscadas (o al menos 2 de 3 en búsquedas largas)
       if (qWords.length <= 2) return matchedWords === qWords.length;
       return matchedWords >= qWords.length - 1;
     }
 
     window.updateApiStatus = function() {
-        const key = window.cloudGeminiKey || localStorage.getItem('GE300_GEMINI_KEY');
-        const icon = document.getElementById('keyIcon');
-        if (!icon) return;
-        if (key && key.trim() !== '') { icon.classList.add('text-brand-accent'); icon.classList.remove('text-brand-muted'); }
-        else { icon.classList.remove('text-brand-accent'); icon.classList.add('text-brand-muted'); }
+      const key = window.cloudGeminiKey || localStorage.getItem('GE300_GEMINI_KEY');
+      const icon = document.getElementById('keyIcon');
+      if (!icon) return;
+      if (key && key.trim() !== '') {
+        icon.classList.add('text-brand-accent');
+        icon.classList.remove('text-brand-muted');
+      } else {
+        icon.classList.remove('text-brand-accent');
+        icon.classList.add('text-brand-muted');
+      }
     };
 
     function toggleApiKeyModal() {
-        const modal = document.getElementById('apiKeyModal');
-        if (modal) {
-            modal.classList.toggle('hidden');
-            const savedKey = window.cloudGeminiKey || localStorage.getItem('GE300_GEMINI_KEY');
-            if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
-        }
+      const modal = document.getElementById('apiKeyModal');
+      if (modal) {
+        modal.classList.toggle('hidden');
+        const savedKey = window.cloudGeminiKey || localStorage.getItem('GE300_GEMINI_KEY');
+        if (savedKey) document.getElementById('apiKeyInput').value = savedKey;
+      }
     }
 
     async function saveApiKey() {
-        const keyInput = document.getElementById('apiKeyInput');
-        if (keyInput) {
-            const key = keyInput.value.trim();
-            if (key) {
-                localStorage.setItem('GE300_GEMINI_KEY', key);
-                window.cloudGeminiKey = key;
-                // Guardar en Firestore para que todos los celulares tengan acceso automático
-                try {
-                    if (window.firebaseDb && window.firestoreDoc && window.firestoreSetDoc) {
-                        await window.firestoreSetDoc(window.firestoreDoc(window.firebaseDb, "app_config", "ai_engine"), { geminiKey: key }, { merge: true });
-                    }
-                } catch (e) { console.error("Error guardando API Key en la nube:", e); }
-            } else {
-                localStorage.removeItem('GE300_GEMINI_KEY');
+      const keyInput = document.getElementById('apiKeyInput');
+      if (keyInput) {
+        const key = keyInput.value.trim();
+        if (key) {
+          localStorage.setItem('GE300_GEMINI_KEY', key);
+          window.cloudGeminiKey = key;
+          try {
+            if (window.firebaseDb && window.firestoreDoc && window.firestoreSetDoc) {
+              await window.firestoreSetDoc(window.firestoreDoc(window.firebaseDb, "app_config", "ai_engine"), { geminiKey: key }, { merge: true });
             }
-            window.updateApiStatus();
-            toggleApiKeyModal();
+          } catch (e) { console.error("Error guardando API Key en la nube:", e); }
+        } else {
+          localStorage.removeItem('GE300_GEMINI_KEY');
         }
+        window.updateApiStatus();
+        toggleApiKeyModal();
+      }
     }
 
     function switchTab(tab) {
-        document.getElementById('viewSearch').classList.add('hidden');
-        document.getElementById('viewLibrary').classList.add('hidden');
-        document.getElementById('navSearch').classList.replace('text-brand-accent', 'text-brand-muted');
-        
-        const libBtn = document.getElementById('libraryNavBtn');
-        if (libBtn) libBtn.classList.replace('text-brand-accent', 'text-brand-muted');
+      document.getElementById('viewSearch').classList.add('hidden');
+      document.getElementById('viewLibrary').classList.add('hidden');
+      document.getElementById('navSearch').classList.replace('text-brand-accent', 'text-brand-muted');
+      
+      const libBtn = document.getElementById('libraryNavBtn');
+      if (libBtn) libBtn.classList.replace('text-brand-accent', 'text-brand-muted');
 
-        if(tab === 'search') {
-            document.getElementById('viewSearch').classList.remove('hidden');
-            document.getElementById('viewSearch').classList.add('flex');
-            document.getElementById('navSearch').classList.replace('text-brand-muted', 'text-brand-accent');
-        } else if(tab === 'library') {
-            document.getElementById('viewLibrary').classList.remove('hidden');
-            document.getElementById('viewLibrary').classList.add('flex');
-            if (libBtn) libBtn.classList.replace('text-brand-muted', 'text-brand-accent');
-            renderLibrary();
-        }
+      if (tab === 'search') {
+        document.getElementById('viewSearch').classList.remove('hidden');
+        document.getElementById('viewSearch').classList.add('flex');
+        document.getElementById('navSearch').classList.replace('text-brand-muted', 'text-brand-accent');
+      } else if (tab === 'library') {
+        document.getElementById('viewLibrary').classList.remove('hidden');
+        document.getElementById('viewLibrary').classList.add('flex');
+        if (libBtn) libBtn.classList.replace('text-brand-muted', 'text-brand-accent');
+        renderLibrary();
+      }
     }
 
     function toggleEditMode() {
-        isEditMode = !isEditMode; const container = document.getElementById('mainPresetContainer'); const btnEdit = document.getElementById('btnEdit'); const badge = document.getElementById('editStatusBadge');
-        if (isEditMode) { container.classList.remove('view-mode'); container.classList.add('edit-mode'); btnEdit.innerHTML = `<i class="fa-solid fa-lock-open text-brand-accent"></i> <span class="text-brand-accent">Done</span>`; badge.innerHTML = `🔓 Edit Mode`; badge.className = "text-[9px] text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded font-mono border border-yellow-400/20"; } 
-        else { container.classList.add('view-mode'); container.classList.remove('edit-mode'); btnEdit.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> <span>Edit</span>`; badge.innerHTML = `🔒 Safe Mode`; badge.className = "text-[9px] text-brand-accent bg-brand-accent/10 px-2 py-0.5 rounded font-mono border border-brand-accent/20"; }
+      isEditMode = !isEditMode;
+      const container = document.getElementById('mainPresetContainer');
+      const btnEdit = document.getElementById('btnEdit');
+      const badge = document.getElementById('editStatusBadge');
+      if (isEditMode) {
+        container.classList.remove('view-mode');
+        container.classList.add('edit-mode');
+        btnEdit.innerHTML = `<i class="fa-solid fa-lock-open text-brand-accent"></i> <span class="text-brand-accent">Done</span>`;
+        badge.innerHTML = `🔓 Edit Mode`;
+        badge.className = "text-[9px] text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded font-mono border border-yellow-400/20";
+      } else {
+        container.classList.add('view-mode');
+        container.classList.remove('edit-mode');
+        btnEdit.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> <span>Edit</span>`;
+        badge.innerHTML = `🔒 Safe Mode`;
+        badge.className = "text-[9px] text-brand-accent bg-brand-accent/10 px-2 py-0.5 rounded font-mono border border-brand-accent/20";
+      }
     }
 
     function loadPresetFromLibrary(cacheKey, isUniversal = false) {
-        let presetData = isUniversal ? UNIVERSAL_PRESETS[cacheKey] : (JSON.parse(localStorage.getItem(cacheKey)) || window.globalCloudPresets[cacheKey]);
-        if(presetData) { currentCacheKey = cacheKey; renderPreset(presetData, isUniversal); switchTab('search'); }
+      let presetData = isUniversal
+        ? UNIVERSAL_PRESETS[cacheKey]
+        : (JSON.parse(localStorage.getItem(cacheKey)) || window.globalCloudPresets[cacheKey]);
+      if (presetData) {
+        currentCacheKey = cacheKey;
+        renderPreset(presetData, isUniversal);
+        switchTab('search');
+      }
     }
 
     function renderLibrary() {
-        const currentUser = window.firebaseAuth ? window.firebaseAuth.currentUser : null;
-        const userEmail = currentUser && currentUser.email ? currentUser.email.toLowerCase() : "";
-        const userUid = currentUser ? currentUser.uid : "guest";
-        const isAdmin = userEmail === "faustolute@gmail.com";
+      const currentUser = window.firebaseAuth ? window.firebaseAuth.currentUser : null;
+      const userEmail = currentUser && currentUser.email ? currentUser.email.toLowerCase() : "";
+      const userUid = currentUser ? currentUser.uid : "guest";
+      const isAdmin = userEmail === "faustolute@gmail.com";
 
-        // 1. DESTACADOS (Visibles para Suscriptores PRO y Admin)
-        const featuredContainer = document.getElementById('featuredList');
-        featuredContainer.innerHTML = '';
-        Object.keys(UNIVERSAL_PRESETS).forEach(key => {
-            let p = UNIVERSAL_PRESETS[key];
-            featuredContainer.innerHTML += `
-              <div class="bg-brand-panel border border-brand-border/60 p-3 rounded-xl flex items-center justify-between cursor-pointer hover:bg-brand-card transition-colors" onclick="loadPresetFromLibrary('${key}', true)">
-                <div>
-                  <h4 class="text-xs font-bold text-white">${p.title}</h4>
-                  <div class="flex items-center gap-2 mt-1">
-                    <span class="text-[9px] font-mono text-brand-accent bg-brand-accent/10 px-1 rounded border border-brand-accent/20">FEATURED</span>
-                    <span class="text-[9px] text-yellow-400"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></span>
+      const featuredContainer = document.getElementById('featuredList');
+      featuredContainer.innerHTML = '';
+      Object.keys(UNIVERSAL_PRESETS).forEach(key => {
+        let p = UNIVERSAL_PRESETS[key];
+        featuredContainer.innerHTML += `
+          <div class="bg-brand-panel border border-brand-border/60 p-3 rounded-xl flex items-center justify-between cursor-pointer hover:bg-brand-card transition-colors" onclick="loadPresetFromLibrary('${key}', true)">
+            <div>
+              <h4 class="text-xs font-bold text-white">${p.title}</h4>
+              <div class="flex items-center gap-2 mt-1">
+                <span class="text-[9px] font-mono text-brand-accent bg-brand-accent/10 px-1.5 rounded border border-brand-accent/20">FEATURED</span>
+                <span class="text-[9px] font-mono text-slate-400 uppercase">${p.section || 'main'}</span>
+                <span class="text-[9px] text-yellow-400">★★★★★ ${(Number(p.rating) || 5.0).toFixed(1)}</span>
+              </div>
+            </div>
+            <i class="fa-solid fa-chevron-right text-brand-muted text-xs"></i>
+          </div>`;
+      });
+
+      const favContainer = document.getElementById('favoritesList');
+      favContainer.innerHTML = '';
+      let hasFavs = false;
+      let allCachedItemsHtml = '';
+      let totalCachedCount = 0;
+
+      for (let i = 0; i < localStorage.length; i++) {
+        let key = localStorage.key(i);
+        if (key && key.startsWith('GE300_CACHE_')) {
+          try {
+            let p = JSON.parse(localStorage.getItem(key));
+            let isFavForThisUser = Array.isArray(p.favUsers)
+              ? p.favUsers.includes(userUid)
+              : (isAdmin && p.isFav === true);
+
+            if (isFavForThisUser) {
+              hasFavs = true;
+              favContainer.innerHTML += `
+                <div class="bg-brand-panel border border-brand-border/60 p-3 rounded-xl flex items-center justify-between cursor-pointer hover:bg-brand-card transition-colors">
+                  <div class="flex-1" onclick="loadPresetFromLibrary('${key}', false)">
+                    <h4 class="text-xs font-bold text-white truncate max-w-[210px]">${p.title}</h4>
+                    <span class="text-[9px] font-mono text-yellow-400">★ ${(Number(p.rating) || 4.9).toFixed(1)} (${p.votesCount || 1})</span>
                   </div>
-                </div>
-                <i class="fa-solid fa-chevron-right text-brand-muted text-xs"></i>
-              </div>`;
-        });
-
-        // 2. FAVORITOS PRIVADOS DEL USUARIO
-        const favContainer = document.getElementById('favoritesList');
-        favContainer.innerHTML = '';
-        let hasFavs = false;
-        let allCachedItemsHtml = '';
-        let totalCachedCount = 0;
-
-        for (let i = 0; i < localStorage.length; i++) {
-            let key = localStorage.key(i);
-            if (key.startsWith('GE300_CACHE_')) {
-                try {
-                    let p = JSON.parse(localStorage.getItem(key));
-                    let starsHtml = Array(5).fill(0).map((_, idx) => `<i class="fa-solid fa-star ${idx < (p.rating || 0) ? 'text-yellow-400' : 'text-brand-muted/30'}"></i>`).join('');
-
-                    let isFavForThisUser = Array.isArray(p.favUsers)
-                        ? p.favUsers.includes(userUid)
-                        : (isAdmin && p.isFav === true);
-
-                    if (isFavForThisUser) {
-                        hasFavs = true;
-                        favContainer.innerHTML += `
-                          <div class="bg-brand-panel border border-brand-border/60 p-3 rounded-xl flex items-center justify-between cursor-pointer hover:bg-brand-card transition-colors">
-                            <div class="flex-1" onclick="loadPresetFromLibrary('${key}', false)">
-                              <h4 class="text-xs font-bold text-white truncate max-w-[200px]">${p.title}</h4>
-                              <div class="flex items-center gap-2 mt-1"><span class="text-[9px] text-brand-muted">${starsHtml}</span></div>
-                            </div>
-                            <button onclick="deleteFavorite('${key}')" class="p-2 text-brand-muted hover:text-red-500 transition-colors"><i class="fa-solid fa-trash text-xs"></i></button>
-                          </div>`;
-                    }
-
-                    if (isAdmin) {
-                        totalCachedCount++;
-                        allCachedItemsHtml += `
-                          <div class="bg-brand-panel/70 border border-brand-accent/30 p-3 rounded-xl flex items-center justify-between cursor-pointer hover:bg-brand-card transition-colors" onclick="loadPresetFromLibrary('${key}', false)">
-                            <div>
-                              <h4 class="text-xs font-bold text-white">${p.title}</h4>
-                              <span class="text-[9px] font-mono text-brand-accent">KEY: ${key.replace('GE300_CACHE_', '')}</span>
-                            </div>
-                            <i class="fa-solid fa-unlock-keyhole text-brand-accent text-xs"></i>
-                          </div>`;
-                    }
-                } catch(e) {}
+                  <button onclick="deleteFavorite('${key}')" class="p-2 text-brand-muted hover:text-red-500 transition-colors">
+                    <i class="fa-solid fa-trash text-xs"></i>
+                  </button>
+                </div>`;
             }
-        }
 
-        if (!hasFavs) {
-            favContainer.innerHTML = `<p class="text-[11px] text-brand-muted italic bg-brand-card p-3 rounded-lg border border-brand-border/30">No favorites saved yet. Tap the ❤️ icon on any tone to save it here.</p>`;
-        }
-
-        // 3. ADMIN MASTER VAULT (SOLO VISIBLE PARA FAUSTO)
-        let adminVaultEl = document.getElementById('adminMasterVault');
-        if (isAdmin) {
-            if (!adminVaultEl) {
-                adminVaultEl = document.createElement('div');
-                adminVaultEl.id = 'adminMasterVault';
-                adminVaultEl.className = 'space-y-3 pt-4 border-t border-brand-accent/30';
-                document.getElementById('viewLibrary').appendChild(adminVaultEl);
+            if (isAdmin) {
+              totalCachedCount++;
+              allCachedItemsHtml += `
+                <div class="bg-brand-panel/70 border border-brand-accent/30 p-3 rounded-xl flex items-center justify-between cursor-pointer hover:bg-brand-card transition-colors" onclick="loadPresetFromLibrary('${key}', false)">
+                  <div>
+                    <h4 class="text-xs font-bold text-white">${p.title}</h4>
+                    <span class="text-[9px] font-mono text-brand-accent">★ ${(Number(p.rating) || 4.9).toFixed(1)} • KEY: ${key.replace('GE300_CACHE_', '')}</span>
+                  </div>
+                  <i class="fa-solid fa-unlock-keyhole text-brand-accent text-xs"></i>
+                </div>`;
             }
-            adminVaultEl.innerHTML = `
-              <h2 class="text-xs font-bold font-mono text-brand-accent uppercase flex items-center justify-between border-b border-brand-border pb-1">
-                <span><i class="fa-solid fa-vault"></i> Admin Secret Vault (All Tones)</span>
-                <span class="bg-brand-accent text-brand-bg px-1.5 py-0.5 rounded text-[9px]">${totalCachedCount} Tones</span>
-              </h2>
-              <div class="grid grid-cols-1 gap-2.5">
-                ${allCachedItemsHtml || '<p class="text-[11px] text-brand-muted italic">No AI tones in vault yet.</p>'}
-              </div>`;
-        } else if (adminVaultEl) {
-            adminVaultEl.remove();
+          } catch(e) {}
         }
+      }
+
+      if (!hasFavs) {
+        favContainer.innerHTML = `<p class="text-[11px] text-brand-muted italic bg-brand-card p-3 rounded-lg border border-brand-border/30">No favorites saved yet. Tap the ❤️ icon on any tone to save it here.</p>`;
+      }
+
+      let adminVaultEl = document.getElementById('adminMasterVault');
+      if (isAdmin) {
+        if (!adminVaultEl) {
+          adminVaultEl = document.createElement('div');
+          adminVaultEl.id = 'adminMasterVault';
+          adminVaultEl.className = 'space-y-3 pt-4 border-t border-brand-accent/30';
+          document.getElementById('viewLibrary').appendChild(adminVaultEl);
+        }
+        adminVaultEl.innerHTML = `
+          <h2 class="text-xs font-bold font-mono text-brand-accent uppercase flex items-center justify-between border-b border-brand-border pb-1">
+            <span><i class="fa-solid fa-vault"></i> Admin Secret Vault (All GE300 Tones)</span>
+            <span class="bg-brand-accent text-brand-bg px-1.5 py-0.5 rounded text-[9px]">${totalCachedCount} Tones</span>
+          </h2>
+          <div class="grid grid-cols-1 gap-2.5">
+            ${allCachedItemsHtml || '<p class="text-[11px] text-brand-muted italic">No AI tones in vault yet.</p>'}
+          </div>`;
+      } else if (adminVaultEl) {
+        adminVaultEl.remove();
+      }
     }
 
     function deleteFavorite(key) {
-        if(confirm("Remove from favorites?")) {
-            const currentUser = window.firebaseAuth ? window.firebaseAuth.currentUser : null;
-            const userUid = currentUser ? currentUser.uid : "guest";
-            let p = JSON.parse(localStorage.getItem(key));
-            if (Array.isArray(p.favUsers)) {
-                p.favUsers = p.favUsers.filter(id => id !== userUid);
-            }
-            p.isFav = false;
-            localStorage.setItem(key, JSON.stringify(p));
-            renderLibrary();
+      if (confirm("Remove from favorites?")) {
+        const currentUser = window.firebaseAuth ? window.firebaseAuth.currentUser : null;
+        const userUid = currentUser ? currentUser.uid : "guest";
+        let p = JSON.parse(localStorage.getItem(key));
+        if (Array.isArray(p.favUsers)) {
+          p.favUsers = p.favUsers.filter(id => id !== userUid);
         }
+        p.isFav = false;
+        localStorage.setItem(key, JSON.stringify(p));
+        renderLibrary();
+      }
     }
 
     function fuzzyMatchModel(list, query) {
-        if (!query || query === "None") return null; let q = query.toLowerCase().replace(/[^a-z0-9]/g, ''); 
-        return list.find(x => x.name.toLowerCase().replace(/[^a-z0-9]/g, '').includes(q) || q.includes(x.name.toLowerCase().replace(/[^a-z0-9]/g, '')));
+      if (!query || query === "None") return null;
+      let q = query.toLowerCase().replace(/[^a-z0-9]/g, '');
+      return list.find(x => x.name.toLowerCase().replace(/[^a-z0-9]/g, '').includes(q) || q.includes(x.name.toLowerCase().replace(/[^a-z0-9]/g, '')));
     }
 
-    // --- TURBO AI ENGINE WITH GEMINI FLASH ---
-    async function fetchAITone(query, apiKey) {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`;
-        const prompt = `You are a MOOER GE300 expert. Create the guitar tone for: "${query}". Also provide the standardized "ARTIST - SONG TITLE" in a field called "cleanTitle". Use a MAXIMUM of 5 blocks. NEVER include VOL. Return ONLY the 2 or 3 key knobs per block.
-        Catalogs: AMP: ${AMP.map(a=>a.name).join(', ')} | CAB: ${CAB.map(c=>c.name).join(', ')} | DS/OD: ${DS_OD.map(d=>d.name).join(', ')} | WAH: ${WAH.map(w=>w.name).join(', ')} | FXA: ${FXA.map(f=>f.name).join(', ')} | DELAY: ${DELAY.map(d=>d.name).join(', ')} | REVERB: ${REVERB.map(r=>r.name).join(', ')} | COMP: ${COMP.map(c=>c.name).join(', ')}
-        Return ONLY JSON in English: {"cleanTitle": "ARTIST - SONG", "blocks": [{"type": "AMP", "name": "10: J800", "p": {"Gain": 75}}], "pickup": "Neck", "ctrls": ["CTRL 1: Drive"], "desc": "Brief tone info"}`;
+    // --- TURBO AI ENGINE CON RESPALDO AUTOMÁTICO DE MODELOS Y SECCIÓN (INTRO/SOLO) ---
+    async function fetchAITone(query, section, apiKey) {
+      const sectionLabel = section && section !== 'main' ? section.toUpperCase() : 'MAIN TONE';
+      const prompt = `You are a MOOER GE300 expert audio engineer. Create the exact guitar tone for: "${query}" (Requested Section: ${sectionLabel}).
+      If the requested section is INTRO or CLEAN, use clean amp settings (like 102: Jazz 120 with Chorus/Delay/Reverb and Neck pickup). If SOLO or RHYTHM, use appropriate drive/amp settings.
+      Provide the standardized "ARTIST - SONG TITLE (${sectionLabel})" in "cleanTitle". Use a MAXIMUM of 5 blocks. NEVER include VOL. Return ONLY the 2 or 3 key knobs per block.
+      Catalogs: AMP: ${AMP.map(a=>a.name).join(', ')} | CAB: ${CAB.map(c=>c.name).join(', ')} | DS/OD: ${DS_OD.map(d=>d.name).join(', ')} | WAH: ${WAH.map(w=>w.name).join(', ')} | FXA: ${FXA.map(f=>f.name).join(', ')} | DELAY: ${DELAY.map(d=>d.name).join(', ')} | REVERB: ${REVERB.map(r=>r.name).join(', ')} | COMP: ${COMP.map(c=>c.name).join(', ')}
+      Return ONLY JSON in English: {"cleanTitle": "ARTIST - SONG (${sectionLabel})", "section": "${section}", "blocks": [{"type": "AMP", "name": "10: J800", "p": {"Gain": 75, "Treble": 68, "Bass": 60}}], "pickup": "Neck or Bridge", "ctrls": ["CTRL 1: Drive"], "desc": "Brief tone info"}`;
 
-        const response = await fetch(url, {
+      const modelsToTry = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash"];
+      let lastError = null;
+
+      for (const modelName of modelsToTry) {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+        try {
+          const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { responseMimeType: "application/json", temperature: 0.4 } 
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: { responseMimeType: "application/json", temperature: 0.35 }
             })
-        });
+          });
 
-        if (response.ok) {
+          if (response.ok) {
             const data = await response.json();
             let rawText = data.candidates[0].content.parts[0].text;
             const jsonMatch = rawText.match(/\{[\s\S]*\}/);
             if (jsonMatch) rawText = jsonMatch[0];
             return JSON.parse(rawText);
-        } else {
+          } else {
             const errData = await response.json();
-            throw new Error(errData.error?.message || "Google API Error");
+            lastError = new Error(errData.error?.message || `HTTP ${response.status}`);
+            if (response.status !== 404) break;
+          }
+        } catch (err) {
+          lastError = err;
         }
+      }
+      throw lastError || new Error("Google API Error");
     }
 
-    // --- FLUJO DE BÚSQUEDA INTELIGENTE (EVITA GASTAR IA SI YA EXISTE CON OTRO NOMBRE O ERROR DE DEDO) ---
+    // --- FLUJO DE BÚSQUEDA INTELIGENTE ---
     document.getElementById('aiToneForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       
@@ -635,7 +828,6 @@
       const userEmail = currentUser && currentUser.email ? currentUser.email.toLowerCase() : "";
       const isAdmin = userEmail === "faustolute@gmail.com";
       const isUserPro = window.currentUserData && window.currentUserData.isPro === true;
-      
       const generationsUsed = window.currentUserData && window.currentUserData.freeGenerationsUsed !== undefined ? window.currentUserData.freeGenerationsUsed : 0;
       
       if (!isUserPro && !isAdmin && generationsUsed >= 3) {
@@ -647,56 +839,59 @@
       const query = queryInput.value.trim();
       if (!query) return;
 
+      const reqSection = detectSection(query);
       let finalPreset = null;
-      let isUniversal = false; 
+      let isUniversal = false;
 
-      // 1. Buscar en Featured / Universales con tolerancia a errores y acentos
+      // 1. Buscar en Featured / Universales
       for (let key in UNIVERSAL_PRESETS) {
-          if (isSmartPresetMatch(query, UNIVERSAL_PRESETS[key].title)) {
-              currentCacheKey = key;
-              finalPreset = UNIVERSAL_PRESETS[key];
-              isUniversal = true;
-              break;
-          }
+        if (isSmartPresetMatch(query, UNIVERSAL_PRESETS[key])) {
+          currentCacheKey = key;
+          finalPreset = UNIVERSAL_PRESETS[key];
+          isUniversal = true;
+          break;
+        }
       }
 
-      // 2. Buscar en LocalStorage con tolerancia a errores y orden de palabras
+      // 2. Buscar en LocalStorage
       if (!finalPreset) {
-          for (let i = 0; i < localStorage.length; i++) {
-              let key = localStorage.key(i);
-              if (key && key.startsWith('GE300_CACHE_')) {
-                  try {
-                      let parsed = JSON.parse(localStorage.getItem(key));
-                      if (parsed && isSmartPresetMatch(query, parsed.title)) {
-                          currentCacheKey = key;
-                          finalPreset = parsed;
-                          break;
-                      }
-                  } catch(e) {}
+        for (let i = 0; i < localStorage.length; i++) {
+          let key = localStorage.key(i);
+          if (key && key.startsWith('GE300_CACHE_')) {
+            try {
+              let parsed = JSON.parse(localStorage.getItem(key));
+              if (parsed && isSmartPresetMatch(query, parsed)) {
+                currentCacheKey = key;
+                finalPreset = parsed;
+                break;
               }
+            } catch(e) {}
           }
+        }
       }
 
-      // 3. Buscar en la Bóveda Global de Firestore (creados por otros dispositivos)
+      // 3. Buscar en la Bóveda Global de Firestore
       if (!finalPreset && window.globalCloudPresets) {
-          for (let key in window.globalCloudPresets) {
-              let cloudPreset = window.globalCloudPresets[key];
-              if (cloudPreset && isSmartPresetMatch(query, cloudPreset.title)) {
-                  currentCacheKey = key;
-                  finalPreset = cloudPreset;
-                  localStorage.setItem(key, JSON.stringify({ ...cloudPreset, isFav: false }));
-                  break;
-              }
+        for (let key in window.globalCloudPresets) {
+          let cloudPreset = window.globalCloudPresets[key];
+          if (cloudPreset && isSmartPresetMatch(query, cloudPreset)) {
+            currentCacheKey = key;
+            finalPreset = cloudPreset;
+            localStorage.setItem(key, JSON.stringify({ ...cloudPreset, isFav: false }));
+            break;
           }
+        }
       }
 
       if (finalPreset) {
-          await registerSearchUsage();
-          renderPreset(finalPreset, isUniversal);
+        await registerSearchUsage();
+        renderPreset(finalPreset, isUniversal);
       } else {
-          currentCacheKey = 'GE300_CACHE_' + normalizeText(query).replace(/\s+/g, '_');
-          pendingSearchQuery = query;
-          document.getElementById('confirmIaModal').classList.remove('hidden');
+        currentCacheKey = 'GE300_CACHE_' + normalizeText(query).replace(/\s+/g, '_') + (reqSection !== 'main' ? '_' + reqSection : '');
+        pendingSearchQuery = query;
+        pendingSearchSection = reqSection;
+        document.getElementById('confirmModalSubtitle').innerText = `Section: ${reqSection.toUpperCase()} • MOOER GE300 Cloud AI`;
+        document.getElementById('confirmIaModal').classList.remove('hidden');
       }
     });
 
@@ -706,10 +901,9 @@
       const isAdmin = userEmail === "faustolute@gmail.com";
       const isUserPro = window.currentUserData && window.currentUserData.isPro === true;
       
-      if (isUserPro || isAdmin) return; 
+      if (isUserPro || isAdmin) return;
 
       window.currentUserData.freeGenerationsUsed = (window.currentUserData.freeGenerationsUsed || 0) + 1;
-      
       try {
         if (currentUser && window.firebaseDb && window.firestoreDoc && window.firestoreSetDoc) {
           const userRef = window.firestoreDoc(window.firebaseDb, "users", currentUser.uid);
@@ -727,199 +921,273 @@
         const userEmail = currentUser && currentUser.email ? currentUser.email.toLowerCase() : "";
         const isAdmin = userEmail === "faustolute@gmail.com";
         const isUserPro = window.currentUserData && window.currentUserData.isPro === true;
-
-        if (!isUserPro && !isAdmin) {
-          libraryBtn.style.display = 'none'; 
-        } else {
-          libraryBtn.style.display = 'flex'; 
-        }
+        libraryBtn.style.display = (!isUserPro && !isAdmin) ? 'none' : 'flex';
       }
     };
     
-    function cancelIaGeneration() { document.getElementById('confirmIaModal').classList.add('hidden'); pendingSearchQuery = ''; }
-
-    async function confirmIaGeneration() {
-        document.getElementById('confirmIaModal').classList.add('hidden');
-        const query = pendingSearchQuery;
-        if(!query) return;
-        const queryInput = document.getElementById('toneSearchInput');
-        const searchBtn = document.getElementById('searchBtn');
-        queryInput.disabled = true; searchBtn.disabled = true; queryInput.classList.add('opacity-50'); searchBtn.classList.add('opacity-50');
-        document.getElementById('btnText').innerText = "Generating..."; document.getElementById('btnIcon').className = "fa-solid fa-spinner animate-spin";
-        
-        const apiKey = window.cloudGeminiKey || localStorage.getItem('GE300_GEMINI_KEY');
-        let finalPreset = null;
-
-        try {
-            if (apiKey && apiKey.trim() !== '') {
-                const aiData = await fetchAITone(query, apiKey);
-                let parsedBlocks = [];
-                if (aiData.blocks) {
-                    aiData.blocks.forEach(bData => {
-                        if(bData.type === "VOL") return; let targetList = [];
-                        if(bData.type === "COMP") targetList = COMP; else if(bData.type === "WAH") targetList = WAH; else if(bData.type === "FXA") targetList = FXA; else if(bData.type === "DS/OD") targetList = DS_OD; else if(bData.type === "AMP") targetList = AMP; else if(bData.type === "CAB") targetList = CAB; else if(bData.type === "NS") targetList = NS; else if(bData.type === "EQ") targetList = EQ; else if(bData.type === "DELAY") targetList = DELAY; else if(bData.type === "REVERB") targetList = REVERB;
-                        let match = fuzzyMatchModel(targetList, bData.name);
-                        if (match) {
-                            let finalKnobs = { ...match.knobs() }; let displayKnobs = {};
-                            if (bData.p) { for (let k in bData.p) { let realKey = Object.keys(finalKnobs).find(x => x.toLowerCase() === k.toLowerCase()); if (realKey) { finalKnobs[realKey] = bData.p[k]; displayKnobs[realKey] = bData.p[k]; } } }
-                            if(Object.keys(displayKnobs).length === 0) displayKnobs = finalKnobs;
-                            parsedBlocks.push({ type: bData.type, model: match.name, knobs: finalKnobs, displayKnobs: displayKnobs });
-                        }
-                    });
-                }
-                const displayTitle = aiData.cleanTitle ? `AI Preset: ${aiData.cleanTitle.toUpperCase()}` : `AI Preset: ${query.toUpperCase()}`;
-                finalPreset = {
-                    title: displayTitle,
-                    bank: "01A",
-                    desc: `[CLOUD API] ${aiData.desc || ""}`,
-                    pickup: aiData.pickup || "Bridge",
-                    ctrls: aiData.ctrls || [],
-                    rating: 0,
-                    isFav: false,
-                    favUsers: [],
-                    blocks: parsedBlocks
-                };
-
-                // Guardar localmente y también en la Bóveda Global de Firestore para ahorrar IA en futuras búsquedas
-                localStorage.setItem(currentCacheKey, JSON.stringify(finalPreset));
-                window.globalCloudPresets[currentCacheKey] = finalPreset;
-                if (window.firebaseDb && window.firestoreDoc && window.firestoreSetDoc) {
-                    await window.firestoreSetDoc(window.firestoreDoc(window.firebaseDb, "global_presets", currentCacheKey), finalPreset, { merge: true });
-                }
-
-                await registerSearchUsage();
-            } else {
-                throw new Error("Master API Key not configured yet. Log in as Admin (faustolute@gmail.com) and save your Gemini Key once.");
-            }
-        } catch (error) {
-            alert(`Connection or API Key notice:\n\n${error.message}`);
-        } finally {
-            queryInput.disabled = false; searchBtn.disabled = false; queryInput.classList.remove('opacity-50'); searchBtn.classList.remove('opacity-50');
-            document.getElementById('btnText').innerText = "Search"; document.getElementById('btnIcon').className = "fa-solid fa-arrow-right";
-        }
-        if(finalPreset) renderPreset(finalPreset, false);
+    function cancelIaGeneration() {
+      document.getElementById('confirmIaModal').classList.add('hidden');
+      pendingSearchQuery = '';
     }
 
-    function parseKnobValue(valStr) { valStr = String(valStr); let numMatch = valStr.match(/-?\d+(\.\d+)?/); if (!numMatch) return { num: 50, prefix: '', suffix: '' }; let num = parseFloat(numMatch[0]); let idx = valStr.indexOf(numMatch[0]); return { num, prefix: valStr.substring(0, idx), suffix: valStr.substring(idx + numMatch[0].length) }; }
+    async function confirmIaGeneration() {
+      document.getElementById('confirmIaModal').classList.add('hidden');
+      const query = pendingSearchQuery;
+      const section = pendingSearchSection || 'main';
+      if (!query) return;
+
+      const queryInput = document.getElementById('toneSearchInput');
+      const searchBtn = document.getElementById('searchBtn');
+      queryInput.disabled = true; searchBtn.disabled = true;
+      queryInput.classList.add('opacity-50'); searchBtn.classList.add('opacity-50');
+      document.getElementById('btnText').innerText = "Generating...";
+      document.getElementById('btnIcon').className = "fa-solid fa-spinner animate-spin";
+      
+      const apiKey = window.cloudGeminiKey || localStorage.getItem('GE300_GEMINI_KEY');
+      let finalPreset = null;
+
+      try {
+        if (apiKey && apiKey.trim() !== '') {
+          const aiData = await fetchAITone(query, section, apiKey);
+          let parsedBlocks = [];
+          if (aiData.blocks) {
+            aiData.blocks.forEach(bData => {
+              if (bData.type === "VOL") return;
+              let targetList = [];
+              if (bData.type === "COMP") targetList = COMP;
+              else if (bData.type === "WAH") targetList = WAH;
+              else if (bData.type === "FXA") targetList = FXA;
+              else if (bData.type === "DS/OD") targetList = DS_OD;
+              else if (bData.type === "AMP") targetList = AMP;
+              else if (bData.type === "CAB") targetList = CAB;
+              else if (bData.type === "NS") targetList = NS;
+              else if (bData.type === "EQ") targetList = EQ;
+              else if (bData.type === "DELAY") targetList = DELAY;
+              else if (bData.type === "REVERB") targetList = REVERB;
+              let match = fuzzyMatchModel(targetList, bData.name);
+              if (match) {
+                let finalKnobs = { ...match.knobs() };
+                let displayKnobs = {};
+                if (bData.p) {
+                  for (let k in bData.p) {
+                    let realKey = Object.keys(finalKnobs).find(x => x.toLowerCase() === k.toLowerCase());
+                    if (realKey) {
+                      finalKnobs[realKey] = bData.p[k];
+                      displayKnobs[realKey] = bData.p[k];
+                    }
+                  }
+                }
+                if (Object.keys(displayKnobs).length === 0) displayKnobs = finalKnobs;
+                parsedBlocks.push({ type: bData.type, model: match.name, knobs: finalKnobs, displayKnobs: displayKnobs });
+              }
+            });
+          }
+          const displayTitle = aiData.cleanTitle ? `AI Preset: ${aiData.cleanTitle.toUpperCase()}` : `AI Preset: ${query.toUpperCase()}`;
+          finalPreset = {
+            title: displayTitle,
+            section: section,
+            bank: "01A",
+            desc: `[CLOUD API] ${aiData.desc || ""}`,
+            pickup: aiData.pickup || "Bridge",
+            ctrls: aiData.ctrls || [],
+            rating: 4.9,
+            votesCount: 1,
+            isFav: false,
+            favUsers: [],
+            blocks: parsedBlocks
+          };
+
+          localStorage.setItem(currentCacheKey, JSON.stringify(finalPreset));
+          window.globalCloudPresets[currentCacheKey] = finalPreset;
+          if (window.firebaseDb && window.firestoreDoc && window.firestoreSetDoc) {
+            await window.firestoreSetDoc(window.firestoreDoc(window.firebaseDb, "global_presets", currentCacheKey), finalPreset, { merge: true });
+          }
+
+          await registerSearchUsage();
+        } else {
+          throw new Error("Master API Key not configured yet. Log in as Admin (faustolute@gmail.com) and save your Gemini Key once.");
+        }
+      } catch (error) {
+        alert(`Connection or API Key notice:\n\n${error.message}`);
+      } finally {
+        queryInput.disabled = false; searchBtn.disabled = false;
+        queryInput.classList.remove('opacity-50'); searchBtn.classList.remove('opacity-50');
+        document.getElementById('btnText').innerText = "Search";
+        document.getElementById('btnIcon').className = "fa-solid fa-arrow-right text-[10px]";
+      }
+      if (finalPreset) renderPreset(finalPreset, false);
+    }
+
+    function parseKnobValue(valStr) {
+      valStr = String(valStr);
+      let numMatch = valStr.match(/-?\d+(\.\d+)?/);
+      if (!numMatch) return { num: 50, prefix: '', suffix: '' };
+      let num = parseFloat(numMatch[0]);
+      let idx = valStr.indexOf(numMatch[0]);
+      return { num, prefix: valStr.substring(0, idx), suffix: valStr.substring(idx + numMatch[0].length) };
+    }
+
     function renderKnobSVG(label, value, blockType) {
-      let valStr = String(value !== undefined && value !== null ? value : 50); let parsed = parseKnobValue(valStr); let numVal = 50;
-      if (parsed.suffix.includes('dB')) numVal = ((parsed.num + 60) / 120) * 100; else if (parsed.suffix.includes('ms')) numVal = (parsed.num / 2000) * 100; else if (parsed.suffix.includes('Hz')) numVal = (parsed.num / 20000) * 100; else numVal = Math.min(Math.max(parsed.num, 0), 100);
+      let valStr = String(value !== undefined && value !== null ? value : 50);
+      let parsed = parseKnobValue(valStr);
+      let numVal = 50;
+      if (parsed.suffix.includes('dB')) numVal = ((parsed.num + 60) / 120) * 100;
+      else if (parsed.suffix.includes('ms')) numVal = (parsed.num / 2000) * 100;
+      else if (parsed.suffix.includes('Hz')) numVal = (parsed.num / 20000) * 100;
+      else numVal = Math.min(Math.max(parsed.num, 0), 100);
       let strokeDash = (numVal / 100) * 126;
       return `<div class="flex flex-col items-center gap-0.5"><div class="knob-container cursor-ns-resize" data-block-type="${blockType}" data-knob-name="${label}" data-raw-val="${valStr}" onmousedown="handleDragStart(event, this)" ontouchstart="handleDragStart(event, this)"><svg class="w-14 h-14 knob-svg" viewBox="0 0 50 50"><circle cx="25" cy="25" r="20" fill="none" stroke="#26334d" stroke-width="4"/><circle class="dynamic-stroke" cx="25" cy="25" r="20" fill="none" stroke="#00ff66" stroke-width="4" stroke-dasharray="${strokeDash} 126" stroke-linecap="round"/></svg><span class="knob-value-badge">${valStr}</span></div><span class="text-[9px] font-mono font-bold text-brand-muted uppercase text-center max-w-[70px] truncate">${label}</span></div>`;
     }
 
     function renderPreset(preset, isUniversal = false) {
-        isEditMode = false; document.getElementById('mainPresetContainer').classList.add('view-mode'); document.getElementById('mainPresetContainer').classList.remove('edit-mode'); document.getElementById('btnEdit').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> <span>Edit</span>`; document.getElementById('editStatusBadge').innerHTML = `🔒 Safe Mode`; document.getElementById('editStatusBadge').className = "text-[9px] text-brand-accent bg-brand-accent/10 px-2 py-0.5 rounded font-mono border border-brand-accent/20";
-        if(isUniversal) document.getElementById('btnEdit').classList.add('hidden'); else document.getElementById('btnEdit').classList.remove('hidden');
-        document.getElementById('presetBank').innerText = preset.bank || "01A"; document.getElementById('songTitle').innerText = preset.title; document.getElementById('soundDescription').innerText = preset.desc; document.getElementById('pickupRec').innerText = preset.pickup || "Bridge";
-        if(preset.ctrls && preset.ctrls.length > 0) document.getElementById('ctrlAssignments').innerHTML = preset.ctrls.map(c => `<div>${c}</div>`).join(''); else document.getElementById('ctrlAssignments').innerHTML = `<div class="text-brand-muted/50 italic">No assignments</div>`;
-        
-        const currentUser = window.firebaseAuth ? window.firebaseAuth.currentUser : null;
-        const userUid = currentUser ? currentUser.uid : "guest";
-        const isAdmin = currentUser && currentUser.email && currentUser.email.toLowerCase() === "faustolute@gmail.com";
-        const isFavNow = Array.isArray(preset.favUsers) ? preset.favUsers.includes(userUid) : (isAdmin && preset.isFav === true);
+      isEditMode = false;
+      document.getElementById('mainPresetContainer').classList.add('view-mode');
+      document.getElementById('mainPresetContainer').classList.remove('edit-mode');
+      document.getElementById('btnEdit').innerHTML = `<i class="fa-solid fa-pen-to-square"></i> <span>Edit</span>`;
+      document.getElementById('editStatusBadge').innerHTML = `🔒 Safe Mode`;
+      document.getElementById('editStatusBadge').className = "text-[9px] text-brand-accent bg-brand-accent/10 px-2 py-0.5 rounded font-mono border border-brand-accent/20";
+      if (isUniversal) document.getElementById('btnEdit').classList.add('hidden');
+      else document.getElementById('btnEdit').classList.remove('hidden');
 
-        updateStarsUI(preset.rating || 0);
-        updateFavUI(isFavNow);
+      document.getElementById('presetBank').innerText = preset.bank || "01A";
+      document.getElementById('presetSectionTag').innerText = (preset.section || detectSection(preset.title) || "main").toUpperCase();
+      document.getElementById('songTitle').innerText = preset.title;
+      document.getElementById('soundDescription').innerText = preset.desc;
+      document.getElementById('pickupRec').innerText = preset.pickup || "Bridge";
 
-        if (preset.blocks) preset.blocks.sort((a, b) => { let idxA = BLOCK_ORDER.indexOf(a.type); let idxB = BLOCK_ORDER.indexOf(b.type); return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB); });
-        const blocksContainer = document.getElementById('effectBlocksContainer'); blocksContainer.innerHTML = '';
-        preset.blocks.forEach(block => {
-          const blockEl = document.createElement('div'); blockEl.className = "bg-brand-bg/90 rounded-xl p-2.5 border border-brand-border/60 space-y-2";
-          let knobsToRender = block.displayKnobs ? block.displayKnobs : block.knobs; let knobsHTML = Object.entries(knobsToRender).map(([k, v]) => renderKnobSVG(k, v, block.type)).join('');
-          blockEl.innerHTML = `<div class="flex items-center justify-between border-b border-brand-border/40 pb-1.5"><span class="text-[10px] font-bold font-mono text-brand-accent uppercase bg-brand-accent/10 px-1.5 py-0.5 rounded border border-brand-accent/20">${block.type}</span><span class="text-xs font-semibold text-brand-text">${block.model}</span></div><div class="flex items-center justify-around flex-wrap gap-1.5 pt-0.5">${knobsHTML}</div>`;
-          blocksContainer.appendChild(blockEl);
+      if (preset.ctrls && preset.ctrls.length > 0) {
+        document.getElementById('ctrlAssignments').innerHTML = preset.ctrls.map(c => `<div>${c}</div>`).join('');
+      } else {
+        document.getElementById('ctrlAssignments').innerHTML = `<div class="text-brand-muted/50 italic">No assignments</div>`;
+      }
+      
+      const currentUser = window.firebaseAuth ? window.firebaseAuth.currentUser : null;
+      const userUid = currentUser ? currentUser.uid : "guest";
+      const isAdmin = currentUser && currentUser.email && currentUser.email.toLowerCase() === "faustolute@gmail.com";
+      const isFavNow = Array.isArray(preset.favUsers) ? preset.favUsers.includes(userUid) : (isAdmin && preset.isFav === true);
+
+      renderInteractiveStars(preset);
+      updateFavUI(isFavNow);
+
+      if (preset.blocks) {
+        preset.blocks.sort((a, b) => {
+          let idxA = BLOCK_ORDER.indexOf(a.type);
+          let idxB = BLOCK_ORDER.indexOf(b.type);
+          return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
         });
+      }
+      const blocksContainer = document.getElementById('effectBlocksContainer');
+      blocksContainer.innerHTML = '';
+      (preset.blocks || []).forEach(block => {
+        const blockEl = document.createElement('div');
+        blockEl.className = "bg-brand-bg/90 rounded-xl p-2.5 border border-brand-border/60 space-y-2";
+        let knobsToRender = block.displayKnobs ? block.displayKnobs : block.knobs;
+        let knobsHTML = Object.entries(knobsToRender).map(([k, v]) => renderKnobSVG(k, v, block.type)).join('');
+        blockEl.innerHTML = `<div class="flex items-center justify-between border-b border-brand-border/40 pb-1.5"><span class="text-[10px] font-bold font-mono text-brand-accent uppercase bg-brand-accent/10 px-1.5 py-0.5 rounded border border-brand-accent/20">${block.type}</span><span class="text-xs font-semibold text-brand-text">${block.model}</span></div><div class="flex items-center justify-around flex-wrap gap-1.5 pt-0.5">${knobsHTML}</div>`;
+        blocksContainer.appendChild(blockEl);
+      });
     }
 
+    // --- EDICIÓN TÁCTIL DE PERILLAS ---
     let draggingKnob = null; let startY = 0; let initialNum = 0;
-    function updateKnobVisual(knobEl, valStr) { let parsed = parseKnobValue(valStr); let numVal = 50; if (parsed.suffix.includes('dB')) numVal = ((parsed.num + 60) / 120) * 100; else if (parsed.suffix.includes('ms')) numVal = (parsed.num / 2000) * 100; else if (parsed.suffix.includes('Hz')) numVal = (parsed.num / 20000) * 100; else numVal = parsed.num; numVal = Math.max(0, Math.min(100, numVal)); knobEl.querySelector('.knob-value-badge').innerText = valStr; knobEl.querySelector('.dynamic-stroke').setAttribute('stroke-dasharray', `${(numVal / 100) * 126} 126`); knobEl.dataset.rawVal = valStr; }
-    function handleDragStart(e, knobEl) { if(!isEditMode) return; draggingKnob = knobEl; startY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY; initialNum = parseKnobValue(knobEl.dataset.rawVal).num; document.body.style.userSelect = 'none'; }
-    function handleDragMove(e) { if (!draggingKnob || !isEditMode) return; let deltaY = startY - (e.type.includes('mouse') ? e.clientY : e.touches[0].clientY); let parsed = parseKnobValue(draggingKnob.dataset.rawVal); let newVal = initialNum + (deltaY * 0.5); if (parsed.suffix.includes('ms')) newVal = Math.max(0, Math.min(2000, newVal)); else if (parsed.suffix.includes('dB')) newVal = Math.max(-60, Math.min(60, newVal)); else if (parsed.suffix.includes('Hz')) newVal = Math.max(20, Math.min(20000, newVal)); else newVal = Math.max(0, Math.min(100, newVal)); if(Number.isInteger(initialNum) && !parsed.suffix.includes('dB')) newVal = Math.round(newVal); else newVal = newVal.toFixed(1); updateKnobVisual(draggingKnob, parsed.prefix + newVal + parsed.suffix); }
-    function handleDragEnd() { if(draggingKnob && isEditMode && !UNIVERSAL_PRESETS[currentCacheKey]) { let bType = draggingKnob.dataset.blockType; let kName = draggingKnob.dataset.knobName; let rVal = draggingKnob.dataset.rawVal; if (currentCacheKey) { let cached = JSON.parse(localStorage.getItem(currentCacheKey)); if (cached && cached.blocks) { let bIdx = cached.blocks.findIndex(b => b.type === bType); if (bIdx !== -1) { let parsed = parseKnobValue(rVal); cached.blocks[bIdx].knobs[kName] = (!parsed.prefix && !parsed.suffix) ? parsed.num : rVal; if(cached.blocks[bIdx].displayKnobs && cached.blocks[bIdx].displayKnobs[kName] !== undefined) cached.blocks[bIdx].displayKnobs[kName] = cached.blocks[bIdx].knobs[kName]; localStorage.setItem(currentCacheKey, JSON.stringify(cached)); } } } } draggingKnob = null; document.body.style.userSelect = ''; }
-    document.addEventListener('mousemove', handleDragMove); document.addEventListener('mouseup', handleDragEnd); document.addEventListener('touchmove', handleDragMove, {passive: false}); document.addEventListener('touchend', handleDragEnd);
-
-    function ratePreset(stars) { if(UNIVERSAL_PRESETS[currentCacheKey]) { alert("Featured Presets are read-only."); return; } updateStarsUI(stars); let cached = JSON.parse(localStorage.getItem(currentCacheKey)); if(cached) { cached.rating = stars; localStorage.setItem(currentCacheKey, JSON.stringify(cached)); } }
-    function updateStarsUI(stars) { let icons = document.getElementById('ratingStars').children; for(let i=0; i<5; i++) icons[i].className = `fa-solid fa-star cursor-pointer transition-colors ${i < stars ? 'text-yellow-400' : 'hover:text-yellow-400'}`; }
-    
-    function toggleFavorite() {
-        if(UNIVERSAL_PRESETS[currentCacheKey]) { alert("Already in your Featured Library."); return; }
-        if(!currentCacheKey) return;
-        let cached = JSON.parse(localStorage.getItem(currentCacheKey));
-        if(!cached) return;
-        const currentUser = window.firebaseAuth ? window.firebaseAuth.currentUser : null;
-        const userUid = currentUser ? currentUser.uid : "guest";
-        if (!Array.isArray(cached.favUsers)) cached.favUsers = [];
-        const isCurrentlyFav = cached.favUsers.includes(userUid);
-        if (isCurrentlyFav) {
-            cached.favUsers = cached.favUsers.filter(id => id !== userUid);
-            cached.isFav = false;
-        } else {
-            cached.favUsers.push(userUid);
-            cached.isFav = true;
-        }
-        localStorage.setItem(currentCacheKey, JSON.stringify(cached));
-        updateFavUI(!isCurrentlyFav);
+    function updateKnobVisual(knobEl, valStr) {
+      let parsed = parseKnobValue(valStr);
+      let numVal = 50;
+      if (parsed.suffix.includes('dB')) numVal = ((parsed.num + 60) / 120) * 100;
+      else if (parsed.suffix.includes('ms')) numVal = (parsed.num / 2000) * 100;
+      else if (parsed.suffix.includes('Hz')) numVal = (parsed.num / 20000) * 100;
+      else numVal = parsed.num;
+      numVal = Math.max(0, Math.min(100, numVal));
+      knobEl.querySelector('.knob-value-badge').innerText = valStr;
+      knobEl.querySelector('.dynamic-stroke').setAttribute('stroke-dasharray', `${(numVal / 100) * 126} 126`);
+      knobEl.dataset.rawVal = valStr;
     }
 
-    function updateFavUI(isFav) { let icon = document.getElementById('favIcon'); let btn = document.getElementById('btnFav'); if(isFav) { icon.className = "fa-solid fa-heart"; btn.classList.add('text-red-500'); btn.classList.remove('text-brand-muted'); } else { icon.className = "fa-regular fa-heart"; btn.classList.remove('text-red-500'); btn.classList.add('text-brand-muted'); } }
+    function handleDragStart(e, knobEl) {
+      if (!isEditMode) return;
+      draggingKnob = knobEl;
+      startY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+      initialNum = parseKnobValue(knobEl.dataset.rawVal).num;
+      document.body.style.userSelect = 'none';
+    }
 
-    window.addEventListener('DOMContentLoaded', () => { window.updateApiStatus(); renderPreset(UNIVERSAL_PRESETS["ge300_univ_soda_ligera"], true); });
-      // ============================================================================
-    // SISTEMA DE VOTACIÓN POR ESTRELLAS (1-5 ★) Y RANKING "FEATURED" AUTOMÁTICO
-    // ============================================================================
+    function handleDragMove(e) {
+      if (!draggingKnob || !isEditMode) return;
+      let deltaY = startY - (e.type.includes('mouse') ? e.clientY : e.touches[0].clientY);
+      let parsed = parseKnobValue(draggingKnob.dataset.rawVal);
+      let newVal = initialNum + (deltaY * 0.5);
+      if (parsed.suffix.includes('ms')) newVal = Math.max(0, Math.min(2000, newVal));
+      else if (parsed.suffix.includes('dB')) newVal = Math.max(-60, Math.min(60, newVal));
+      else if (parsed.suffix.includes('Hz')) newVal = Math.max(20, Math.min(20000, newVal));
+      else newVal = Math.max(0, Math.min(100, newVal));
+      if (Number.isInteger(initialNum) && !parsed.suffix.includes('dB')) newVal = Math.round(newVal);
+      else newVal = newVal.toFixed(1);
+      updateKnobVisual(draggingKnob, parsed.prefix + newVal + parsed.suffix);
+    }
 
-    // 1. Encuentra o crea automáticamente la barra de 5 estrellas debajo del título
-    window.renderInteractiveStars = function(preset) {
-      if (!preset) return;
-
-      let starsContainer = document.getElementById('presetStars');
-
-      // Si no tiene el ID presetStars, lo buscamos automáticamente junto a los iconos de estrella o debajo de presetTitle
-      if (!starsContainer) {
-        const starIcon = document.querySelector('#viewSearch .fa-star');
-        if (starIcon && starIcon.parentElement) {
-          starsContainer = starIcon.parentElement;
-          starsContainer.id = 'presetStars';
-          starsContainer.className = 'flex items-center text-yellow-400 text-sm gap-1 cursor-pointer select-none';
-        } else {
-          const titleEl = document.getElementById('presetTitle');
-          if (titleEl && titleEl.parentElement) {
-            starsContainer = document.createElement('div');
-            starsContainer.id = 'presetStars';
-            starsContainer.className = 'flex items-center text-yellow-400 text-sm gap-1 cursor-pointer select-none mt-1';
-            titleEl.insertAdjacentElement('afterend', starsContainer);
+    function handleDragEnd() {
+      if (draggingKnob && isEditMode && !UNIVERSAL_PRESETS[currentCacheKey]) {
+        let bType = draggingKnob.dataset.blockType;
+        let kName = draggingKnob.dataset.knobName;
+        let rVal = draggingKnob.dataset.rawVal;
+        if (currentCacheKey) {
+          let cached = JSON.parse(localStorage.getItem(currentCacheKey));
+          if (cached && cached.blocks) {
+            let bIdx = cached.blocks.findIndex(b => b.type === bType);
+            if (bIdx !== -1) {
+              let parsed = parseKnobValue(rVal);
+              cached.blocks[bIdx].knobs[kName] = (!parsed.prefix && !parsed.suffix) ? parsed.num : rVal;
+              if (cached.blocks[bIdx].displayKnobs && cached.blocks[bIdx].displayKnobs[kName] !== undefined) {
+                cached.blocks[bIdx].displayKnobs[kName] = cached.blocks[bIdx].knobs[kName];
+              }
+              localStorage.setItem(currentCacheKey, JSON.stringify(cached));
+            }
           }
         }
       }
+      draggingKnob = null;
+      document.body.style.userSelect = '';
+    }
 
-      if (!starsContainer) return;
+    document.addEventListener('mousemove', handleDragMove);
+    document.addEventListener('mouseup', handleDragEnd);
+    document.addEventListener('touchmove', handleDragMove, { passive: false });
+    document.addEventListener('touchend', handleDragEnd);
 
-      const currentRating = Number(preset.rating) || 4.8;
+    // --- VOTACIÓN INTERACTIVA POR ESTRELLAS CON DECIMALES (4.9 (1)) IGUAL QUE LINE 6 POD GO ---
+    function getActivePresetObject() {
+      if (UNIVERSAL_PRESETS[currentCacheKey]) return UNIVERSAL_PRESETS[currentCacheKey];
+      const localRaw = localStorage.getItem(currentCacheKey);
+      if (localRaw) {
+        try { return JSON.parse(localRaw); } catch(e) {}
+      }
+      return window.globalCloudPresets[currentCacheKey] || null;
+    }
+
+    function renderInteractiveStars(preset) {
+      const container = document.getElementById('ratingStars');
+      if (!container || !preset) return;
+      const currentRating = (preset.rating && Number(preset.rating) > 0) ? Number(preset.rating) : 4.9;
       const votesCount = Number(preset.votesCount) || 1;
       const roundedStars = Math.round(currentRating);
 
-      let starsHtml = '';
+      let html = '';
       for (let i = 1; i <= 5; i++) {
         const isFilled = i <= roundedStars;
-        starsHtml += `<span onclick="window.rateCurrentPreset(${i})" class="hover:scale-125 active:scale-95 transition-transform px-0.5 text-base ${isFilled ? 'text-yellow-400' : 'text-gray-600'}">★</span>`;
+        html += `<i onclick="ratePreset(${i})" class="fa-solid fa-star cursor-pointer hover:scale-125 transition-transform ${isFilled ? 'text-yellow-400' : 'text-slate-700'}"></i>`;
       }
+      html += `<span class="text-[10px] text-brand-muted font-mono ml-1.5">${currentRating.toFixed(1)} (${votesCount})</span>`;
+      container.innerHTML = html;
+    }
 
-      starsHtml += `<span class="text-[11px] text-gray-400 font-mono ml-1.5">${currentRating.toFixed(1)} (${votesCount})</span>`;
-      starsContainer.innerHTML = starsHtml;
-    };
+    async function ratePreset(starsGiven) {
+      let preset = getActivePresetObject();
+      if (!preset) return;
 
-    // 2. Guarda el voto del usuario y lo sincroniza con Firebase (tones_vault)
-    window.rateCurrentPreset = async function(starsGiven) {
-      const key = typeof currentPresetKey !== 'undefined' ? currentPresetKey : null;
-      if (!key || !presetsData[key]) return;
-
-      const preset = presetsData[key];
-      const storageVoteKey = `voted_${key}`;
-
-      const prevRating = Number(preset.rating) || 4.8;
+      const voteKey = `ge300_voted_${currentCacheKey}`;
+      const prevRating = (preset.rating && Number(preset.rating) > 0) ? Number(preset.rating) : 4.9;
       const prevVotes = Number(preset.votesCount) || 1;
-      const alreadyVoted = localStorage.getItem(storageVoteKey);
+      const alreadyVoted = localStorage.getItem(voteKey);
 
       let newVotes = alreadyVoted ? prevVotes : prevVotes + 1;
       let newRating = alreadyVoted
@@ -927,111 +1195,77 @@
         : ((prevRating * prevVotes) + starsGiven) / newVotes;
 
       newRating = Math.min(5, Math.max(1, Number(newRating.toFixed(2))));
-
       preset.rating = newRating;
       preset.votesCount = newVotes;
-      preset.isFeatured = newRating >= 4.0;
-      localStorage.setItem(storageVoteKey, String(starsGiven));
+      localStorage.setItem(voteKey, String(starsGiven));
 
-      window.renderInteractiveStars(preset);
+      renderInteractiveStars(preset);
 
-      try {
-        const localCache = JSON.parse(localStorage.getItem('mooer_ai_cache_v3') || '{}');
-        localCache[key] = preset;
-        localStorage.setItem('mooer_ai_cache_v3', JSON.stringify(localCache));
-
-        if (window.firebaseDb && window.firestoreDoc && window.firestoreSetDoc) {
-          const docId = key.toLowerCase().replace(/[^a-z0-9_-]/g, '_').substring(0, 80);
-          const toneRef = window.firestoreDoc(window.firebaseDb, "tones_vault", docId);
-          await window.firestoreSetDoc(toneRef, {
-            ...preset,
-            presetKey: key,
-            rating: newRating,
-            votesCount: newVotes,
-            isFeatured: newRating >= 4.0,
-            updatedAt: new Date().toISOString()
-          }, { merge: true });
-        }
-      } catch (e) {
-        console.warn("Error sincronizando voto:", e);
+      if (!UNIVERSAL_PRESETS[currentCacheKey]) {
+        localStorage.setItem(currentCacheKey, JSON.stringify(preset));
+        window.globalCloudPresets[currentCacheKey] = preset;
+        try {
+          if (window.firebaseDb && window.firestoreDoc && window.firestoreSetDoc) {
+            await window.firestoreSetDoc(window.firestoreDoc(window.firebaseDb, "global_presets", currentCacheKey), {
+              rating: newRating,
+              votesCount: newVotes
+            }, { merge: true });
+          }
+        } catch (e) { console.warn("Error sincronizando voto:", e); }
       }
-    };
-
-    // 3. Conectamos renderPreset para que pinte las estrellas interactivas siempre
-    const _origRenderPresetStars = window.renderPreset || (typeof renderPreset === 'function' ? renderPreset : null);
-    if (typeof _origRenderPresetStars === 'function') {
-      window.renderPreset = renderPreset = function(key) {
-        _origRenderPresetStars(key);
-        if (presetsData[key]) {
-          window.renderInteractiveStars(presetsData[key]);
-        }
-      };
     }
-
-    // 4. Pestaña "Featured" dinámica con todos los tonos de la nube y fábrica ordenados por estrellas
-    const _origRenderLibStars = window.renderLibraryList || (typeof renderLibraryList === 'function' ? renderLibraryList : null);
-    window.renderLibraryList = renderLibraryList = function() {
-      const container = document.getElementById('libraryListContainer');
-      if (!container) return;
-
-      if (typeof currentLibraryTab !== 'undefined' && currentLibraryTab === 'featured') {
-        const allKeys = Object.keys(presetsData);
-        const featuredKeys = allKeys.filter(k => {
-          const p = presetsData[k];
-          const r = Number(p.rating) || 4.8;
-          return r >= 4.0 || p.isFeatured !== false;
-        });
-
-        featuredKeys.sort((a, b) => {
-          const rA = Number(presetsData[a].rating) || 4.8;
-          const rB = Number(presetsData[b].rating) || 4.8;
-          if (rB !== rA) return rB - rA;
-          return (Number(presetsData[b].votesCount) || 1) - (Number(presetsData[a].votesCount) || 1);
-        });
-
-        const topKeys = featuredKeys.slice(0, 30);
-
-        if (topKeys.length === 0) {
-          container.innerHTML = `<p class="text-xs text-gray-500 text-center py-8">No featured tones yet.</p>`;
-          return;
-        }
-
-        container.innerHTML = topKeys.map((key, idx) => {
-          const p = presetsData[key];
-          const rating = (Number(p.rating) || 4.8).toFixed(1);
-          const votes = Number(p.votesCount) || 1;
-          const cleanTitle = (p.title || key).replace(/^Preset IA:\s*/i, '');
-          return `
-            <div onclick="selectPresetFromLibrary('${key}')" class="p-3.5 rounded-xl bg-brand-card border border-brand-border hover:border-brand-accent/50 cursor-pointer transition-all flex items-center justify-between group mb-2.5">
-              <div class="flex items-center gap-3 min-w-0">
-                <div class="w-8 h-8 rounded-lg bg-brand-accent/10 border border-brand-accent/30 flex items-center justify-center text-brand-accent font-mono text-xs font-bold shrink-0">
-                  #${idx + 1}
-                </div>
-                <div class="min-w-0">
-                  <h4 class="font-bold text-sm text-white truncate group-hover:text-brand-accent transition-colors">${cleanTitle}</h4>
-                  <p class="text-[11px] text-gray-400 truncate">${p.amp?.name || 'Custom Rig'} • ${p.pickup || 'Standard'}</p>
-                </div>
-              </div>
-              <div class="flex flex-col items-end shrink-0 ml-3">
-                <span class="text-xs font-bold text-yellow-400 flex items-center gap-1">★ ${rating}</span>
-                <span class="text-[10px] text-gray-500 font-mono">${votes} ${votes === 1 ? 'vote' : 'votes'}</span>
-              </div>
-            </div>
-          `;
-        }).join('');
+    
+    function toggleFavorite() {
+      if (UNIVERSAL_PRESETS[currentCacheKey]) {
+        alert("Already in your Featured Library.");
         return;
       }
-
-      if (typeof _origRenderLibStars === 'function') {
-        _origRenderLibStars();
+      if (!currentCacheKey) return;
+      let cached = JSON.parse(localStorage.getItem(currentCacheKey));
+      if (!cached) return;
+      const currentUser = window.firebaseAuth ? window.firebaseAuth.currentUser : null;
+      const userUid = currentUser ? currentUser.uid : "guest";
+      if (!Array.isArray(cached.favUsers)) cached.favUsers = [];
+      const isCurrentlyFav = cached.favUsers.includes(userUid);
+      if (isCurrentlyFav) {
+        cached.favUsers = cached.favUsers.filter(id => id !== userUid);
+        cached.isFav = false;
+      } else {
+        cached.favUsers.push(userUid);
+        cached.isFav = true;
       }
-    };
+      localStorage.setItem(currentCacheKey, JSON.stringify(cached));
+      updateFavUI(!isCurrentlyFav);
+    }
 
-    setTimeout(() => {
-      if (typeof currentPresetKey !== 'undefined' && presetsData[currentPresetKey]) {
-        window.renderInteractiveStars(presetsData[currentPresetKey]);
+    function updateFavUI(isFav) {
+      let icon = document.getElementById('favIcon');
+      let btn = document.getElementById('btnFav');
+      if (isFav) {
+        icon.className = "fa-solid fa-heart";
+        btn.classList.add('text-red-500');
+        btn.classList.remove('text-brand-muted');
+      } else {
+        icon.className = "fa-regular fa-heart";
+        btn.classList.remove('text-red-500');
+        btn.classList.add('text-brand-muted');
       }
-    }, 600);
+    }
+
+    function openBpmTool() {
+      const bpm = prompt("MOOER GE300 Delay Calculator — Enter song BPM:", "120");
+      if (!bpm || isNaN(bpm)) return;
+      const b = Number(bpm);
+      const quarter = Math.round(60000 / b);
+      const dottedEighth = Math.round(quarter * 0.75);
+      const eighth = Math.round(quarter * 0.5);
+      alert(`MOOER GE300 Delay Times for ${b} BPM:\n\n• 1/4 Note: ${quarter} ms\n• 1/8 Dotted (U2/Cerati): ${dottedEighth} ms\n• 1/8 Note: ${eighth} ms`);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      window.updateApiStatus();
+      renderPreset(UNIVERSAL_PRESETS["ge300_univ_soda_ligera"], true);
+    });
   </script>
 </body>
 </html>

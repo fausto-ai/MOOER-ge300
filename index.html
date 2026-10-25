@@ -4,7 +4,7 @@
   <meta name="google-site-verification" content="qj5xwtUOyglEfxxDf1hg-auK39f_Fo1MZeZgFcxk2_U" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>MOOER GE300 Pro AI Tone Studio v9.0</title>
+  <title>MOOER GE300 Pro AI Tone Studio v9.2</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
@@ -42,6 +42,11 @@
     .edit-mode .dynamic-stroke { stroke: #00ff66; filter: drop-shadow(0 0 4px rgba(0, 255, 102, 0.4)); }
     .view-mode .dynamic-stroke { stroke: #00cc52; }
     .view-mode .knob-container { cursor: default !important; }
+    @keyframes pulseGold {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.35); }
+      50% { box-shadow: 0 0 12px 2px rgba(251, 191, 36, 0.55); }
+    }
+    .pro-glow { animation: pulseGold 2.8s infinite; }
   </style>
 
   <!-- FIREBASE SECURITY GUARD, GLOBAL VAULT & SMART SYNC -->
@@ -79,7 +84,12 @@
       if (!user) {
         window.location.href = "login.html";
       } else {
-        const isAdmin = user.email && user.email.toLowerCase() === "faustolute@gmail.com";
+        const emailLower = user.email ? user.email.toLowerCase() : "";
+        const isAdmin = emailLower === "faustolute@gmail.com";
+
+        if (emailLower) {
+          localStorage.setItem("mooer_user_email", emailLower);
+        }
 
         const keyBtn = document.getElementById('keyBtn');
         if (keyBtn) {
@@ -102,6 +112,7 @@
             };
             await setDoc(userRef, window.currentUserData);
           }
+          localStorage.setItem("mooer_pro_status", window.currentUserData.isPro ? "true" : "false");
           if (typeof window.updateLibraryVisibility === 'function') {
             window.updateLibraryVisibility();
           }
@@ -139,7 +150,6 @@
             if (!existingLocal) {
               localStorage.setItem(docSnap.id, JSON.stringify({ ...data, isFav: false, favUsers: [] }));
             } else {
-              // Actualizar rating y votos desde la nube manteniendo favoritos locales
               try {
                 const parsedLocal = JSON.parse(existingLocal);
                 parsedLocal.rating = data.rating || parsedLocal.rating || 4.9;
@@ -186,8 +196,8 @@
 </head>
 <body class="flex flex-col h-[100dvh] overflow-hidden font-sans">
 
-  <!-- TOP HEADER -->
-  <header class="bg-brand-panel border-b border-brand-border px-4 py-3 flex items-center justify-between shrink-0 z-10">
+  <!-- TOP HEADER CON BOTÓN ELEGANTE PRO -->
+  <header class="bg-brand-panel border-b border-brand-border px-3.5 py-3 flex items-center justify-between shrink-0 z-10">
     <div class="flex items-center gap-2.5">
       <div class="w-8 h-8 rounded-lg bg-brand-accent/10 border border-brand-accent/30 flex items-center justify-center text-brand-accent shrink-0">
         <i class="fa-solid fa-guitar text-sm"></i>
@@ -203,9 +213,15 @@
       <button type="button" onclick="toggleApiKeyModal()" title="Configure Master API Key" style="display:none;" class="p-2 rounded-lg bg-brand-border/40 hover:bg-brand-border text-brand-text transition-colors cursor-pointer" id="keyBtn">
         <i class="fa-solid fa-key text-xs" id="keyIcon"></i>
       </button>
-      <span class="text-[10px] font-mono text-brand-accent font-bold bg-brand-accent/10 px-2.5 py-1 rounded-md border border-brand-accent/30 whitespace-nowrap">AI STUDIO</span>
-      <button id="logout-btn" class="text-xs text-brand-muted hover:text-brand-accent flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap">
-        <i class="fa-solid fa-right-from-bracket"></i> <span class="hidden sm:inline">Sign Out</span>
+
+      <!-- BOTÓN SUPERIOR ELEGANTE PARA VOLVERSE PREMIUM -->
+      <a href="premium.html" id="headerProBtn" class="pro-glow text-[10px] font-mono font-extrabold bg-gradient-to-r from-amber-400 via-yellow-300 to-emerald-400 text-slate-950 px-2.5 py-1 rounded-lg flex items-center gap-1 whitespace-nowrap shadow-md hover:brightness-110 transition-all">
+        <i class="fa-solid fa-crown text-[10px]"></i>
+        <span id="headerProText">GO PRO</span>
+      </a>
+
+      <button id="logout-btn" class="text-xs text-brand-muted hover:text-brand-accent flex items-center gap-1 px-2 py-1.5 rounded-lg transition-colors whitespace-nowrap" title="Sign Out">
+        <i class="fa-solid fa-right-from-bracket"></i>
       </button>
     </div>
   </header>
@@ -274,9 +290,12 @@
         </div>
 
         <div class="space-y-3">
-          <h3 class="text-[11px] font-mono uppercase text-brand-muted font-bold flex items-center gap-1.5">
-            <i class="fa-solid fa-diagram-project text-brand-accent"></i> GE300 Hardware Chain
-          </h3>
+          <div class="flex items-center justify-between">
+            <h3 class="text-[11px] font-mono uppercase text-brand-muted font-bold flex items-center gap-1.5">
+              <i class="fa-solid fa-diagram-project text-brand-accent"></i> GE300 Hardware Chain
+            </h3>
+            <span class="text-[9px] font-mono text-brand-accent/80" id="blockCountBadge">Full Rig</span>
+          </div>
           <div id="effectBlocksContainer" class="space-y-2.5"></div>
         </div>
 
@@ -340,9 +359,9 @@
         </div>
       </div>
       <p class="text-xs text-brand-muted leading-relaxed">
-        This specific song or section is not in the global vault yet. Would you like the Cloud AI Engine to build it from scratch?
+        This specific song or section is not in the global vault yet. Would you like the Cloud AI Engine to build the complete multi-block rig from scratch?
         <br><br>
-        <span class="text-brand-accent font-semibold"><i class="fa-solid fa-bolt"></i> Flash Turbo Engine (2 to 4 sec).</span>
+        <span class="text-brand-accent font-semibold"><i class="fa-solid fa-bolt"></i> Flash Turbo Engine (Up to 8 Hardware Blocks).</span>
       </p>
       <div class="flex gap-3 pt-2">
         <button type="button" onclick="cancelIaGeneration()" class="flex-1 bg-brand-panel border border-brand-border text-white font-bold text-xs py-2.5 rounded-xl hover:bg-brand-border transition-colors">
@@ -379,45 +398,104 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION BAR (4 BOTONES IGUAL QUE LINE 6 POD GO) -->
-  <nav class="bg-brand-panel border-t border-brand-border px-4 py-2 flex justify-around shrink-0 text-center z-20 w-full relative">
-    <button class="flex flex-col items-center gap-0.5 text-brand-accent w-16" id="navSearch" onclick="switchTab('search')">
+  <!-- BOTTOM NAVIGATION BAR CON EL BOTÓN ELEGANTE PRO -->
+  <nav class="bg-brand-panel border-t border-brand-border px-2 py-2 flex justify-around items-center shrink-0 text-center z-20 w-full relative">
+    <button class="flex flex-col items-center gap-0.5 text-brand-accent w-14" id="navSearch" onclick="switchTab('search')">
       <i class="fa-solid fa-sliders text-base"></i>
       <span class="text-[9px] font-bold">Tone AI</span>
     </button>
     
-    <button id="libraryNavBtn" class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16" onclick="switchTab('library')">
+    <button id="libraryNavBtn" class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-14" onclick="switchTab('library')">
       <i class="fa-solid fa-book-bookmark text-base"></i>
       <span class="text-[9px] font-bold">Library</span>
     </button>
 
-    <a href="community.html" class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16">
+    <a href="community.html" class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-14">
       <i class="fa-solid fa-users text-base"></i>
       <span class="text-[9px] font-bold">Community</span>
     </a>
 
-    <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-16" onclick="openBpmTool()">
+    <button class="flex flex-col items-center gap-0.5 text-brand-muted hover:text-brand-text transition-colors w-14" onclick="openBpmTool()">
       <i class="fa-solid fa-calculator text-base"></i>
       <span class="text-[9px] font-bold">Tools</span>
     </button>
+
+    <!-- BOTÓN INFERIOR ELEGANTE DORADO PRO -->
+    <a href="premium.html" id="bottomProBtn" class="flex flex-col items-center gap-0.5 text-amber-400 hover:text-amber-300 transition-transform hover:scale-105 w-14">
+      <div class="w-7 h-6 rounded-lg bg-amber-400/15 border border-amber-400/40 flex items-center justify-center">
+        <i class="fa-solid fa-crown text-xs text-amber-400"></i>
+      </div>
+      <span class="text-[9px] font-extrabold tracking-tight" id="bottomProText">Go Pro</span>
+    </a>
   </nav>
 
   <!-- ========================================================================= -->
-  <!-- MOTOR MOOER GE300 + ESTRELLAS CON DECIMALES + SECCIONES SOLO/INTRO       -->
+  <!-- MOTOR MOOER GE300 EXPANDIDO (HASTA 8 BLOQUES) + ESTRELLAS CON DECIMALES   -->
   <!-- ========================================================================= -->
   <script>
     const BLOCK_ORDER = ["SYNTH", "COMP", "WAH", "FXA", "DS/OD", "AMP", "CAB", "NS", "TONE CAP", "EQ", "FXB", "FX LOOP", "DELAY", "REVERB"];
     const m = (n, k) => ({ name: n, knobs: () => k });
-    const COMP = [m("1: S-Comp", {"Sensitivity": 82, "Output": "+4.0dB"}), m("3: Yellow Comp", {"Threshold": "-30.0dB", "Ratio": "4.0:1", "Attack": 38, "Output": "+6.0dB"})];
-    const WAH = [m("1: Cry Wah", {"Position": 50, "Q": "2.2", "Peak": 50, "Output": "0dB"})];
-    const FXA = [m("26: 70s Chorus", {"Rate": 36, "Tone": 30, "Depth": 40, "Level": 75, "Output Mode": "Stereo", "Output": "0dB"}), m("35: Mono Pitch", {"Pitch": "+12.0", "Tone": 20, "Mix": 50, "Output": "+1.0dB"})];
-    const DS_OD = [m("2: 808", {"Gain": 50, "Bass": 35, "Mid": 44, "Treble": 70, "Output": 60}), m("6: DDrive", {"Gain": 53, "Bass": 40, "Mid": 52, "Treble": 60, "Output": 45})];
-    const AMP = [m("10: J800", {"Gain": 60, "Bass": 50, "Mid": 60, "Treble": 50, "Mode": "Original", "Tube": "UK EL34", "Preamp Out": 70, "Presence": 45, "Bias": 40, "Master": 75}), m("102: Jazz 120", {"Gain": 40, "Bass": 50, "Mid": 60, "Treble": 50, "Mode": "Original", "Tube": "UK EL34", "Preamp Out": 70, "Presence": 45, "Bias": 40, "Master": 75})];
-    const CAB = [m("6: 1960 412", {"Mic 1": "SM57", "Center 1": 0, "Distance 1": 10, "Mic 2": "U87", "Center 2": 5, "Distance 2": 10, "Low Cut": "80Hz", "High Cut": "8500Hz", "Early Reflection": 10, "Output": "0dB"}), m("16: Jazz 212", {"Mic 1": "SM57", "Center 1": 0, "Distance 1": 10, "Mic 2": "U87", "Center 2": 5, "Distance 2": 10, "Low Cut": "80Hz", "High Cut": "8500Hz", "Early Reflection": 10, "Output": "0dB"})];
-    const NS = [m("1: Noise Killer", {"Threshold": 25, "Output": "0dB"})];
-    const EQ = [m("1: 3-Band EQ", {"Low": "0dB", "Mid": "0dB", "High": "0dB", "Output": "0dB"})];
-    const DELAY = [m("1: Digital", {"Feedback": 15, "Mix": 10, "Time": "500ms", "Output": "0dB", "Tempo Sync": "Off", "Trail": "Off"})];
-    const REVERB = [m("2: Hall", {"Pre Delay": "30ms", "Decay": 30, "Low Cut": "80Hz", "High Cut": "4000Hz", "Mix": 20, "Output Mode": "Stereo", "Output": "0dB", "Quality": "High", "Trail": "Off"})];
+
+    // Catálogo ampliado de la MOOER GE300 para soportar hasta 8 bloques reales
+    const COMP = [
+      m("1: S-Comp", {"Sensitivity": 82, "Output": "+4.0dB"}),
+      m("2: Red Comp", {"Sensitivity": 75, "Output": "+3.0dB"}),
+      m("3: Yellow Comp", {"Threshold": "-30.0dB", "Ratio": "4.0:1", "Attack": 38, "Output": "+6.0dB"})
+    ];
+    const WAH = [
+      m("1: Cry Wah", {"Position": 50, "Q": "2.2", "Peak": 50, "Output": "0dB"}),
+      m("2: 535 Wah", {"Position": 55, "Q": "2.5", "Peak": 60, "Output": "0dB"})
+    ];
+    const FXA = [
+      m("10: Phaser", {"Rate": 32, "Depth": 65, "Resonance": 45}),
+      m("15: Flanger", {"Rate": 28, "Depth": 70, "Feedback": 50}),
+      m("26: 70s Chorus", {"Rate": 36, "Tone": 30, "Depth": 40, "Level": 75}),
+      m("35: Mono Pitch", {"Pitch": "+12.0", "Tone": 20, "Mix": 50})
+    ];
+    const DS_OD = [
+      m("1: Tube DR", {"Gain": 45, "Tone": 60, "Output": 70}),
+      m("2: 808", {"Gain": 25, "Bass": 35, "Mid": 55, "Treble": 68, "Output": 75}),
+      m("6: DDrive", {"Gain": 53, "Bass": 40, "Mid": 52, "Treble": 60, "Output": 45}),
+      m("11: Rat Dist", {"Gain": 68, "Filter": 45, "Output": 65}),
+      m("15: Metal Club", {"Gain": 78, "Bass": 60, "Mid": 42, "Treble": 72, "Output": 65})
+    ];
+    const AMP = [
+      m("1: US Classic", {"Gain": 35, "Bass": 52, "Mid": 50, "Treble": 68, "Presence": 55, "Master": 75}),
+      m("10: J800", {"Gain": 72, "Bass": 55, "Mid": 65, "Treble": 68, "Presence": 55, "Master": 75}),
+      m("12: J900", {"Gain": 78, "Bass": 60, "Mid": 62, "Treble": 70, "Presence": 60, "Master": 75}),
+      m("32: US Gold 100", {"Gain": 80, "Bass": 62, "Mid": 55, "Treble": 72, "Presence": 60, "Master": 75}),
+      m("55: Cali Dual", {"Gain": 82, "Bass": 65, "Mid": 45, "Treble": 72, "Presence": 58, "Master": 75}),
+      m("65: EV 5050", {"Gain": 85, "Bass": 65, "Mid": 52, "Treble": 74, "Presence": 65, "Master": 75}),
+      m("102: Jazz 120", {"Gain": 28, "Bass": 50, "Mid": 55, "Treble": 68, "Presence": 50, "Master": 75})
+    ];
+    const CAB = [
+      m("1: US Deluxe 112", {"Mic 1": "SM57", "Low Cut": "85Hz", "High Cut": "8000Hz"}),
+      m("6: 1960 412", {"Mic 1": "SM57", "Low Cut": "80Hz", "High Cut": "6800Hz"}),
+      m("16: Jazz 212", {"Mic 1": "SM57", "Low Cut": "90Hz", "High Cut": "7500Hz"}),
+      m("28: Cali 412", {"Mic 1": "SM57", "Low Cut": "85Hz", "High Cut": "6500Hz"})
+    ];
+    const NS = [
+      m("1: Noise Killer", {"Threshold": 35, "Output": "0dB"}),
+      m("2: Intel Gate", {"Sensitivity": 65, "Attack": 20, "Damp": 50})
+    ];
+    const EQ = [
+      m("1: 3-Band EQ", {"Low": "+1.5dB", "Mid": "+2.0dB", "High": "+1.0dB", "Output": "0dB"}),
+      m("3: 5-Band Graphic", {"100Hz": "+2.0dB", "400Hz": "-1.5dB", "800Hz": "+1.5dB", "1.6kHz": "+2.5dB", "4kHz": "+1.5dB"})
+    ];
+    const FXB = [
+      m("26: Stereo Chorus", {"Rate": 32, "Depth": 48, "Level": 60}),
+      m("30: Tremolo", {"Rate": 45, "Depth": 65, "Level": 70})
+    ];
+    const DELAY = [
+      m("1: Digital", {"Time": "420ms", "Feedback": 25, "Mix": 28}),
+      m("2: Analog", {"Time": "360ms", "Feedback": 30, "Mix": 25}),
+      m("5: Tape", {"Time": "380ms", "Feedback": 28, "Mix": 24})
+    ];
+    const REVERB = [
+      m("1: Room", {"Pre Delay": "15ms", "Decay": 25, "Mix": 18}),
+      m("2: Hall", {"Pre Delay": "30ms", "Decay": 45, "Mix": 28}),
+      m("4: Plate", {"Pre Delay": "20ms", "Decay": 38, "Mix": 24})
+    ];
 
     const UNIVERSAL_PRESETS = {
       "ge300_univ_soda_ligera": {
@@ -425,17 +503,20 @@
         title: "SODA STEREO - DE MÚSICA LIGERA",
         section: "main",
         bank: "01A",
-        desc: "Bright Roland Jazz Chorus style clean/crunch tone with 70s Chorus modulation.",
+        desc: "Gustavo Cerati iconic Roland Jazz Chorus rig with Yellow Comp, DDrive crunch, 70s Chorus, Digital Delay & Hall Reverb.",
         pickup: "Bridge",
-        ctrls: ["CTRL 1: Chorus"],
+        ctrls: ["CTRL 1: Chorus", "CTRL 2: DDrive"],
         rating: 5.0,
         votesCount: 14,
         isFav: false,
         blocks: [
-          { type: "COMP", model: "3: Yellow Comp", knobs: COMP[1].knobs(), displayKnobs: { "Threshold": "-30.0dB", "Ratio": "4.0:1" } },
-          { type: "AMP", model: "102: Jazz 120", knobs: AMP[1].knobs(), displayKnobs: { "Gain": 30, "Treble": 70, "Mid": 55 } },
-          { type: "CAB", model: "16: Jazz 212", knobs: CAB[1].knobs(), displayKnobs: { "Mic 1": "SM57" } },
-          { type: "FXA", model: "26: 70s Chorus", knobs: FXA[0].knobs(), displayKnobs: { "Depth": 55, "Level": 75 } }
+          { type: "COMP", model: "3: Yellow Comp", knobs: COMP[2].knobs(), displayKnobs: { "Threshold": "-30.0dB", "Ratio": "4.0:1", "Output": "+4.0dB" } },
+          { type: "DS/OD", model: "6: DDrive", knobs: DS_OD[2].knobs(), displayKnobs: { "Gain": 32, "Treble": 65, "Output": 60 } },
+          { type: "AMP", model: "102: Jazz 120", knobs: AMP[6].knobs(), displayKnobs: { "Gain": 30, "Treble": 70, "Mid": 55, "Bass": 50 } },
+          { type: "CAB", model: "16: Jazz 212", knobs: CAB[2].knobs(), displayKnobs: { "Low Cut": "85Hz", "High Cut": "7800Hz" } },
+          { type: "FXA", model: "26: 70s Chorus", knobs: FXA[2].knobs(), displayKnobs: { "Rate": 35, "Depth": 55, "Level": 65 } },
+          { type: "DELAY", model: "1: Digital", knobs: DELAY[0].knobs(), displayKnobs: { "Time": "380ms", "Feedback": 22, "Mix": 20 } },
+          { type: "REVERB", model: "2: Hall", knobs: REVERB[1].knobs(), displayKnobs: { "Decay": 35, "Mix": 25 } }
         ]
       },
       "ge300_univ_audioslave_stone": {
@@ -450,11 +531,13 @@
         votesCount: 19,
         isFav: false,
         blocks: [
-          { type: "FXA", model: "35: Mono Pitch", knobs: FXA[1].knobs(), displayKnobs: { "Pitch": "+24.0", "Mix": 100 } },
-          { type: "DS/OD", model: "6: DDrive", knobs: DS_OD[1].knobs(), displayKnobs: { "Gain": 55, "Treble": 60 } },
-          { type: "AMP", model: "10: J800", knobs: AMP[0].knobs(), displayKnobs: { "Gain": 60, "Mid": 65, "Treble": 55 } },
-          { type: "CAB", model: "6: 1960 412", knobs: CAB[0].knobs(), displayKnobs: { "Mic 1": "SM57" } },
-          { type: "DELAY", model: "1: Digital", knobs: DELAY[0].knobs(), displayKnobs: { "Time": "380ms", "Mix": 20 } }
+          { type: "FXA", model: "35: Mono Pitch", knobs: FXA[3].knobs(), displayKnobs: { "Pitch": "+24.0", "Mix": 100 } },
+          { type: "DS/OD", model: "6: DDrive", knobs: DS_OD[2].knobs(), displayKnobs: { "Gain": 55, "Treble": 60, "Output": 65 } },
+          { type: "AMP", model: "10: J800", knobs: AMP[1].knobs(), displayKnobs: { "Gain": 68, "Mid": 65, "Treble": 58, "Bass": 55 } },
+          { type: "CAB", model: "6: 1960 412", knobs: CAB[1].knobs(), displayKnobs: { "Low Cut": "80Hz", "High Cut": "7000Hz" } },
+          { type: "NS", model: "1: Noise Killer", knobs: NS[0].knobs(), displayKnobs: { "Threshold": 30 } },
+          { type: "DELAY", model: "1: Digital", knobs: DELAY[0].knobs(), displayKnobs: { "Time": "440ms", "Feedback": 32, "Mix": 28 } },
+          { type: "REVERB", model: "4: Plate", knobs: REVERB[2].knobs(), displayKnobs: { "Decay": 30, "Mix": 20 } }
         ]
       },
       "ge300_univ_limp_livin_intro": {
@@ -469,11 +552,12 @@
         votesCount: 8,
         isFav: false,
         blocks: [
-          { type: "AMP", model: "102: Jazz 120", knobs: AMP[1].knobs(), displayKnobs: { "Gain": 25, "Treble": 65, "Mid": 50, "Bass": 50 } },
-          { type: "CAB", model: "16: Jazz 212", knobs: CAB[1].knobs(), displayKnobs: { "Low Cut": "90Hz", "High Cut": "7000Hz" } },
-          { type: "FXA", model: "26: 70s Chorus", knobs: FXA[0].knobs(), displayKnobs: { "Rate": 30, "Depth": 45, "Level": 35 } },
+          { type: "COMP", model: "1: S-Comp", knobs: COMP[0].knobs(), displayKnobs: { "Sensitivity": 65, "Output": "+2.0dB" } },
+          { type: "AMP", model: "102: Jazz 120", knobs: AMP[6].knobs(), displayKnobs: { "Gain": 25, "Treble": 65, "Mid": 50, "Bass": 50 } },
+          { type: "CAB", model: "16: Jazz 212", knobs: CAB[2].knobs(), displayKnobs: { "Low Cut": "90Hz", "High Cut": "7000Hz" } },
+          { type: "FXA", model: "26: 70s Chorus", knobs: FXA[2].knobs(), displayKnobs: { "Rate": 30, "Depth": 45, "Level": 35 } },
           { type: "DELAY", model: "1: Digital", knobs: DELAY[0].knobs(), displayKnobs: { "Time": "420ms", "Feedback": 25, "Mix": 35 } },
-          { type: "REVERB", model: "2: Hall", knobs: REVERB[0].knobs(), displayKnobs: { "Decay": 65, "Mix": 40 } }
+          { type: "REVERB", model: "2: Hall", knobs: REVERB[1].knobs(), displayKnobs: { "Decay": 65, "Mix": 40 } }
         ]
       }
     };
@@ -483,7 +567,6 @@
     let pendingSearchQuery = '';
     let pendingSearchSection = 'main';
 
-    // --- MOTOR INTELIGENTE ANTI-DUPLICADOS Y DETECTOR DE SECCIÓN (SOLO vs INTRO) ---
     const STOP_WORDS = new Set(['ai', 'preset', 'tone', 'mooer', 'ge300', 'the', 'a', 'an', 'of', 'in', 'on', 'for', 'to', 'and', 'by', 'de', 'la', 'el', 'los', 'las', 'un', 'una', 'con', 'del', 'al', 'y', 'en']);
 
     const SECTION_MAP = {
@@ -724,7 +807,7 @@
                 <div class="bg-brand-panel/70 border border-brand-accent/30 p-3 rounded-xl flex items-center justify-between cursor-pointer hover:bg-brand-card transition-colors" onclick="loadPresetFromLibrary('${key}', false)">
                   <div>
                     <h4 class="text-xs font-bold text-white">${p.title}</h4>
-                    <span class="text-[9px] font-mono text-brand-accent">★ ${(Number(p.rating) || 4.9).toFixed(1)} • KEY: ${key.replace('GE300_CACHE_', '')}</span>
+                    <span class="text-[9px] font-mono text-brand-accent">★ ${(Number(p.rating) || 4.9).toFixed(1)} • ${(p.blocks || []).length} BLOCKS</span>
                   </div>
                   <i class="fa-solid fa-unlock-keyhole text-brand-accent text-xs"></i>
                 </div>`;
@@ -778,14 +861,26 @@
       return list.find(x => x.name.toLowerCase().replace(/[^a-z0-9]/g, '').includes(q) || q.includes(x.name.toLowerCase().replace(/[^a-z0-9]/g, '')));
     }
 
-    // --- TURBO AI ENGINE CON RESPALDO AUTOMÁTICO DE MODELOS Y SECCIÓN (INTRO/SOLO) ---
+    // --- MOTOR IA DESBLOQUEADO PARA USAR ENTRE 5 Y 8 BLOQUES REALES ---
     async function fetchAITone(query, section, apiKey) {
       const sectionLabel = section && section !== 'main' ? section.toUpperCase() : 'MAIN TONE';
-      const prompt = `You are a MOOER GE300 expert audio engineer. Create the exact guitar tone for: "${query}" (Requested Section: ${sectionLabel}).
-      If the requested section is INTRO or CLEAN, use clean amp settings (like 102: Jazz 120 with Chorus/Delay/Reverb and Neck pickup). If SOLO or RHYTHM, use appropriate drive/amp settings.
-      Provide the standardized "ARTIST - SONG TITLE (${sectionLabel})" in "cleanTitle". Use a MAXIMUM of 5 blocks. NEVER include VOL. Return ONLY the 2 or 3 key knobs per block.
-      Catalogs: AMP: ${AMP.map(a=>a.name).join(', ')} | CAB: ${CAB.map(c=>c.name).join(', ')} | DS/OD: ${DS_OD.map(d=>d.name).join(', ')} | WAH: ${WAH.map(w=>w.name).join(', ')} | FXA: ${FXA.map(f=>f.name).join(', ')} | DELAY: ${DELAY.map(d=>d.name).join(', ')} | REVERB: ${REVERB.map(r=>r.name).join(', ')} | COMP: ${COMP.map(c=>c.name).join(', ')}
-      Return ONLY JSON in English: {"cleanTitle": "ARTIST - SONG (${sectionLabel})", "section": "${section}", "blocks": [{"type": "AMP", "name": "10: J800", "p": {"Gain": 75, "Treble": 68, "Bass": 60}}], "pickup": "Neck or Bridge", "ctrls": ["CTRL 1: Drive"], "desc": "Brief tone info"}`;
+      const prompt = `You are a MOOER GE300 expert audio engineer. Create the complete, authentic guitar tone for: "${query}" (Requested Section: ${sectionLabel}).
+      Build a complete studio signal chain using between 5 and 8 hardware blocks as needed by the song (for example: COMP or WAH + DS/OD + AMP + CAB + NS + EQ + FXA/FXB + DELAY + REVERB). NEVER include VOL.
+      If the requested section is INTRO or CLEAN, use clean amp settings (like 102: Jazz 120 or 1: US Classic with COMP, Chorus, Delay, Reverb and Neck pickup). If SOLO or RHYTHM, include appropriate DS/OD booster, high-gain AMP, CAB, NS gate, EQ, Delay and Reverb.
+      Provide the standardized "ARTIST - SONG TITLE (${sectionLabel})" in "cleanTitle". Return 3 to 4 key knobs per block.
+      Catalogs:
+      - COMP: ${COMP.map(c=>c.name).join(', ')}
+      - WAH: ${WAH.map(w=>w.name).join(', ')}
+      - FXA: ${FXA.map(f=>f.name).join(', ')}
+      - DS/OD: ${DS_OD.map(d=>d.name).join(', ')}
+      - AMP: ${AMP.map(a=>a.name).join(', ')}
+      - CAB: ${CAB.map(c=>c.name).join(', ')}
+      - NS: ${NS.map(n=>n.name).join(', ')}
+      - EQ: ${EQ.map(e=>e.name).join(', ')}
+      - FXB: ${FXB.map(f=>f.name).join(', ')}
+      - DELAY: ${DELAY.map(d=>d.name).join(', ')}
+      - REVERB: ${REVERB.map(r=>r.name).join(', ')}
+      Return ONLY JSON in English: {"cleanTitle": "ARTIST - SONG (${sectionLabel})", "section": "${section}", "blocks": [{"type": "DS/OD", "name": "2: 808", "p": {"Gain": 25, "Tone": 65, "Output": 75}}, {"type": "AMP", "name": "10: J800", "p": {"Gain": 75, "Treble": 68, "Mid": 65, "Bass": 58}}], "pickup": "Neck or Bridge", "ctrls": ["CTRL 1: Drive", "CTRL 2: Delay"], "desc": "Brief studio tone description"}`;
 
       const modelsToTry = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash"];
       let lastError = null;
@@ -820,7 +915,6 @@
       throw lastError || new Error("Google API Error");
     }
 
-    // --- FLUJO DE BÚSQUEDA INTELIGENTE ---
     document.getElementById('aiToneForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       
@@ -843,7 +937,6 @@
       let finalPreset = null;
       let isUniversal = false;
 
-      // 1. Buscar en Featured / Universales
       for (let key in UNIVERSAL_PRESETS) {
         if (isSmartPresetMatch(query, UNIVERSAL_PRESETS[key])) {
           currentCacheKey = key;
@@ -853,7 +946,6 @@
         }
       }
 
-      // 2. Buscar en LocalStorage
       if (!finalPreset) {
         for (let i = 0; i < localStorage.length; i++) {
           let key = localStorage.key(i);
@@ -870,7 +962,6 @@
         }
       }
 
-      // 3. Buscar en la Bóveda Global de Firestore
       if (!finalPreset && window.globalCloudPresets) {
         for (let key in window.globalCloudPresets) {
           let cloudPreset = window.globalCloudPresets[key];
@@ -915,13 +1006,22 @@
     }
 
     window.updateLibraryVisibility = function() {
+      const currentUser = window.firebaseAuth ? window.firebaseAuth.currentUser : null;
+      const userEmail = currentUser && currentUser.email ? currentUser.email.toLowerCase() : "";
+      const isAdmin = userEmail === "faustolute@gmail.com";
+      const isUserPro = window.currentUserData && window.currentUserData.isPro === true;
+
       const libraryBtn = document.getElementById('libraryNavBtn');
       if (libraryBtn) {
-        const currentUser = window.firebaseAuth ? window.firebaseAuth.currentUser : null;
-        const userEmail = currentUser && currentUser.email ? currentUser.email.toLowerCase() : "";
-        const isAdmin = userEmail === "faustolute@gmail.com";
-        const isUserPro = window.currentUserData && window.currentUserData.isPro === true;
         libraryBtn.style.display = (!isUserPro && !isAdmin) ? 'none' : 'flex';
+      }
+
+      // Actualizar el texto del botón elegante PRO si ya es miembro VIP
+      const headerProText = document.getElementById('headerProText');
+      const bottomProText = document.getElementById('bottomProText');
+      if (isUserPro || isAdmin) {
+        if (headerProText) headerProText.innerText = isAdmin ? "ADMIN PRO" : "PRO VIP";
+        if (bottomProText) bottomProText.innerText = "PRO VIP";
       }
     };
     
@@ -950,38 +1050,48 @@
         if (apiKey && apiKey.trim() !== '') {
           const aiData = await fetchAITone(query, section, apiKey);
           let parsedBlocks = [];
-          if (aiData.blocks) {
+          if (Array.isArray(aiData.blocks)) {
             aiData.blocks.forEach(bData => {
-              if (bData.type === "VOL") return;
+              const bType = (bData.type || "AMP").toUpperCase();
+              if (bType === "VOL") return;
               let targetList = [];
-              if (bData.type === "COMP") targetList = COMP;
-              else if (bData.type === "WAH") targetList = WAH;
-              else if (bData.type === "FXA") targetList = FXA;
-              else if (bData.type === "DS/OD") targetList = DS_OD;
-              else if (bData.type === "AMP") targetList = AMP;
-              else if (bData.type === "CAB") targetList = CAB;
-              else if (bData.type === "NS") targetList = NS;
-              else if (bData.type === "EQ") targetList = EQ;
-              else if (bData.type === "DELAY") targetList = DELAY;
-              else if (bData.type === "REVERB") targetList = REVERB;
+              if (bType === "COMP") targetList = COMP;
+              else if (bType === "WAH") targetList = WAH;
+              else if (bType === "FXA") targetList = FXA;
+              else if (bType === "DS/OD") targetList = DS_OD;
+              else if (bType === "AMP") targetList = AMP;
+              else if (bType === "CAB") targetList = CAB;
+              else if (bType === "NS") targetList = NS;
+              else if (bType === "EQ") targetList = EQ;
+              else if (bType === "FXB") targetList = FXB;
+              else if (bType === "DELAY") targetList = DELAY;
+              else if (bType === "REVERB") targetList = REVERB;
+
               let match = fuzzyMatchModel(targetList, bData.name);
               if (match) {
                 let finalKnobs = { ...match.knobs() };
                 let displayKnobs = {};
                 if (bData.p) {
                   for (let k in bData.p) {
-                    let realKey = Object.keys(finalKnobs).find(x => x.toLowerCase() === k.toLowerCase());
-                    if (realKey) {
-                      finalKnobs[realKey] = bData.p[k];
-                      displayKnobs[realKey] = bData.p[k];
-                    }
+                    let realKey = Object.keys(finalKnobs).find(x => x.toLowerCase() === k.toLowerCase()) || k;
+                    finalKnobs[realKey] = bData.p[k];
+                    displayKnobs[realKey] = bData.p[k];
                   }
                 }
                 if (Object.keys(displayKnobs).length === 0) displayKnobs = finalKnobs;
-                parsedBlocks.push({ type: bData.type, model: match.name, knobs: finalKnobs, displayKnobs: displayKnobs });
+                parsedBlocks.push({ type: bType, model: match.name, knobs: finalKnobs, displayKnobs: displayKnobs });
+              } else if (bData.p && Object.keys(bData.p).length > 0) {
+                // Respaldo directo para que NUNCA se pierda ningún bloque extra sugerido por la IA
+                parsedBlocks.push({
+                  type: bType,
+                  model: bData.name || `${bType} Studio`,
+                  knobs: { ...bData.p },
+                  displayKnobs: { ...bData.p }
+                });
               }
             });
           }
+
           const displayTitle = aiData.cleanTitle ? `AI Preset: ${aiData.cleanTitle.toUpperCase()}` : `AI Preset: ${query.toUpperCase()}`;
           finalPreset = {
             title: displayTitle,
@@ -1076,6 +1186,12 @@
           return (idxA === -1 ? 99 : idxA) - (idxB === -1 ? 99 : idxB);
         });
       }
+
+      const blockBadge = document.getElementById('blockCountBadge');
+      if (blockBadge) {
+        blockBadge.innerText = `${(preset.blocks || []).length} Active Blocks`;
+      }
+
       const blocksContainer = document.getElementById('effectBlocksContainer');
       blocksContainer.innerHTML = '';
       (preset.blocks || []).forEach(block => {
@@ -1088,7 +1204,6 @@
       });
     }
 
-    // --- EDICIÓN TÁCTIL DE PERILLAS ---
     let draggingKnob = null; let startY = 0; let initialNum = 0;
     function updateKnobVisual(knobEl, valStr) {
       let parsed = parseKnobValue(valStr);
@@ -1154,7 +1269,6 @@
     document.addEventListener('touchmove', handleDragMove, { passive: false });
     document.addEventListener('touchend', handleDragEnd);
 
-    // --- VOTACIÓN INTERACTIVA POR ESTRELLAS CON DECIMALES (4.9 (1)) IGUAL QUE LINE 6 POD GO ---
     function getActivePresetObject() {
       if (UNIVERSAL_PRESETS[currentCacheKey]) return UNIVERSAL_PRESETS[currentCacheKey];
       const localRaw = localStorage.getItem(currentCacheKey);

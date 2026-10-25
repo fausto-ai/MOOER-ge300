@@ -1,89 +1,197 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MOOER GE300 AI - Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MOOER GE300 AI Tone Studio — Find Any Guitar Tone with AI</title>
+  <meta name="description" content="Find the exact MOOER GE300 guitar tone and knob settings for any song, intro, or solo in seconds using our Cloud AI Engine." />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
   <script>
     tailwind.config = { 
       darkMode: 'class', 
       theme: { 
         extend: { 
           colors: { 
-            brand: { bg: '#050a14', accent: '#00ff66', accentHover: '#00cc52', cyan: '#00e5ff', text: '#e2e8f0', muted: '#64748b' } 
-          } 
+            brand: { 
+              bg: '#060a12', 
+              card: '#111827',
+              accent: '#00ff66', 
+              accentHover: '#00cc52', 
+              cyan: '#00e5ff', 
+              text: '#f1f5f9', 
+              muted: '#94a3b8',
+              border: '#1e293b'
+            } 
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
         } 
       } 
     };
   </script>
   <style>
     body {
-      background-color: #050a14;
-      background-image: radial-gradient(circle at 15% 30%, rgba(0, 255, 102, 0.12) 0%, transparent 40%), radial-gradient(circle at 85% 60%, rgba(0, 229, 255, 0.12) 0%, transparent 40%), linear-gradient(to bottom, rgba(5, 10, 20, 0.8), rgba(5, 10, 20, 1));
-      color: #e2e8f0;
+      background-color: #060a12;
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(0, 255, 102, 0.14) 0%, transparent 45%), 
+        radial-gradient(circle at 85% 75%, rgba(0, 229, 255, 0.10) 0%, transparent 45%), 
+        linear-gradient(to bottom, #060a12, #090d16);
+      color: #f1f5f9;
+      -webkit-tap-highlight-color: transparent;
     }
     .glass-panel {
-      background: rgba(10, 15, 30, 0.45);
-      backdrop-filter: blur(16px);
+      background: rgba(15, 23, 42, 0.72);
+      backdrop-filter: blur(20px);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.75);
     }
-    .neon-border-btn {
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(0, 255, 102, 0.4);
-      transition: all 0.3s ease;
+    .google-cta-btn {
+      background: linear-gradient(180deg, rgba(18, 26, 42, 0.95) 0%, rgba(10, 15, 28, 0.98) 100%);
+      border: 1px solid rgba(0, 255, 102, 0.55);
+      box-shadow: 0 0 20px rgba(0, 255, 102, 0.15);
+      transition: all 0.25s ease;
       cursor: pointer;
     }
-    .neon-border-btn:hover { border-color: rgba(0, 255, 102, 0.8); box-shadow: 0 0 15px rgba(0, 255, 102, 0.2); }
-    .neon-border-btn.cyan-variant { border-color: rgba(0, 229, 255, 0.4); }
-    .neon-border-btn.cyan-variant:hover { border-color: rgba(0, 229, 255, 0.8); box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); }
-    .input-neon {
-      background: transparent; border: none; border-bottom: 2px solid rgba(255, 255, 255, 0.2); transition: all 0.3s ease;
+    .google-cta-btn:hover {
+      border-color: #00ff66;
+      box-shadow: 0 0 28px rgba(0, 255, 102, 0.35);
+      transform: translateY(-1px);
     }
-    .input-neon:focus { outline: none; border-bottom: 2px solid #00ff66; }
-    .input-neon.pwd:focus { border-bottom: 2px solid #00e5ff; }
+    .google-cta-btn:active {
+      transform: translateY(0px);
+    }
   </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4 relative overflow-hidden">
+<body class="flex items-center justify-center min-h-screen p-4 py-8 relative overflow-y-auto">
   
-  <div class="glass-panel w-full max-w-sm rounded-3xl p-8 z-10 flex flex-col relative">
+  <div class="glass-panel w-full max-w-md rounded-3xl p-6 sm:p-7 z-10 flex flex-col relative space-y-5">
     
-    <!-- Cabecera -->
-    <div class="flex items-center gap-4 mb-2">
-      <div class="w-12 h-12 rounded-xl border border-brand-accent/40 flex items-center justify-center text-brand-accent shadow-[0_0_15px_rgba(0,255,102,0.2)]">
-        <i class="fa-solid fa-guitar text-xl"></i>
-      </div>
-      <div>
-        <h2 class="text-xl font-bold tracking-wider leading-tight">MOOER GE300</h2>
-        <h3 class="text-sm font-mono text-brand-muted tracking-widest">AI TONE STUDIO</h3>
+    <!-- TOP BRAND HEADER -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-brand-accent/10 border border-brand-accent/40 flex items-center justify-center text-brand-accent shadow-[0_0_15px_rgba(0,255,102,0.2)]">
+          <i class="fa-solid fa-guitar text-lg"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-black tracking-tight text-white leading-none">MOOER <span class="text-brand-accent">GE300</span></h1>
+            <span class="text-[9px] font-mono font-bold bg-brand-accent/15 text-brand-accent border border-brand-accent/30 px-1.5 py-0.5 rounded">AI ENGINE</span>
+          </div>
+          <p class="text-[11px] font-mono text-brand-muted tracking-wider mt-1">SMART CLOUD TONE STUDIO</p>
+        </div>
       </div>
     </div>
-    <p class="text-xs text-brand-muted mb-8 tracking-wide">Smart Access to Your Sound</p>
 
-    <!-- Botones Sociales -->
-    <div class="space-y-4 mb-8">
-      <!-- ID AÑADIDO PARA LA LÓGICA -->
-      <button id="btn-google" class="neon-border-btn cyan-variant w-full py-3.5 px-4 rounded-xl flex items-center justify-center gap-3 text-sm font-semibold tracking-wide">
-        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <!-- HERO VALUE PROPOSITION (LA INVITACIÓN ELEGANTE) -->
+    <div class="space-y-2 pt-1">
+      <h2 class="text-xl sm:text-2xl font-extrabold text-white leading-snug tracking-tight">
+        Find Your Ideal Guitar Tone for <span class="text-brand-accent">Any Song</span> with AI.
+      </h2>
+      <p class="text-xs text-brand-muted leading-relaxed">
+        Stop spending hours tweaking menus. Type any artist, song, or section (<span class="text-slate-200 font-semibold">Intro, Rhythm, or Solo</span>) and get the exact hardware chain and knob values for your MOOER GE300 in seconds.
+      </p>
+    </div>
+
+    <!-- MINI VISUAL PREVIEW OF THE STUDIO INSIDE -->
+    <div class="bg-[#090d16]/90 border border-slate-800 rounded-2xl p-3.5 space-y-2.5 shadow-inner">
+      <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
+        <div class="flex items-center gap-1.5">
+          <span class="text-[9px] font-mono bg-brand-accent/15 text-brand-accent border border-brand-accent/30 px-1.5 py-0.5 rounded font-bold">01A</span>
+          <span class="text-[11px] font-bold text-white truncate">AI PRESET STUDIO PREVIEW</span>
+        </div>
+        <span class="text-[10px] font-mono text-yellow-400">★★★★★ 4.9</span>
+      </div>
+
+      <!-- Mini Knobs Demo -->
+      <div class="grid grid-cols-3 gap-2 pt-1 text-center">
+        <div class="bg-slate-900/90 border border-slate-800/80 rounded-xl p-2 flex flex-col items-center">
+          <span class="text-[9px] font-mono text-brand-accent font-bold mb-1">AMP • J800</span>
+          <div class="w-9 h-9 rounded-full border-2 border-brand-accent flex items-center justify-center text-[10px] font-mono font-bold text-brand-accent shadow-[0_0_8px_rgba(0,255,102,0.25)]">
+            75
+          </div>
+          <span class="text-[8px] font-mono text-brand-muted mt-1 uppercase">GAIN</span>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800/80 rounded-xl p-2 flex flex-col items-center">
+          <span class="text-[9px] font-mono text-brand-accent font-bold mb-1">FXA • CHORUS</span>
+          <div class="w-9 h-9 rounded-full border-2 border-brand-accent flex items-center justify-center text-[10px] font-mono font-bold text-brand-accent shadow-[0_0_8px_rgba(0,255,102,0.25)]">
+            45
+          </div>
+          <span class="text-[8px] font-mono text-brand-muted mt-1 uppercase">DEPTH</span>
+        </div>
+
+        <div class="bg-slate-900/90 border border-slate-800/80 rounded-xl p-2 flex flex-col items-center">
+          <span class="text-[9px] font-mono text-brand-accent font-bold mb-1">DELAY • DIGI</span>
+          <div class="w-9 h-9 rounded-full border-2 border-brand-accent flex items-center justify-center text-[10px] font-mono font-bold text-brand-accent shadow-[0_0_8px_rgba(0,255,102,0.25)]">
+            420ms
+          </div>
+          <span class="text-[8px] font-mono text-brand-muted mt-1 uppercase">TIME</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 KEY BENEFITS (TRUST BUILDERS) -->
+    <div class="space-y-2 text-xs">
+      <div class="flex items-start gap-2.5">
+        <div class="w-5 h-5 rounded-md bg-brand-accent/15 text-brand-accent flex items-center justify-center shrink-0 mt-0.5">
+          <i class="fa-solid fa-sliders text-[10px]"></i>
+        </div>
+        <p class="text-slate-300 text-[11px] leading-snug">
+          <strong class="text-white">Real GE300 Hardware Chain:</strong> Exact parameters for COMP, DS/OD, AMP, CAB, NS, EQ, FX, Delay & Reverb.
+        </p>
+      </div>
+
+      <div class="flex items-start gap-2.5">
+        <div class="w-5 h-5 rounded-md bg-brand-accent/15 text-brand-accent flex items-center justify-center shrink-0 mt-0.5">
+          <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i>
+        </div>
+        <p class="text-slate-300 text-[11px] leading-snug">
+          <strong class="text-white">Section-Aware AI:</strong> Search specific song parts like crystal-clean intros or high-gain lead solos.
+        </p>
+      </div>
+
+      <div class="flex items-start gap-2.5">
+        <div class="w-5 h-5 rounded-md bg-brand-accent/15 text-brand-accent flex items-center justify-center shrink-0 mt-0.5">
+          <i class="fa-solid fa-users text-[10px]"></i>
+        </div>
+        <p class="text-slate-300 text-[11px] leading-snug">
+          <strong class="text-white">Guitarist Community Hub:</strong> Rate presets, share knob tweaks, and save your favorite tones.
+        </p>
+      </div>
+    </div>
+
+    <!-- GOOGLE LOGIN BUTTON -->
+    <div class="pt-1 space-y-2.5">
+      <button id="btn-google" class="google-cta-btn w-full py-3.5 px-4 rounded-2xl flex items-center justify-center gap-3 text-sm font-bold text-white tracking-wide">
+        <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
           <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
           <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
           <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
         </svg>
-        Sign in with Google
+        <span id="btn-text">Continue with Google — Enter Studio</span>
+        <i class="fa-solid fa-arrow-right text-xs text-brand-accent ml-1"></i>
       </button>
-    
+
+      <!-- TRUST FOOTER -->
+      <div class="flex items-center justify-center gap-4 text-[10px] text-brand-muted pt-1">
+        <span class="flex items-center gap-1"><i class="fa-solid fa-lock text-brand-accent text-[9px]"></i> Secure Google Auth</span>
+        <span>•</span>
+        <span class="flex items-center gap-1"><i class="fa-solid fa-bolt text-brand-accent text-[9px]"></i> Instant Access</span>
+      </div>
+    </div>
+
+  </div>
 
   <!-- SCRIPT DE FIREBASE Y LÓGICA DE LOGIN -->
   <script type="module">
-    // 1. Importar los módulos de Firebase directo desde internet (sin instalar nada)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
 
-    // 2. Las credenciales de tu proyecto (Caja fuerte)
     const firebaseConfig = {
       apiKey: "AIzaSyDMZxIgDvBRJNyIZuo3CDwnyvx1INm7LsM",
       authDomain: "mooer-ai-tone-studio.firebaseapp.com",
@@ -93,30 +201,35 @@
       appId: "1:666841738973:web:2c0937a5b2a51b143c3534"
     };
 
-    // 3. Encender Firebase y la Autenticación
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
 
-    // 4. Activar el Botón de Google
+    // Si el usuario ya tenía sesión iniciada, lo llevamos directo al Studio
+    onAuthStateChanged(auth, (user) => {
+      if (user && user.email) {
+        localStorage.setItem("mooer_user_email", user.email.toLowerCase());
+      }
+    });
+
     const btnGoogle = document.getElementById('btn-google');
+    const btnText = document.getElementById('btn-text');
     
     btnGoogle.addEventListener('click', async () => {
       try {
-        // Abre la ventanita de Google
+        btnText.innerText = "Connecting to Studio...";
         const resultado = await signInWithPopup(auth, provider);
         const usuario = resultado.user;
-        
-        // ¡Éxito!
-        // Redirigir a la pedalera principal
-window.location.href = "index.html";
-
-        // (En el futuro, aquí agregaremos la redirección hacia la pantalla de la pedalera)
+        if (usuario && usuario.email) {
+          localStorage.setItem("mooer_user_email", usuario.email.toLowerCase());
+        }
+        window.location.href = "index.html";
       } catch (error) {
         console.error("Error al iniciar sesión:", error);
-        alert("Authentication failed.");
+        btnText.innerText = "Continue with Google — Enter Studio";
+        alert("Authentication failed. Please try again.");
       }
     });
   </script>
 </body>
-    </html>
+</html>

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MOOER GE300 - Community Hub</title>
+    <title>MOOER GE300 - Global Community Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Firebase SDK -->
@@ -21,7 +21,7 @@
 </head>
 <body class="min-h-screen pb-28">
 
-    <!-- HEADER MOOER GE300 CON BOTÓN PRO ELEGANTE -->
+    <!-- HEADER MOOER GE300 WITH ELEGANT PRO BUTTON -->
     <header class="sticky top-0 z-30 bg-[#090d16]/95 backdrop-blur border-b border-slate-800/80 px-3.5 py-3 flex items-center justify-between">
         <div class="flex items-center gap-2.5">
             <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
@@ -33,21 +33,21 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <!-- Botón Superior Elegante para Volverse Premium -->
-            <a href="premium.html" class="pro-glow text-[10px] font-mono font-extrabold bg-gradient-to-r from-amber-400 via-yellow-300 to-emerald-400 text-slate-950 px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-md hover:brightness-110 transition-all">
+            <!-- Top Elegant Upgrade Button -->
+            <a href="premium.html" id="top-pro-btn" class="pro-glow text-[10px] font-mono font-extrabold bg-gradient-to-r from-amber-400 via-yellow-300 to-emerald-400 text-slate-950 px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-md hover:brightness-110 transition-all">
                 <i class="fas fa-crown text-[10px]"></i>
-                <span>GO PRO</span>
+                <span id="top-pro-text">GO PRO</span>
             </a>
             <a href="index.html" class="text-xs bg-slate-800 hover:bg-slate-700 text-gray-300 px-2.5 py-1.5 rounded-lg border border-slate-700 flex items-center gap-1">
-                <i class="fas fa-arrow-left text-[10px]"></i> Volver
+                <i class="fas fa-arrow-left text-[10px]"></i> Studio
             </a>
         </div>
     </header>
 
-    <!-- CONTENIDO PRINCIPAL -->
+    <!-- MAIN CONTENT -->
     <main class="max-w-xl mx-auto p-4 space-y-4">
 
-        <!-- BANNER ELEGANTE VIP PARA SUSCRIBIRSE DESDE LA COMUNIDAD -->
+        <!-- ELEGANT VIP BANNER FOR PRO SUBSCRIPTION -->
         <a href="premium.html" id="proCommunityBanner" class="block bg-gradient-to-r from-amber-500/15 via-emerald-500/10 to-slate-900 border border-amber-400/40 rounded-2xl p-3.5 shadow-lg hover:border-amber-400 transition-all">
             <div class="flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
@@ -56,21 +56,21 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-1.5">
-                            <span class="text-xs font-extrabold text-white">Hazte MOOER AI PRO</span>
+                            <span class="text-xs font-extrabold text-white">Upgrade to MOOER AI PRO</span>
                             <span class="text-[9px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.5 rounded uppercase">VIP</span>
                         </div>
-                        <p class="text-[11px] text-gray-300">Tonos IA ilimitados, insignia 👑 PRO en el foro y acceso a Library.</p>
+                        <p class="text-[11px] text-gray-300">Unlimited AI tones, 👑 PRO forum badge & full Library access.</p>
                     </div>
                 </div>
                 <i class="fas fa-chevron-right text-amber-400 text-xs shrink-0"></i>
             </div>
         </a>
 
-        <!-- CAJA DE PUBLICACIÓN (FREE & PRO) -->
+        <!-- POST BOX (OPEN TO FREE & PRO) -->
         <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
             <div class="flex items-center justify-between">
                 <h2 class="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
-                    <i class="fas fa-comments"></i> Publicar Comentario o Ajuste
+                    <i class="fas fa-comments"></i> Post Comment or Knob Tweak
                 </h2>
                 <span id="plan-badge" class="text-[10px] bg-slate-800 text-gray-300 px-2 py-0.5 rounded font-semibold">
                     🎸 FREE MEMBER
@@ -79,20 +79,20 @@
 
             <div class="grid grid-cols-2 gap-2">
                 <div>
-                    <label class="text-[10px] text-gray-400 block mb-1">Tu Nickname (del correo)</label>
-                    <input id="post-nick" type="text" placeholder="@tu_nickname" 
+                    <label class="text-[10px] text-gray-400 block mb-1">Your Nickname (from email)</label>
+                    <input id="post-nick" type="text" placeholder="@your_nickname" 
                         class="w-full bg-[#090d16] border border-slate-800 rounded-xl px-3 py-2 text-xs text-emerald-400 font-mono focus:border-emerald-500 focus:outline-none">
                 </div>
                 <div>
-                    <label class="text-[10px] text-gray-400 block mb-1">Preset / Canción (Opcional)</label>
-                    <input id="post-preset" type="text" placeholder="Ej: Metallica One / 01A" 
+                    <label class="text-[10px] text-gray-400 block mb-1">Preset / Song (Optional)</label>
+                    <input id="post-preset" type="text" placeholder="e.g. Metallica One / 01A" 
                         class="w-full bg-[#090d16] border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-emerald-500 focus:outline-none">
                 </div>
             </div>
 
-            <!-- Valoración con decimales opcional para el preset comentado -->
+            <!-- Decimal Star Rating Slider -->
             <div class="flex items-center justify-between bg-[#090d16] border border-slate-800/80 rounded-xl px-3 py-2">
-                <span class="text-[11px] text-gray-400"><i class="fas fa-star text-amber-400 mr-1"></i> Puntuar tono:</span>
+                <span class="text-[11px] text-gray-400"><i class="fas fa-star text-amber-400 mr-1"></i> Rate tone:</span>
                 <div class="flex items-center gap-2">
                     <input id="post-rating" type="range" min="3.5" max="5.0" step="0.1" value="4.9" 
                         oninput="document.getElementById('rating-val').innerText = parseFloat(this.value).toFixed(1)"
@@ -101,25 +101,25 @@
                 </div>
             </div>
 
-            <textarea id="post-text" rows="3" placeholder="Comparte tus correcciones de perillas, pide un preset o deja tu sugerencia para la comunidad GE300..." 
+            <textarea id="post-text" rows="3" placeholder="Share your knob tweaks, request a preset, or leave a suggestion for the GE300 community..." 
                 class="w-full bg-[#090d16] border border-slate-800 rounded-xl p-3 text-xs text-white focus:border-emerald-500 focus:outline-none"></textarea>
 
             <button onclick="sendPost()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold py-2.5 rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
-                <i class="fas fa-paper-plane"></i> Publicar en Comunidad
+                <i class="fas fa-paper-plane"></i> Post to Community
             </button>
         </div>
 
-        <!-- MURO DE COMENTARIOS EN VIVO -->
+        <!-- LIVE COMMENTS FEED -->
         <div class="flex items-center justify-between px-1 pt-2">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Comentarios Recientes</h3>
-            <span id="post-count" class="text-[10px] text-emerald-400 font-mono">En vivo</span>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">Recent Comments</h3>
+            <span id="post-count" class="text-[10px] text-emerald-400 font-mono">● Live</span>
         </div>
 
         <div id="feed-container" class="space-y-3"></div>
 
     </main>
 
-    <!-- BARRA DE NAVEGACIÓN INFERIOR CON BOTÓN ELEGANTE PRO -->
+    <!-- BOTTOM NAVIGATION BAR WITH ELEGANT PRO BUTTON -->
     <nav class="fixed bottom-0 left-0 right-0 bg-[#090d16]/95 backdrop-blur border-t border-slate-800/80 px-2 py-2 flex justify-around items-center z-40">
         <a href="index.html" class="flex flex-col items-center text-gray-500 hover:text-emerald-400 transition-colors w-14">
             <i class="fas fa-sliders-h text-base mb-0.5"></i>
@@ -141,12 +141,12 @@
             <div class="w-7 h-6 rounded-lg bg-amber-400/15 border border-amber-400/40 flex items-center justify-center mb-0.5">
                 <i class="fas fa-crown text-xs text-amber-400"></i>
             </div>
-            <span class="text-[9px] font-extrabold">Go Pro</span>
+            <span class="text-[9px] font-extrabold" id="bottom-pro-text">Go Pro</span>
         </a>
     </nav>
 
     <script>
-        // CONEXIÓN REAL A TU FIREBASE MOOER-AI-TONE-STUDIO
+        // OFFICIAL FIREBASE CONNECTION (MOOER-AI-TONE-STUDIO)
         const firebaseConfig = {
             apiKey: "AIzaSyDMZxIgDvBRJNyIZuo3CDwnyvx1INm7LsM",
             authDomain: "mooer-ai-tone-studio.firebaseapp.com",
@@ -162,7 +162,7 @@
                 firebase.initializeApp(firebaseConfig);
             }
             db = firebase.firestore();
-        } catch (e) { console.log("Usando almacenamiento híbrido"); }
+        } catch (e) { console.log("Using hybrid storage"); }
 
         function initUser() {
             const savedEmail = localStorage.getItem('mooer_user_email') || localStorage.getItem('user_email') || '';
@@ -174,7 +174,7 @@
                 nick = '@' + savedEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
             }
             if (!nick) {
-                nick = '@Guitarrista_' + Math.floor(100 + Math.random() * 899);
+                nick = '@Guitarist_' + Math.floor(100 + Math.random() * 899);
             }
 
             document.getElementById('post-nick').value = nick;
@@ -195,6 +195,8 @@
                         if (user.email.toLowerCase() === 'faustolute@gmail.com') {
                             planBadge.innerHTML = '👑 ADMIN PRO';
                             planBadge.className = 'text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded font-bold';
+                            document.getElementById('top-pro-text').innerText = 'PRO VIP';
+                            document.getElementById('bottom-pro-text').innerText = 'PRO VIP';
                         } else if (db) {
                             try {
                                 const uDoc = await db.collection('users').doc(user.uid).get();
@@ -202,6 +204,8 @@
                                     localStorage.setItem('mooer_pro_status', 'true');
                                     planBadge.innerHTML = '👑 PRO MEMBER';
                                     planBadge.className = 'text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded font-bold';
+                                    document.getElementById('top-pro-text').innerText = 'PRO VIP';
+                                    document.getElementById('bottom-pro-text').innerText = 'PRO VIP';
                                 }
                             } catch (err) {}
                         }
@@ -214,18 +218,18 @@
             {
                 nick: "@fausto_ai",
                 isPro: true,
-                preset: "Bienvenida MOOER GE300",
+                preset: "Welcome to MOOER GE300",
                 rating: "5.0",
-                text: "¡Bienvenidos al Community Hub de MOOER GE300! Aquí pueden dejar sus ajustes de perillas, puntuar tonos o pedir correcciones de canciones.",
-                date: "Fijado"
+                text: "Welcome to the MOOER GE300 Community Hub! Share your knob tweaks, rate tones, or request song corrections with guitarists worldwide.",
+                date: "Pinned"
             },
             {
                 nick: "@wes_nu_metal",
                 isPro: false,
                 preset: "Limp Bizkit - Livin' It Up (Intro)",
                 rating: "4.9",
-                text: "Para la intro limpia usen pastilla Neck + 102: Jazz 120 con Gain en 25, 70s Chorus en 35, Digital Delay (420ms) y Reverb Hall largo. ¡Suena idéntico al disco!",
-                date: "Hace 2 h"
+                text: "For the clean intro: use Neck pickup + 102: Jazz 120 with Gain at 25, 70s Chorus at 35, Digital Delay (420ms) and a deep Hall Reverb. Sounds identical to the album!",
+                date: "2h ago"
             }
         ];
 
@@ -240,7 +244,7 @@
                                 ? '<span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-bold">👑 PRO</span>' 
                                 : '<span class="text-[9px] bg-slate-800 text-gray-400 px-1.5 py-0.5 rounded">FREE</span>'}
                         </div>
-                        <span class="text-[10px] text-gray-500">${p.date || 'Reciente'}</span>
+                        <span class="text-[10px] text-gray-500">${p.date || 'Recent'}</span>
                     </div>
                     <div class="flex items-center justify-between bg-[#090d16] px-2.5 py-1.5 rounded-lg border border-slate-800/60">
                         <span class="text-[11px] font-semibold text-gray-300"><i class="fas fa-sliders-h text-emerald-400 mr-1.5"></i>${p.preset || 'General GE300'}</span>
@@ -273,12 +277,12 @@
             const ratingInput = document.getElementById('post-rating');
             const textInput = document.getElementById('post-text');
 
-            let nick = nickInput.value.trim() || '@guitarrista';
+            let nick = nickInput.value.trim() || '@guitarist';
             if (!nick.startsWith('@')) nick = '@' + nick;
             localStorage.setItem('mooer_comm_nick', nick);
 
             const text = textInput.value.trim();
-            if (!text) return alert('Escribe tu comentario o sugerencia antes de publicar 🎸');
+            if (!text) return alert('Please write a comment or knob tweak before posting! 🎸');
 
             const isAdminOrPro = localStorage.getItem('mooer_pro_status') === 'true' || localStorage.getItem('mooer_user_email') === 'faustolute@gmail.com';
 
@@ -288,7 +292,7 @@
                 preset: presetInput.value.trim() || 'General GE300',
                 rating: parseFloat(ratingInput.value).toFixed(1),
                 text: text,
-                date: 'Ahora mismo',
+                date: 'Just now',
                 timestamp: Date.now()
             };
 

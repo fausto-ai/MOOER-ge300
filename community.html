@@ -11,34 +11,60 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <style>
-        body { background-color: #090d16; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: #090d16; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
+        @keyframes pulseGold {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.35); }
+            50% { box-shadow: 0 0 12px 2px rgba(251, 191, 36, 0.55); }
+        }
+        .pro-glow { animation: pulseGold 2.8s infinite; }
     </style>
 </head>
-<body class="min-h-screen pb-24">
+<body class="min-h-screen pb-28">
 
-    <!-- HEADER MOOER GE300 -->
-    <header class="sticky top-0 z-30 bg-[#090d16]/95 backdrop-blur border-b border-slate-800/80 px-4 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+    <!-- HEADER MOOER GE300 CON BOTÓN PRO ELEGANTE -->
+    <header class="sticky top-0 z-30 bg-[#090d16]/95 backdrop-blur border-b border-slate-800/80 px-3.5 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
                 <i class="fas fa-guitar"></i>
             </div>
             <div>
                 <h1 class="font-extrabold text-sm tracking-tight text-white">MOOER <span class="text-emerald-400">GE300</span></h1>
-                <p class="text-[10px] text-gray-400">Community Hub & Preset Forum</p>
+                <p class="text-[10px] text-gray-400">Community Hub & Forum</p>
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <span id="user-nick-badge" class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-lg font-mono">
-                @guitarrista
-            </span>
-            <a href="index.html" class="text-xs bg-slate-800 hover:bg-slate-700 text-gray-300 px-3 py-1.5 rounded-lg border border-slate-700">
-                <i class="fas fa-arrow-left mr-1"></i> Volver
+            <!-- Botón Superior Elegante para Volverse Premium -->
+            <a href="premium.html" class="pro-glow text-[10px] font-mono font-extrabold bg-gradient-to-r from-amber-400 via-yellow-300 to-emerald-400 text-slate-950 px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-md hover:brightness-110 transition-all">
+                <i class="fas fa-crown text-[10px]"></i>
+                <span>GO PRO</span>
+            </a>
+            <a href="index.html" class="text-xs bg-slate-800 hover:bg-slate-700 text-gray-300 px-2.5 py-1.5 rounded-lg border border-slate-700 flex items-center gap-1">
+                <i class="fas fa-arrow-left text-[10px]"></i> Volver
             </a>
         </div>
     </header>
 
     <!-- CONTENIDO PRINCIPAL -->
     <main class="max-w-xl mx-auto p-4 space-y-4">
+
+        <!-- BANNER ELEGANTE VIP PARA SUSCRIBIRSE DESDE LA COMUNIDAD -->
+        <a href="premium.html" id="proCommunityBanner" class="block bg-gradient-to-r from-amber-500/15 via-emerald-500/10 to-slate-900 border border-amber-400/40 rounded-2xl p-3.5 shadow-lg hover:border-amber-400 transition-all">
+            <div class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-300 shrink-0">
+                        <i class="fas fa-crown text-sm"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs font-extrabold text-white">Hazte MOOER AI PRO</span>
+                            <span class="text-[9px] bg-amber-400 text-slate-950 font-black px-1.5 py-0.5 rounded uppercase">VIP</span>
+                        </div>
+                        <p class="text-[11px] text-gray-300">Tonos IA ilimitados, insignia 👑 PRO en el foro y acceso a Library.</p>
+                    </div>
+                </div>
+                <i class="fas fa-chevron-right text-amber-400 text-xs shrink-0"></i>
+            </div>
+        </a>
 
         <!-- CAJA DE PUBLICACIÓN (FREE & PRO) -->
         <div class="bg-[#111827] border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
@@ -47,7 +73,7 @@
                     <i class="fas fa-comments"></i> Publicar Comentario o Ajuste
                 </h2>
                 <span id="plan-badge" class="text-[10px] bg-slate-800 text-gray-300 px-2 py-0.5 rounded font-semibold">
-                    FREE / PRO
+                    🎸 FREE MEMBER
                 </span>
             </div>
 
@@ -89,60 +115,62 @@
             <span id="post-count" class="text-[10px] text-emerald-400 font-mono">En vivo</span>
         </div>
 
-        <div id="feed-container" class="space-y-3">
-            <!-- Se llena automáticamente -->
-        </div>
+        <div id="feed-container" class="space-y-3"></div>
 
     </main>
 
-    <!-- BARRA DE NAVEGACIÓN INFERIOR (4 BOTONES IGUAL QUE LINE 6) -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-[#090d16]/95 backdrop-blur border-t border-slate-800/80 px-6 py-2.5 flex justify-around items-center z-40">
-        <a href="index.html" class="flex flex-col items-center text-gray-500 hover:text-emerald-400 transition-colors">
-            <i class="fas fa-sliders-h text-lg mb-1"></i>
-            <span class="text-[10px] font-medium">Tone AI</span>
+    <!-- BARRA DE NAVEGACIÓN INFERIOR CON BOTÓN ELEGANTE PRO -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-[#090d16]/95 backdrop-blur border-t border-slate-800/80 px-2 py-2 flex justify-around items-center z-40">
+        <a href="index.html" class="flex flex-col items-center text-gray-500 hover:text-emerald-400 transition-colors w-14">
+            <i class="fas fa-sliders-h text-base mb-0.5"></i>
+            <span class="text-[9px] font-bold">Tone AI</span>
         </a>
-        <a href="index.html#library" class="flex flex-col items-center text-gray-500 hover:text-emerald-400 transition-colors">
-            <i class="fas fa-book text-lg mb-1"></i>
-            <span class="text-[10px] font-medium">Library</span>
+        <a href="index.html#library" class="flex flex-col items-center text-gray-500 hover:text-emerald-400 transition-colors w-14">
+            <i class="fas fa-book text-base mb-0.5"></i>
+            <span class="text-[9px] font-bold">Library</span>
         </a>
-        <a href="community.html" class="flex flex-col items-center text-emerald-400">
-            <i class="fas fa-users text-lg mb-1"></i>
-            <span class="text-[10px] font-bold">Community</span>
+        <a href="community.html" class="flex flex-col items-center text-emerald-400 w-14">
+            <i class="fas fa-users text-base mb-0.5"></i>
+            <span class="text-[9px] font-bold">Community</span>
         </a>
-        <a href="index.html#tools" class="flex flex-col items-center text-gray-500 hover:text-emerald-400 transition-colors">
-            <i class="fas fa-calculator text-lg mb-1"></i>
-            <span class="text-[10px] font-medium">Tools</span>
+        <a href="index.html" class="flex flex-col items-center text-gray-500 hover:text-emerald-400 transition-colors w-14">
+            <i class="fas fa-calculator text-base mb-0.5"></i>
+            <span class="text-[9px] font-bold">Tools</span>
+        </a>
+        <a href="premium.html" class="flex flex-col items-center text-amber-400 hover:text-amber-300 transition-transform hover:scale-105 w-14">
+            <div class="w-7 h-6 rounded-lg bg-amber-400/15 border border-amber-400/40 flex items-center justify-center mb-0.5">
+                <i class="fas fa-crown text-xs text-amber-400"></i>
+            </div>
+            <span class="text-[9px] font-extrabold">Go Pro</span>
         </a>
     </nav>
 
     <script>
-        // ==========================================
-        // 1. CONFIGURACIÓN FIREBASE (O MODO LOCAL SI NO ESTÁ CONECTADO)
-        // Si quieres que sincronice en la nube con tu Firebase de MOOER, 
-        // pega aquí el mismo bloque firebaseConfig de tu index.html:
-        // ==========================================
+        // CONEXIÓN REAL A TU FIREBASE MOOER-AI-TONE-STUDIO
         const firebaseConfig = {
-            // Pega aquí tu apiKey, authDomain, projectId, etc. de tu index.html
+            apiKey: "AIzaSyDMZxIgDvBRJNyIZuo3CDwnyvx1INm7LsM",
+            authDomain: "mooer-ai-tone-studio.firebaseapp.com",
+            projectId: "mooer-ai-tone-studio",
+            storageBucket: "mooer-ai-tone-studio.firebasestorage.app",
+            messagingSenderId: "666841738973",
+            appId: "1:666841738973:web:2c0937a5b2a51b143c3534"
         };
 
         let db = null;
         try {
-            if (firebaseConfig.apiKey) {
+            if (!firebase.apps.length) {
                 firebase.initializeApp(firebaseConfig);
-                db = firebase.firestore();
             }
+            db = firebase.firestore();
         } catch (e) { console.log("Usando almacenamiento híbrido"); }
 
-        // ==========================================
-        // 2. EXTRAER NICKNAME DEL CORREO AUTOMÁTICAMENTE
-        // ==========================================
         function initUser() {
-            const savedEmail = localStorage.getItem('user_email') || localStorage.getItem('mooer_user_email') || '';
+            const savedEmail = localStorage.getItem('mooer_user_email') || localStorage.getItem('user_email') || '';
             const savedNick = localStorage.getItem('mooer_comm_nick') || '';
-            const isPro = localStorage.getItem('mooer_pro_status') === 'true' || localStorage.getItem('isPro') === 'true';
+            const isPro = localStorage.getItem('mooer_pro_status') === 'true';
 
             let nick = savedNick;
-            if (!nick && savedEmail.includes('@')) {
+            if (savedEmail.includes('@')) {
                 nick = '@' + savedEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
             }
             if (!nick) {
@@ -150,28 +178,38 @@
             }
 
             document.getElementById('post-nick').value = nick;
-            document.getElementById('user-nick-badge').innerText = nick;
             const planBadge = document.getElementById('plan-badge');
             if (isPro) {
                 planBadge.innerHTML = '👑 PRO MEMBER';
                 planBadge.className = 'text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded font-bold';
-            } else {
-                planBadge.innerHTML = '🎸 FREE MEMBER';
             }
 
             if (firebase.apps.length > 0) {
-                firebase.auth().onAuthStateChanged(user => {
+                firebase.auth().onAuthStateChanged(async user => {
                     if (user && user.email) {
                         const emailNick = '@' + user.email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
                         document.getElementById('post-nick').value = emailNick;
-                        document.getElementById('user-nick-badge').innerText = emailNick;
                         localStorage.setItem('mooer_comm_nick', emailNick);
+                        localStorage.setItem('mooer_user_email', user.email.toLowerCase());
+
+                        if (user.email.toLowerCase() === 'faustolute@gmail.com') {
+                            planBadge.innerHTML = '👑 ADMIN PRO';
+                            planBadge.className = 'text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2 py-0.5 rounded font-bold';
+                        } else if (db) {
+                            try {
+                                const uDoc = await db.collection('users').doc(user.uid).get();
+                                if (uDoc.exists && uDoc.data().isPro) {
+                                    localStorage.setItem('mooer_pro_status', 'true');
+                                    planBadge.innerHTML = '👑 PRO MEMBER';
+                                    planBadge.className = 'text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded font-bold';
+                                }
+                            } catch (err) {}
+                        }
                     }
                 });
             }
         }
 
-        // Comentarios iniciales de ejemplo para que nunca se vea vacío
         const defaultPosts = [
             {
                 nick: "@fausto_ai",
@@ -184,9 +222,9 @@
             {
                 nick: "@wes_nu_metal",
                 isPro: false,
-                preset: "Limp Bizkit - Livin' It Up",
+                preset: "Limp Bizkit - Livin' It Up (Intro)",
                 rating: "4.9",
-                text: "Para la intro limpia usen pastilla Neck + US Clean con Gain en 25, Chorus al 30% y Reverb Plate largo. ¡Suena idéntico al disco!",
+                text: "Para la intro limpia usen pastilla Neck + 102: Jazz 120 con Gain en 25, 70s Chorus en 35, Digital Delay (420ms) y Reverb Hall largo. ¡Suena idéntico al disco!",
                 date: "Hace 2 h"
             }
         ];
@@ -199,7 +237,7 @@
                         <div class="flex items-center gap-2">
                             <span class="text-xs font-bold text-emerald-400 font-mono">${p.nick}</span>
                             ${p.isPro 
-                                ? '<span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-bold">PRO</span>' 
+                                ? '<span class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-bold">👑 PRO</span>' 
                                 : '<span class="text-[9px] bg-slate-800 text-gray-400 px-1.5 py-0.5 rounded">FREE</span>'}
                         </div>
                         <span class="text-[10px] text-gray-500">${p.date || 'Reciente'}</span>
@@ -219,6 +257,9 @@
                     const cloudPosts = [];
                     snap.forEach(doc => cloudPosts.push(doc.data()));
                     renderPosts([...cloudPosts, ...defaultPosts]);
+                }, err => {
+                    const local = JSON.parse(localStorage.getItem('mooer_comm_posts') || '[]');
+                    renderPosts([...local, ...defaultPosts]);
                 });
             } else {
                 const local = JSON.parse(localStorage.getItem('mooer_comm_posts') || '[]');
@@ -239,9 +280,11 @@
             const text = textInput.value.trim();
             if (!text) return alert('Escribe tu comentario o sugerencia antes de publicar 🎸');
 
+            const isAdminOrPro = localStorage.getItem('mooer_pro_status') === 'true' || localStorage.getItem('mooer_user_email') === 'faustolute@gmail.com';
+
             const newPost = {
                 nick: nick,
-                isPro: localStorage.getItem('mooer_pro_status') === 'true',
+                isPro: isAdminOrPro,
                 preset: presetInput.value.trim() || 'General GE300',
                 rating: parseFloat(ratingInput.value).toFixed(1),
                 text: text,
@@ -249,12 +292,17 @@
                 timestamp: Date.now()
             };
 
+            const local = JSON.parse(localStorage.getItem('mooer_comm_posts') || '[]');
+            local.unshift(newPost);
+            localStorage.setItem('mooer_comm_posts', JSON.stringify(local));
+
             if (db) {
-                await db.collection('mooer_ge300_community').add(newPost);
+                try {
+                    await db.collection('mooer_ge300_community').add(newPost);
+                } catch (e) {
+                    loadPosts();
+                }
             } else {
-                const local = JSON.parse(localStorage.getItem('mooer_comm_posts') || '[]');
-                local.unshift(newPost);
-                localStorage.setItem('mooer_comm_posts', JSON.stringify(local));
                 loadPosts();
             }
 

@@ -1239,7 +1239,7 @@
       - REVERB: ${REVERB.map(r=>r.name).join(', ')}
       Return ONLY JSON in English: {"cleanTitle": "ARTIST - SONG (${sectionLabel})", "section": "${section}", "blocks": [{"type": "DS/OD", "name": "2: 808", "p": {"Gain": 25, "Tone": 65, "Output": 75}}, {"type": "AMP", "name": "49: J800", "p": {"Gain": 75, "Treble": 68, "Mid": 65, "Bass": 58}}], "pickup": "Neck or Bridge", "ctrls": ["CTRL 1: Drive", "CTRL 2: Delay"], "desc": "Brief studio tone description"}`;
 
-      const modelsToTry = ["gemini-2.5-flash", "gemini-2.0-flash"];
+      const modelsToTry = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash"];
       let lastError = null;
 
       for (const modelName of modelsToTry) {
